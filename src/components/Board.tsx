@@ -3,14 +3,19 @@ import React from 'react';
 
 const CELL_SIZE = 80;
 
-const NUM_ROWS = 10;
-const NUM_COLS = 10;
+const BOARD_SIZE = 20;
+
+const calculateRightEdgeCellPosition = (row: number) => row + BOARD_SIZE - 1;
+const calculateBottomEdgeCellPosition = (col: number) =>
+  2 * BOARD_SIZE - 3 + (BOARD_SIZE - col);
+const calculateLeftEdgeCellPosition = (row: number) =>
+  3 * BOARD_SIZE - 4 + (BOARD_SIZE - row);
 
 export default function Board() {
   return (
-    <Box width={`${NUM_COLS * CELL_SIZE}px`}>
+    <Box width={`${BOARD_SIZE * CELL_SIZE}px`}>
       <FilledRow row={0} />
-      {new Array(NUM_ROWS - 2).fill(0).map((_, i) => (
+      {new Array(BOARD_SIZE - 2).fill(0).map((_, i) => (
         <SpacedRow row={i + 1} />
       ))}
       <FilledRow row={9} />
@@ -37,10 +42,8 @@ const BoardCell = ({ n }: { n: number }) => {
 const FilledRow = ({ row }: { row: number }) => {
   return (
     <Flex>
-      {new Array(NUM_COLS).fill(0).map((_, i) => (
-        <BoardCell
-          n={row === 0 ? i : NUM_COLS + NUM_COLS - 3 + (NUM_COLS - i)}
-        />
+      {new Array(BOARD_SIZE).fill(0).map((_, i) => (
+        <BoardCell n={row === 0 ? i : calculateBottomEdgeCellPosition(i)} />
       ))}
     </Flex>
   );
@@ -49,8 +52,8 @@ const FilledRow = ({ row }: { row: number }) => {
 const SpacedRow = ({ row }: { row: number }) => {
   return (
     <Flex justifyContent={'space-between'}>
-      <BoardCell n={3 * NUM_COLS - 3 + (NUM_ROWS - 1 - row)} />
-      <BoardCell n={row + NUM_COLS - 1} />
+      <BoardCell n={calculateLeftEdgeCellPosition(row)} />
+      <BoardCell n={calculateRightEdgeCellPosition(row)} />
     </Flex>
   );
 };
