@@ -1,59 +1,57 @@
-import { AspectRatio, Box, Flex, Text } from '@chakra-ui/react';
+import { Box, Flex } from '@chakra-ui/react';
 import React from 'react';
+import { useGameContext } from '../hooks/useGameContext';
+import BoardCell from './BoardCell';
 
 const CELL_SIZE = 80;
 
 const BOARD_SIZE = 10;
 
-const calculateRightEdgeCellPosition = (row: number) => row + BOARD_SIZE - 1;
-const calculateBottomEdgeCellPosition = (col: number) =>
-  2 * BOARD_SIZE - 3 + (BOARD_SIZE - col);
-const calculateLeftEdgeCellPosition = (row: number) =>
-  3 * BOARD_SIZE - 4 + (BOARD_SIZE - row);
+const calculateRightEdgeCellPosition = (row: number, boardSize: number) =>
+  row + boardSize - 1;
+const calculateBottomEdgeCellPosition = (col: number, boardSize: number) =>
+  2 * boardSize - 3 + (boardSize - col);
+const calculateLeftEdgeCellPosition = (row: number, boardSize: number) =>
+  3 * boardSize - 4 + (boardSize - row);
 
 export default function Board() {
+  const {
+    boardSettings: { boardSize, cellSize },
+  } = useGameContext();
+
   return (
-    <Box width={`${BOARD_SIZE * CELL_SIZE}px`}>
-      <FilledRow row={0} />
-      {new Array(BOARD_SIZE - 2).fill(0).map((_, i) => (
-        <SpacedRow row={i + 1} />
+    <Box width={`${boardSize * cellSize}px`}>
+      <FilledRow row={0} boardSize={boardSize} />
+      {new Array(boardSize - 2).fill(0).map((_, i) => (
+        <SpacedRow key={i + 1} row={i + 1} boardSize={boardSize} />
       ))}
-      <FilledRow row={9} />
+      <FilledRow row={9} boardSize={boardSize} />
     </Box>
   );
 }
 
-const BoardCell = ({ n }: { n: number }) => {
-  return (
-    <AspectRatio
-      ratio={1}
-      minW={CELL_SIZE}
-      h={CELL_SIZE}
-      bg="blue"
-      onClick={() => alert(n)}
-    >
-      <Flex>
-        <Text>Board</Text>
-      </Flex>
-    </AspectRatio>
-  );
-};
-
-const FilledRow = ({ row }: { row: number }) => {
+interface RowProps {
+  row: number;
+  boardSize: number;
+}
+const FilledRow = ({ row, boardSize }: RowProps) => {
   return (
     <Flex>
-      {new Array(BOARD_SIZE).fill(0).map((_, i) => (
-        <BoardCell n={row === 0 ? i : calculateBottomEdgeCellPosition(i)} />
+      {new Array(boardSize).fill(0).map((_, i) => (
+        <BoardCell
+          key={`${row}-${i}`}
+          n={row === 0 ? i : calculateBottomEdgeCellPosition(i, boardSize)}
+        />
       ))}
     </Flex>
   );
 };
 
-const SpacedRow = ({ row }: { row: number }) => {
+const SpacedRow = ({ row, boardSize }: RowProps) => {
   return (
     <Flex justifyContent={'space-between'}>
-      <BoardCell n={calculateLeftEdgeCellPosition(row)} />
-      <BoardCell n={calculateRightEdgeCellPosition(row)} />
+      <BoardCell n={calculateLeftEdgeCellPosition(row, boardSize)} />
+      <BoardCell n={calculateRightEdgeCellPosition(row, boardSize)} />
     </Flex>
   );
 };
