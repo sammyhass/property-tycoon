@@ -3,7 +3,7 @@ import React from 'react';
 
 const CELL_SIZE = 80;
 
-const BOARD_SIZE = 20;
+const BOARD_SIZE = 10;
 
 const calculateRightEdgeCellPosition = (row: number) => row + BOARD_SIZE - 1;
 const calculateBottomEdgeCellPosition = (col: number) =>
