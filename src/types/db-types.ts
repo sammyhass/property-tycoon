@@ -18,7 +18,6 @@ export interface paths {
         query: {
           id?: parameters["rowFilter.board_space.id"];
           created_at?: parameters["rowFilter.board_space.created_at"];
-          name?: parameters["rowFilter.board_space.name"];
           take_card?: parameters["rowFilter.board_space.take_card"];
           property?: parameters["rowFilter.board_space.property"];
           space_type?: parameters["rowFilter.board_space.space_type"];
@@ -75,7 +74,6 @@ export interface paths {
         query: {
           id?: parameters["rowFilter.board_space.id"];
           created_at?: parameters["rowFilter.board_space.created_at"];
-          name?: parameters["rowFilter.board_space.name"];
           take_card?: parameters["rowFilter.board_space.take_card"];
           property?: parameters["rowFilter.board_space.property"];
           space_type?: parameters["rowFilter.board_space.space_type"];
@@ -96,7 +94,6 @@ export interface paths {
         query: {
           id?: parameters["rowFilter.board_space.id"];
           created_at?: parameters["rowFilter.board_space.created_at"];
-          name?: parameters["rowFilter.board_space.name"];
           take_card?: parameters["rowFilter.board_space.take_card"];
           property?: parameters["rowFilter.board_space.property"];
           space_type?: parameters["rowFilter.board_space.space_type"];
@@ -316,7 +313,6 @@ export interface paths {
           id?: parameters["rowFilter.game_property.id"];
           name?: parameters["rowFilter.game_property.name"];
           price?: parameters["rowFilter.game_property.price"];
-          rents?: parameters["rowFilter.game_property.rents"];
           property_group?: parameters["rowFilter.game_property.property_group"];
           /** Filtering Columns */
           select?: parameters["select"];
@@ -371,7 +367,6 @@ export interface paths {
           id?: parameters["rowFilter.game_property.id"];
           name?: parameters["rowFilter.game_property.name"];
           price?: parameters["rowFilter.game_property.price"];
-          rents?: parameters["rowFilter.game_property.rents"];
           property_group?: parameters["rowFilter.game_property.property_group"];
         };
         header: {
@@ -390,7 +385,6 @@ export interface paths {
           id?: parameters["rowFilter.game_property.id"];
           name?: parameters["rowFilter.game_property.name"];
           price?: parameters["rowFilter.game_property.price"];
-          rents?: parameters["rowFilter.game_property.rents"];
           property_group?: parameters["rowFilter.game_property.property_group"];
         };
         body: {
@@ -515,6 +509,7 @@ export interface definitions {
      * Format: uuid
      * @description Note:
      * This is a Primary Key.<pk/>
+     * @default extensions.uuid_generate_v4()
      */
     id: string;
     /**
@@ -522,8 +517,6 @@ export interface definitions {
      * @default now()
      */
     created_at?: string;
-    /** Format: text */
-    name: string;
     /**
      * Format: public.card_type
      * @enum {string}
@@ -541,7 +534,11 @@ export interface definitions {
      * @enum {string}
      */
     space_type: "property" | "take_card";
-    /** Format: smallint */
+    /**
+     * Format: smallint
+     * @description Note:
+     * This is a Primary Key.<pk/>
+     */
     board_position: number;
   };
   game_card: {
@@ -592,8 +589,6 @@ export interface definitions {
     name: string;
     /** Format: bigint */
     price?: number;
-    /** Format: ARRAY */
-    rents?: unknown[];
     /**
      * Format: bigint
      * @description Note:
@@ -661,8 +656,6 @@ export interface parameters {
   "rowFilter.board_space.id": string;
   /** Format: timestamp with time zone */
   "rowFilter.board_space.created_at": string;
-  /** Format: text */
-  "rowFilter.board_space.name": string;
   /** Format: public.card_type */
   "rowFilter.board_space.take_card": string;
   /** Format: bigint */
@@ -699,8 +692,6 @@ export interface parameters {
   "rowFilter.game_property.name": string;
   /** Format: bigint */
   "rowFilter.game_property.price": string;
-  /** Format: ARRAY */
-  "rowFilter.game_property.rents": string;
   /** Format: bigint */
   "rowFilter.game_property.property_group": string;
   /** @description property_group */
