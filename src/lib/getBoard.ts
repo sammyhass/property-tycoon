@@ -1,11 +1,19 @@
 import { definitions } from '../types/db-types';
-import { supabase } from './supabase';
+import { prisma } from './prisma';
 
 type BoardSpaceT = definitions['board_space'];
 
 export const getBoard = async () => {
-  const { data } = await supabase
-    .from<BoardSpaceT>('board_space')
-    .select('*, property(*, property_group(*))');
-  return data;
+  const spaces = await prisma.board_space.findMany({
+    select: {
+      board_position: true,
+      id: true,
+      space_type: true,
+      property: true,
+      game_property: true,
+      take_card: true,
+    },
+  });
+
+  return JSON.parse(JSON.stringify(spaces));
 };

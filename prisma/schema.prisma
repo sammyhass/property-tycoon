@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model board_space {
+  id          String   @default(uuid()) @db.Uuid
+  created_at     DateTime?      @default(now()) @db.Timestamptz(6)
+  take_card      card_type?
+  property       Int?           @unique
+  space_type     space_type     @default(property)
+  board_position Int            @default(autoincrement()) @db.SmallInt
+  game_property  game_property? @relation(fields: [property], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([id, board_position])
+}
+
+model game_card {
+  id         Int       @id @default(autoincrement())
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  card_type  card_type
+  text       String
+}
+
+model game_card_action {
+  id          Int       @id(map: "game_action_pkey") @default(autoincrement())
+  created_at  DateTime? @default(now()) @db.Timestamptz(6)
+  cost        Int?      @default(0)
+  go_to_space Int?      @db.SmallInt
+}
+
+model game_property {
+  id             Int          @id @default(autoincrement())
+  name           String
+  price          Int?         @default(0)
+  property_group Int?
+  board_space    board_space?
+}
+
+model property_group {
+  id         Int       @id @default(autoincrement())
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  color      String    @unique
+  house_cost Int?
+  hotel_cost Int?
+}
+
+enum card_type {
+  POT_LUCK
+  OPPORTUNITY_KNOCKS
+}
+
+enum space_type {
+  property
+  take_card
+}
