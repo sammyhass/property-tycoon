@@ -4,19 +4,18 @@ import { NextApiHandler } from 'next';
 
 // /api/board_space
 // (GET, POST)
-// Post creates a new board_space, Get returns all board_spaces
+//  - Post creates a new board_space
+//  - Get returns all board_spaces.
 const handler: NextApiHandler = async (req, res) => {
-  return new Promise(async (resolve, reject) => {
-    switch (req.method) {
-      case 'GET':
-        await handleGET(req, res);
-        break;
-      case 'POST':
-        await handlePOST(req, res);
-        break;
-    }
-    return resolve();
-  });
+  switch (req.method) {
+    case 'GET':
+      await handleGET(req, res);
+      break;
+    case 'POST':
+      await handlePOST(req, res);
+    case 'PUT':
+      throw new Error('Method not implemented.');
+  }
 };
 
 const handleGET: NextApiHandler = async (_req, res) => {
