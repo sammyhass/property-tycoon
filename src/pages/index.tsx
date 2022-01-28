@@ -1,7 +1,7 @@
+import { prismaClient } from '@/lib/prisma';
 import { Box, Flex } from '@chakra-ui/react';
 import type { GetStaticProps, NextPage } from 'next';
 import Board from '../components/Board';
-import { getBoard } from '../lib/getBoard';
 
 const Home: NextPage = () => {
   return (
@@ -14,12 +14,11 @@ const Home: NextPage = () => {
 };
 
 export const getStaticProps: GetStaticProps = async () => {
-  const settings = await getBoard();
+  const settings = await prismaClient.board_space.findMany();
   return {
     props: {
       spaces: settings,
     },
   };
 };
-
 export default Home;

@@ -8,15 +8,12 @@ datasource db {
 }
 
 model board_space {
-  id          String   @default(uuid()) @db.Uuid
+  board_position Int            @id @default(0) @unique
   created_at     DateTime?      @default(now()) @db.Timestamptz(6)
   take_card      card_type?
-  property       Int?           @unique
-  space_type     space_type     @default(property)
-  board_position Int            @default(autoincrement()) @db.SmallInt
-  game_property  game_property? @relation(fields: [property], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@id([id, board_position])
+  property_id    String?         @map("property")
+  space_type     space_type     @default(PROPERTY)
+  game_property  game_property? @relation(fields: [property_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model game_card {
@@ -34,7 +31,7 @@ model game_card_action {
 }
 
 model game_property {
-  id             Int          @id @default(autoincrement())
+  id             String       @id @default(uuid())
   name           String
   price          Int?         @default(0)
   property_group Int?
@@ -55,6 +52,6 @@ enum card_type {
 }
 
 enum space_type {
-  property
-  take_card
+  PROPERTY
+  TAKE_CARD
 }
