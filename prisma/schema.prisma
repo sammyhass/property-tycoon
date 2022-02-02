@@ -7,11 +7,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model user {
+  id          String @id
+  email       String @unique
+  games       game[]
+
+  @@map("User")
+}
+
 model game {
   id       String       @id @default(uuid())
   active   Boolean?      @unique
   created_at DateTime? @default(now()) @db.Timestamptz(6)
   name     String
+  user_id  String
+  user     user @relation(fields: [user_id], references: [id])
   board_spaces board_space[]
   game_cards   game_card[]
   game_properties game_property[]
@@ -22,9 +32,9 @@ model game {
 }
 
 model board_space {
-  board_position Int            @id @default(0) @unique
+  board_position Int            @default(0)
   game_id       String            
-  game         game            @relation(fields: [game_id], references: [id])
+  game         game            @relation(fields: [game_id], references: [id], onDelete: Cascade)
   created_at     DateTime?      @default(now()) @db.Timestamptz(6)
   take_card      card_type?
   property_id    String?         @map("property")
@@ -34,6 +44,7 @@ model board_space {
 
   
 
+  @@id([game_id, board_position])
   @@unique([board_position, game_id])
   @@index([board_position, game_id])
 
@@ -119,8 +130,12 @@ enum card_type {
 }
 
 enum space_type {
+  EMPTY
   PROPERTY
   TAKE_CARD
-
+  GO
+  GO_TO_JAIL
+  JUST_VISIT
+  FREE_PARKING
   @@map("SpaceType")
 }
