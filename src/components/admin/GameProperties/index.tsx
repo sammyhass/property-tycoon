@@ -11,7 +11,7 @@ export default function GameProperties({
   return (
     <Box p="10px" boxShadow={'xl'} borderRadius={'8px'}>
       <Heading size="md">Game Properties</Heading>
-      <Flex overflow={'auto'}>
+      <Flex overflow={'auto'} my="10px">
         {properties.map(property => (
           <GameProperties.PropertyItem key={property.id} {...property} />
         ))}
@@ -41,7 +41,7 @@ GameProperties.PropertyItem = function PropertyItem({
         }}
       >
         <Flex>
-					<Square size={'50px'} bg={property_group_color} />
+          <Square size={'50px'} bg={property_group_color} />
           <Heading size="sm">{name}</Heading>
           <Box ml={'auto'}>{price}</Box>
         </Flex>
