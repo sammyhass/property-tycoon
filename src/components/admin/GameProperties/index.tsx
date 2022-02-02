@@ -17,7 +17,7 @@ export default function GameProperties({
         ))}
       </Flex>
       {properties.length === 0 && <Box>No Properties created yet</Box>}
-      <Link href={`/admin/games/${gameId}/property/new`}>
+      <Link href={`/admin/games/${gameId}/properties/new`}>
         <Button>Create a New Property</Button>
       </Link>
     </Box>
@@ -32,7 +32,7 @@ GameProperties.PropertyItem = function PropertyItem({
   property_group_color,
 }: game_property) {
   return (
-    <Link href={`/admin/games/${game_id}/property/${id}`}>
+    <Link href={`/admin/games/${game_id}/properties/${id}`}>
       <Box
         p="10px"
         borderRadius={'8px'}

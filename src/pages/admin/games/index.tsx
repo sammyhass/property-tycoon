@@ -1,7 +1,7 @@
 import GamesList from '@/components/admin/GamesList';
 import AdminLayout from '@/components/UI/admin/AdminLayout';
 import { prismaClient } from '@/lib/prisma';
-import { Box, Button, Flex, Link } from '@chakra-ui/react';
+import { Box, Button, Divider, Heading, Link } from '@chakra-ui/react';
 import { game } from '@prisma/client';
 import { GetServerSideProps } from 'next';
 import React from 'react';
@@ -13,12 +13,14 @@ interface AdminGamesProps {
 export default function AdminGames({ games }: AdminGamesProps) {
   return (
     <AdminLayout>
-      <Box mt="40px" />
-      <Flex my="10px" align="center" justify={'center'}>
+      <Box my="10px">
+        <Heading mb={'5px'}>Game Boards</Heading>
         <Link href="/admin/games/new">
-          <Button>Create a New Game</Button>
+          <Button colorScheme={'green'}>Create a New Game Board</Button>
         </Link>
-      </Flex>
+      </Box>
+
+      <Divider />
       <GamesList games={games} />
     </AdminLayout>
   );

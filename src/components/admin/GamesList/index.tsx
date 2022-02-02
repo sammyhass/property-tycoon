@@ -10,27 +10,26 @@ export default function GamesList({ games }: GameListProps) {
   const activeGame = games.find(game => game.active);
   return (
     <>
-      <Heading textAlign={'center'}>Your Game Boards</Heading>
-      <Flex direction={'column'} w="600px" mx="auto">
+      <Flex direction={'column'} mx="auto">
         {activeGame ? (
-          <GamesList.GameItem {...activeGame} />
+          <GameItem {...activeGame} />
         ) : (
           <Box p="10px">No Active Game</Box>
         )}
         {games
           .filter(g => !g.active)
           .map(game => (
-            <GamesList.GameItem key={game.id} {...game} />
+            <GameItem key={game.id} {...game} />
           ))}
       </Flex>
     </>
   );
 }
 
-GamesList.GameItem = function GameItem({ created_at, name, id, active }: game) {
+const GameItem = ({ created_at, name, id, active }: game) => {
   return (
     <LinkBox>
-      <Link href={`/admin/games/${id}`}>
+      <Link href={`/admin/games/${id}`} _hover={{ textDecor: 'none' }}>
         <Box
           p="10px"
           borderRadius={'8px'}

@@ -29,7 +29,7 @@ model board_space {
   take_card      card_type?
   property_id    String?         @map("property")
   space_type     space_type     @default(PROPERTY)
-  game_property  game_property? @relation(fields: [property_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  game_property  game_property? @relation(fields: [property_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
 
   
@@ -43,7 +43,7 @@ model board_space {
 model game_card {
   id         String       @id @default(uuid())
   game_id    String
-  game       game      @relation(fields: [game_id], references: [id])
+  game       game      @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   created_at DateTime? @default(now()) @db.Timestamptz(6)
   card_type  card_type
   text       String
@@ -61,7 +61,7 @@ model game_card_action {
   cost        Int?      @default(0)
 
   game_card_id String?
-  game_card game_card? @relation(fields: [game_card_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  game_card game_card? @relation(fields: [game_card_id], references: [id])
 
   @@map("GameCardAction")
 }
@@ -69,7 +69,7 @@ model game_card_action {
 model game_property {
   id             String       @id @default(uuid())
   game_id        String
-  game           game         @relation(fields: [game_id], references: [id])
+  game           game         @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   name           String
   price          Int?         @default(0)
   property_group_color property_group_color
@@ -83,7 +83,7 @@ model game_property {
 model property_group {
   color      property_group_color @default(NONE) 
   game_id    String
-  game       game      @relation(fields: [game_id], references: [id])
+  game       game      @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   created_at DateTime? @default(now()) @db.Timestamptz(6)
   
   house_cost Int?

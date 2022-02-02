@@ -8,8 +8,8 @@ const handler: NextApiHandler = async (req, res) => {
     case 'GET':
       await handleGET(req, res);
       break;
-    case 'POST':
-      await handlePOST(req, res);
+    case 'DELETE':
+      await handleDELETE(req, res);
       break;
     case 'PUT':
       throw new Error('Method not implemented.');
@@ -36,6 +36,29 @@ const handleGET: NextApiHandler = async (req, res) => {
   return res.status(200).json(game);
 };
 
-const handlePOST: NextApiHandler = async (req, res) => {
-  throw new Error('Method not implemented.');
+const handleDELETE: NextApiHandler = async (req, res) => {
+  const id = req.query.game_id as string;
+
+  if (!isUUID(id)) {
+    res.status(400).json({
+      message: 'Invalid game id',
+    });
+  }
+  try {
+    const game = await prismaClient.game.delete({ where: { id } });
+    if (!game) {
+      res.status(404).json({
+        message: 'Game not found',
+      });
+    }
+
+    return res.status(200).json(game);
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      message: 'Internal server error',
+    });
+  }
 };
+
+export default handler;

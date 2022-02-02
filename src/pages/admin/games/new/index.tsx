@@ -10,14 +10,13 @@ export default function AdminNewGame() {
         m={'auto'}
         boxShadow={'xl'}
         borderRadius={'8px'}
-        p="10px"
-        background={'#fafafa'}
+        p="20px"
         border={'1px solid #eee'}
         marginTop="150px"
         w="80%"
         mx={'auto'}
       >
-        <Heading textAlign={'center'}>Create a New Game</Heading>
+        <Heading>Create a New Game Board</Heading>
         <Box>
           <Box>
             <NewGameForm />
