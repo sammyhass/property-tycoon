@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { ApiError, User } from '@supabase/supabase-js';
+import { useRouter } from 'next/router';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface IAuthContext {
@@ -31,9 +32,22 @@ const AuthContext = createContext<IAuthContext>({
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider: React.FC = ({ children }) => {
+  const router = useRouter();
+
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const store = JSON.parse(
+      localStorage.getItem('supabase.auth.token') || '{}'
+    );
+
+    if (store.currentSession) {
+      setIsAuthenticated(true);
+      setUser(store.currentSession.user);
+    }
+  }, []);
 
   const signIn = async (email: string, next?: string) => {
     setIsLoading(true);
@@ -59,22 +73,34 @@ export const AuthProvider: React.FC = ({ children }) => {
       setIsAuthenticated(false);
       setUser(null);
     }
+    localStorage.removeItem('supabase.auth.token');
     setIsLoading(false);
+    router.push('/login');
   };
   useEffect(() => {
     const { data: authListener } = supabase?.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         if (session) {
           setIsAuthenticated(true);
           setUser(session.user);
         }
+
+        (await fetch('/api/auth', {
+          method: 'POST',
+          headers: new Headers({ 'Content-Type': 'application/json' }),
+          credentials: 'same-origin',
+          body: JSON.stringify({
+            session,
+            event,
+          }),
+        })) ?? { data: null };
       }
-    ) ?? { data: null };
+    );
 
     return () => {
       authListener?.unsubscribe();
     };
-  }, []);
+  }, [supabase?.auth.onAuthStateChange]);
 
   return (
     <AuthContext.Provider

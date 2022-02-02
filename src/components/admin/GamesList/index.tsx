@@ -1,5 +1,6 @@
-import { Box, Flex, Heading, Link, LinkBox } from '@chakra-ui/react';
+import { Box, Flex, Heading, LinkBox } from '@chakra-ui/react';
 import { game } from '@prisma/client';
+import Link from 'next/link';
 import React from 'react';
 
 interface GameListProps {
@@ -29,7 +30,7 @@ export default function GamesList({ games }: GameListProps) {
 const GameItem = ({ created_at, name, id, active }: game) => {
   return (
     <LinkBox>
-      <Link href={`/admin/games/${id}`} _hover={{ textDecor: 'none' }}>
+      <Link href={`/admin/games/${id}`}>
         <Box
           p="10px"
           borderRadius={'8px'}

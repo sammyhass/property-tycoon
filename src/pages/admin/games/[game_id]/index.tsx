@@ -9,7 +9,6 @@ import {
   Box,
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
   Button,
   Divider,
   Flex,
@@ -20,6 +19,7 @@ import {
 import { Prisma, PrismaClient } from '@prisma/client';
 import axios from 'axios';
 import { GetServerSideProps } from 'next';
+import Link from 'next/link';
 import React from 'react';
 
 export const getGame = async (pc: PrismaClient, id: string) => {
@@ -55,13 +55,13 @@ export default function AdminGamePage({ game }: AdminGamePageProps) {
 
   return (
     <AdminLayout>
-      <Breadcrumb separator="-">
+      <Breadcrumb>
         <BreadcrumbItem>
-          <BreadcrumbLink href="/admin/games">Game Boards</BreadcrumbLink>
+          <Link href="/admin/games">Game Boards</Link>
         </BreadcrumbItem>
 
         <BreadcrumbItem isCurrentPage>
-          <BreadcrumbLink href="#">{game?.name}</BreadcrumbLink>
+          <Link href="#">{game?.name}</Link>
         </BreadcrumbItem>
       </Breadcrumb>
       {game ? (

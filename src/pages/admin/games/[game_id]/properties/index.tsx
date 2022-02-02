@@ -1,14 +1,7 @@
 import AdminLayout from '@/components/UI/admin/AdminLayout';
-import {
-  Box,
-  Button,
-  Flex,
-  Heading,
-  Link,
-  Spacer,
-  Text,
-} from '@chakra-ui/react';
+import { Box, Button, Flex, Heading, Spacer, Text } from '@chakra-ui/react';
 import { game, game_property } from '@prisma/client';
+import Link from 'next/link';
 import React from 'react';
 
 export default function GamePropertiesPage({

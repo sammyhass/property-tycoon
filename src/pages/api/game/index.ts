@@ -1,4 +1,5 @@
 import { prismaClient } from '@/lib/prisma';
+import { supabase } from '@/lib/supabase';
 import { board_space, space_type } from '@prisma/client';
 import Joi from 'joi';
 import { NextApiHandler } from 'next';
@@ -39,6 +40,17 @@ const postSchema = Joi.object().keys({
 });
 
 const handlePOST: NextApiHandler = async (req, res) => {
+  const token = req.headers.token as string;
+
+  const { data, user } = await supabase.auth.api.getUserByCookie(req);
+
+  if (!user) {
+    res.status(401).json({
+      message: 'Unauthorized',
+    });
+    return;
+  }
+
   const { error } = postSchema.validate(req.body);
   if (error) throw error;
 
@@ -69,6 +81,7 @@ const handlePOST: NextApiHandler = async (req, res) => {
 
   const game = await prismaClient.game.create({
     data: {
+      user_id: user.id,
       name: req.body.name,
       board_spaces: {
         createMany: {

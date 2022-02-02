@@ -1,5 +1,6 @@
-import { Box, Button, Flex, Heading, Link, Square } from '@chakra-ui/react';
+import { Box, Button, Flex, Heading, Square } from '@chakra-ui/react';
 import { game_property } from '@prisma/client';
+import Link from 'next/link';
 
 export default function GameProperties({
   gameId,

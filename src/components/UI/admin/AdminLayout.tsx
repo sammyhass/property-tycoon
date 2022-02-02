@@ -1,7 +1,7 @@
 import { Box } from '@chakra-ui/react';
 import Head from 'next/head';
 import React from 'react';
-import AdminNavbar from './AdminNavbar';
+import Navbar from './Navbar';
 
 export default function AdminLayout({
   children,
@@ -11,10 +11,10 @@ export default function AdminLayout({
   return (
     <>
       <Head>
-        <title>Property Tycoon Admin</title>
+        <title>Property Tycoon</title>
       </Head>
       <div>
-        <AdminNavbar />
+        <Navbar />
         <Box w="90%" mt="70px" mx="auto">
           {children}
         </Box>

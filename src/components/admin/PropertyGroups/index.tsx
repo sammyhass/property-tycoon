@@ -1,5 +1,6 @@
-import { Box, Button, Flex, Heading, Link, LinkBox } from '@chakra-ui/react';
+import { Box, Button, Flex, Heading, LinkBox } from '@chakra-ui/react';
 import { property_group } from '@prisma/client';
+import Link from 'next/link';
 import React from 'react';
 
 export default function PropertyGroups({

@@ -1,9 +1,10 @@
 import GamesList from '@/components/admin/GamesList';
 import AdminLayout from '@/components/UI/admin/AdminLayout';
 import { prismaClient } from '@/lib/prisma';
-import { Box, Button, Divider, Heading, Link } from '@chakra-ui/react';
+import { Box, Button, Divider, Heading } from '@chakra-ui/react';
 import { game } from '@prisma/client';
 import { GetServerSideProps } from 'next';
+import Link from 'next/link';
 import React from 'react';
 
 interface AdminGamesProps {

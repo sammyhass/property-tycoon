@@ -21,7 +21,7 @@ model game {
   created_at DateTime? @default(now()) @db.Timestamptz(6)
   name     String
   user_id  String
-  user     user @relation(fields: [user_id], references: [id])
+  user     user @relation(fields: [user_id], references: [id], onDelete: Cascade)
   board_spaces board_space[]
   game_cards   game_card[]
   game_properties game_property[]

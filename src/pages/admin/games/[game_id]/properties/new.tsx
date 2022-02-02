@@ -1,15 +1,10 @@
 import NewPropertyForm from '@/components/admin/GameProperties/NewPropertyForm';
 import AdminLayout from '@/components/UI/admin/AdminLayout';
 import { prismaClient } from '@/lib/prisma';
-import {
-  Box,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  Heading,
-} from '@chakra-ui/react';
+import { Box, Breadcrumb, BreadcrumbItem, Heading } from '@chakra-ui/react';
 import { game, property_group } from '@prisma/client';
 import { GetServerSideProps } from 'next';
+import Link from 'next/link';
 import React from 'react';
 import { getPropertyGroups } from '../property-groups';
 
@@ -24,25 +19,23 @@ export default function NewPropertyPage({
 }: NewPropertyPageProps) {
   return (
     <AdminLayout>
-      <Breadcrumb separator="-">
+      <Breadcrumb>
         <BreadcrumbItem>
-          <BreadcrumbLink href="/admin/games">Game Boards</BreadcrumbLink>
+          <Link href="/admin/games">Game Boards</Link>
         </BreadcrumbItem>
 
         <BreadcrumbItem>
-          <BreadcrumbLink href={`/admin/games/${gameId}`}>Game</BreadcrumbLink>
+          <Link href={`/admin/games/${gameId}`}>Game</Link>
         </BreadcrumbItem>
 
         <BreadcrumbItem>
-          <BreadcrumbLink href={`/admin/games/${gameId}/properties`}>
-            Properties
-          </BreadcrumbLink>
+          <Link href={`/admin/games/${gameId}/properties`}>Properties</Link>
         </BreadcrumbItem>
 
         <BreadcrumbItem isCurrentPage>
-          <BreadcrumbLink href={`/admin/games/${gameId}/properties/new`}>
+          <Link href={`/admin/games/${gameId}/properties/new`}>
             New Property
-          </BreadcrumbLink>
+          </Link>
         </BreadcrumbItem>
       </Breadcrumb>
       <Box
