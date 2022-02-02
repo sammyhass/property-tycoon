@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import React from 'react';
 import AdminNavbar from './AdminNavbar';
 
@@ -7,9 +8,14 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div>
-      <AdminNavbar />
-      {children}
-    </div>
+    <>
+      <Head>
+        <title>Property Tycoon Admin</title>
+      </Head>
+      <div>
+        <AdminNavbar />
+        {children}
+      </div>
+    </>
   );
 }
