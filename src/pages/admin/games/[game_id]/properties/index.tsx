@@ -19,8 +19,10 @@ export default function GamePropertiesPage({
 }) {
   return (
     <AdminLayout>
-      <Flex aling="center">
-        <Heading>Game Properties</Heading>
+      <Flex align="center">
+        <Heading p="0" m="0">
+          Game Properties
+        </Heading>
         <Spacer />
         <Link href={`/admin/games/${game?.id}/properties/new`}>
           <Button colorScheme={'green'}>Add New Property</Button>

@@ -1,4 +1,5 @@
 import DeleteGameButton from '@/components/admin/DeleteGameButton';
+import GameBoardEditor from '@/components/admin/GameBoardEditor';
 import GameProperties from '@/components/admin/GameProperties';
 import PropertyGroups from '@/components/admin/PropertyGroups';
 import AdminLayout from '@/components/UI/admin/AdminLayout';
@@ -87,6 +88,8 @@ export default function AdminGamePage({ game }: AdminGamePageProps) {
               <DeleteGameButton id={game.id} name={game.name} />
             </Box>
           </Flex>
+          <Divider />
+          <GameBoardEditor board_spaces={game.board_spaces} game={game} />
           <Divider />
           <Box mt="10px">
             <GameProperties

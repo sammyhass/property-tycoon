@@ -1,4 +1,5 @@
 import { prismaClient } from '@/lib/prisma';
+import { board_space, space_type } from '@prisma/client';
 import Joi from 'joi';
 import { NextApiHandler } from 'next';
 
@@ -38,15 +39,48 @@ const postSchema = Joi.object().keys({
 });
 
 const handlePOST: NextApiHandler = async (req, res) => {
-  console.log(req.body);
   const { error } = postSchema.validate(req.body);
   if (error) throw error;
+
+  const spaces: Pick<board_space, 'board_position' | 'space_type'>[] = [
+    {
+      board_position: 0,
+      space_type: space_type.GO,
+    },
+
+    {
+      board_position: 11,
+      space_type: space_type.JUST_VISIT,
+    },
+    {
+      board_position: 21,
+      space_type: space_type.FREE_PARKING,
+    },
+    {
+      board_position: 31,
+      space_type: space_type.GO_TO_JAIL,
+    },
+  ];
+
+  const otherSpaces = new Array(39).fill(0).map((_, i) => ({
+    board_position: i + 1,
+    space_type: space_type.EMPTY,
+  }));
 
   const game = await prismaClient.game.create({
     data: {
       name: req.body.name,
+      board_spaces: {
+        createMany: {
+          skipDuplicates: true,
+          data: [...spaces, ...otherSpaces].sort(
+            (a, b) => a.board_position - b.board_position
+          ),
+        },
+      },
     },
   });
+
   res.status(200).json(game);
 };
 const handlePUT: NextApiHandler = async (_req, res) => {

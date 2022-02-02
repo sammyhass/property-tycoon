@@ -33,14 +33,14 @@ export default function DeleteGameButton({
   return (
     <>
       <Button onClick={handleOpen} colorScheme={'red'}>
-        Delete Game
+        Delete Board
       </Button>
       <Modal isOpen={isOpen} onClose={handleClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Delete {name}</ModalHeader>
           <ModalBody>
-            <Text>Are you sure you want to delete this game?</Text>
+            <Text>Are you sure you want to delete this board?</Text>
             <Button
               onClick={handleClose}
               colorScheme="green"

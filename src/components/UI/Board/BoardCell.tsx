@@ -1,8 +1,8 @@
 import { Box, Text } from '@chakra-ui/react';
 import React from 'react';
-import { useGameContext } from '../hooks/useGameContext';
+import { useBoardProps } from './Board';
 export default function BoardCell({ n }: { n: number }) {
-  const { gameSettings: boardSettings, cellSize } = useGameContext();
+  const { onTileClick, cellSize } = useBoardProps();
 
   return (
     <Box
@@ -13,7 +13,7 @@ export default function BoardCell({ n }: { n: number }) {
         transform: `scale(1)`,
       }}
       bg="blue"
-      onClick={() => alert(n)}
+      onClick={() => onTileClick && onTileClick(n)}
     >
       <Text>{n}</Text>
     </Box>
