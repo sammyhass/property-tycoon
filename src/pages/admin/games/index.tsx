@@ -16,7 +16,7 @@ export default function AdminGames({ games }: AdminGamesProps) {
     <AdminLayout>
       <Box my="10px">
         <Heading mb={'5px'}>Game Boards</Heading>
-        <Link href="/admin/games/new">
+        <Link href="/admin/games/new" passHref>
           <Button colorScheme={'green'}>Create a New Game Board</Button>
         </Link>
       </Box>

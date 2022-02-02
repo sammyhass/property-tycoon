@@ -14,11 +14,11 @@ export default function LoginComponent() {
     if (isAuthenticated) {
       router.push('/admin/games');
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, router]);
 
   return (
     <Box boxShadow={'xl'} p="20px" borderRadius={'10px'}>
-      <Heading>Let's get you logged in</Heading>
+      <Heading>Let&apos;s get you logged in</Heading>
       <Divider my="10px" />
       <Auth
         supabaseClient={supabase}

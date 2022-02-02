@@ -30,7 +30,7 @@ export default function GamesList({ games }: GameListProps) {
 const GameItem = ({ created_at, name, id, active }: game) => {
   return (
     <LinkBox>
-      <Link href={`/admin/games/${id}`}>
+      <Link href={`/admin/games/${id}`} passHref>
         <Box
           p="10px"
           borderRadius={'8px'}

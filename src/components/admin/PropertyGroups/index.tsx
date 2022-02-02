@@ -19,7 +19,7 @@ export default function PropertyGroups({
           <PropertyGroups.GroupItem key={group.color} {...group} />
         ))}
       </Flex>
-      <Link href={`/admin/games/${gameId}/property-groups/new`}>
+      <Link href={`/admin/games/${gameId}/property-groups/new`} passHref>
         <Button>New Property Group</Button>
       </Link>
     </Box>
@@ -31,7 +31,7 @@ PropertyGroups.GroupItem = function GroupItem({
   color,
 }: property_group) {
   return (
-    <Link href={`/admin/games/${game_id}/property-groups/${color}`}>
+    <Link href={`/admin/games/${game_id}/property-groups/${color}`} passHref>
       <LinkBox bg={color} borderRadius={'8px'} p="20px">
         <Flex>
           <Heading size="sm" color={'whiteAlpha.900'}>
