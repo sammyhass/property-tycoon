@@ -7,51 +7,119 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model game {
+  id       String       @id @default(uuid())
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  name     String
+  board_spaces board_space[]
+  game_cards   game_card[]
+  game_properties game_property[]
+  property_groups property_group[]
+
+
+  @@map("Game")
+}
+
 model board_space {
   board_position Int            @id @default(0) @unique
+  game_id       String            
+  game         game            @relation(fields: [game_id], references: [id])
   created_at     DateTime?      @default(now()) @db.Timestamptz(6)
   take_card      card_type?
   property_id    String?         @map("property")
   space_type     space_type     @default(PROPERTY)
   game_property  game_property? @relation(fields: [property_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+
+  
+
+  @@unique([board_position, game_id])
+  @@index([board_position, game_id])
+
+  @@map("BoardSpace")
 }
 
 model game_card {
-  id         Int       @id @default(autoincrement())
+  id         String       @id @default(uuid())
+  game_id    String
+  game       game      @relation(fields: [game_id], references: [id])
   created_at DateTime? @default(now()) @db.Timestamptz(6)
   card_type  card_type
   text       String
+  
+  card_action_id String? @map("card_action")
+  card_action game_card_action?
+  
+  @@map("GameCard")
 }
 
 model game_card_action {
-  id          Int       @id(map: "game_action_pkey") @default(autoincrement())
+  id          String       @id() @default(uuid())
+  game_id     String
   created_at  DateTime? @default(now()) @db.Timestamptz(6)
   cost        Int?      @default(0)
-  go_to_space Int?      @db.SmallInt
+
+  game_card_id String?
+  game_card game_card? @relation(fields: [game_card_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("GameCardAction")
 }
 
 model game_property {
   id             String       @id @default(uuid())
+  game_id        String
+  game           game         @relation(fields: [game_id], references: [id])
   name           String
   price          Int?         @default(0)
-  property_group Int?
+  property_group_color property_group_color
+  property_group property_group? @relation(fields: [property_group_color, game_id], references: [color, game_id], onDelete: NoAction, onUpdate: NoAction)
+
   board_space    board_space?
+
+  @@map("GameProperty")
 }
 
 model property_group {
-  id         Int       @id @default(autoincrement())
+  color      property_group_color @default(NONE) 
+  game_id    String
+  game       game      @relation(fields: [game_id], references: [id])
   created_at DateTime? @default(now()) @db.Timestamptz(6)
-  color      String    @unique
+  
   house_cost Int?
   hotel_cost Int?
+
+  properties game_property[]
+
+  @@id([color, game_id])
+  @@unique([color, game_id])
+
+  @@map("PropertyGroup")
+}
+
+
+enum property_group_color {
+  NONE
+  BLUE
+  GREEN
+  RED
+  YELLOW
+  TEAL
+  PURPLE
+  PINK
+  ORANGE
+  GREY
 }
 
 enum card_type {
   POT_LUCK
   OPPORTUNITY_KNOCKS
+
+  @@map("CardType")
 }
 
 enum space_type {
   PROPERTY
   TAKE_CARD
+
+  @@map("SpaceType")
 }

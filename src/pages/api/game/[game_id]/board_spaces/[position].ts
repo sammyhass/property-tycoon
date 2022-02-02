@@ -10,20 +10,22 @@ const handler: NextApiHandler = async (req, res) => {
 };
 
 const handleGET: NextApiHandler = async (req, res) => {
+  const game_id = req.query.game_id as string;
   const pos = req.query.position;
 
   try {
     const nId = parseInt(pos as string);
-    const space = await prismaClient.board_space.findUnique({
+    const space = await prismaClient.board_space.findFirst({
       where: {
         board_position: nId,
+        game_id,
       },
     });
 
     res.status(200).json(space);
-  } catch (e) {
+  } catch (e: any) {
     res.status(400).json({
-      message: e || 'Bad Request',
+      message: e.message || 'Bad Request',
     });
   }
 };

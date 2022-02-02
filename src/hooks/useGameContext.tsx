@@ -6,7 +6,10 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { TokenType } from '../types';
+
+// Token the player can use in the game
+// TODO:
+type TokenType = 'blue' | 'green' | 'red' | 'yellow';
 
 type PositionsT = Partial<{
   [token in TokenType]: {
