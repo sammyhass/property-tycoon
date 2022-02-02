@@ -15,9 +15,7 @@ const calculateLeftEdgeCellPosition = (row: number, boardSize: number) =>
   3 * boardSize - 4 + (boardSize - row);
 
 export default function Board() {
-  const {
-    boardSettings: { boardSize, cellSize },
-  } = useGameContext();
+  const { gameSettings, boardSize, cellSize } = useGameContext();
 
   return (
     <Box width={`${boardSize * cellSize}px`}>

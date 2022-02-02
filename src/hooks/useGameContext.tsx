@@ -1,3 +1,4 @@
+import { board_space, game, game_card, game_property } from '@prisma/client';
 import {
   createContext,
   useCallback,
@@ -23,10 +24,7 @@ export type Player = {
 };
 
 export type GameContextT = {
-  boardSettings: {
-    boardSize: number;
-    cellSize: number;
-  };
+  gameSettings: GameSettingsT | null;
 
   players: Player[];
   positions: PositionsT;
@@ -48,8 +46,10 @@ export type GameContextT = {
 
   setCurrentPlayer: (player: TokenType) => void;
 
+  boardSize: number;
   setBoardSize: (boardSize: number) => void;
 
+  cellSize: number;
   setCellSize: (cellSize: number) => void;
 
   isPaused: boolean;
@@ -58,10 +58,7 @@ export type GameContextT = {
 };
 
 export const GameContext = createContext<GameContextT>({
-  boardSettings: {
-    boardSize: 10,
-    cellSize: 90,
-  },
+  gameSettings: null,
   players: [],
   positions: {},
   currentPlayer: null,
@@ -73,7 +70,11 @@ export const GameContext = createContext<GameContextT>({
   setPlayerPosition: () => {},
   resetGame: () => {},
   setCurrentPlayer: () => {},
+
+  boardSize: 10,
   setBoardSize: () => {},
+
+  cellSize: 80,
   setCellSize: () => {},
   isPaused: false,
   setIsPaused: () => {},
@@ -81,7 +82,28 @@ export const GameContext = createContext<GameContextT>({
 
 export const useGameContext = () => useContext(GameContext);
 
-export const GameContextProvider: React.FC = props => {
+type GameSettingsT = game & {
+  game_properties: game_property[];
+  cards: game_card[];
+  board_spaces: board_space[];
+};
+
+export const GameContextProvider: React.FC = ({ children }) => {
+  const [loadingActiveBoard, setLoadingActiveBoard] = useState(true);
+
+  const [gameSettings, setGameSettings] = useState<GameSettingsT | null>(null);
+
+  useEffect(() => {
+    const fetchBoard = async () => {
+      const response = await fetch('/api/game/active');
+      const board = (await response.json()) as GameSettingsT;
+      setLoadingActiveBoard(false);
+      setGameSettings(board);
+    };
+
+    fetchBoard();
+  }, []);
+
   const [isPaused, setIsPaused] = useState(false);
 
   const [players, setPlayers] = useState<Player[]>([]);
@@ -177,10 +199,7 @@ export const GameContextProvider: React.FC = props => {
   return (
     <GameContext.Provider
       value={{
-        boardSettings: {
-          boardSize,
-          cellSize,
-        },
+        gameSettings,
         players,
         positions,
         currentPlayer,
@@ -189,6 +208,8 @@ export const GameContextProvider: React.FC = props => {
         getTimeDisplay,
         addPlayer,
         removePlayer,
+        boardSize,
+        cellSize,
         setPlayerPosition,
         resetGame,
         setCurrentPlayer,
@@ -198,7 +219,7 @@ export const GameContextProvider: React.FC = props => {
         setIsPaused,
       }}
     >
-      {props.children}
+      {children}
     </GameContext.Provider>
   );
 };

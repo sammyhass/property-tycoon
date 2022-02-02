@@ -57,6 +57,12 @@ const handleGET: NextApiHandler = async (_req, res) => {
     where: {
       active: true,
     },
+    include: {
+      board_spaces: true,
+      property_groups: true,
+      game_cards: true,
+      game_properties: true,
+    },
   });
 
   res.status(200).json(game);
