@@ -6,24 +6,16 @@ const CELL_SIZE = 80;
 
 const BOARD_SIZE = 10;
 
-export const calculateRightEdgeCellPosition = (
-  row: number,
-  boardSize: number
-) => row + boardSize - 1;
-export const calculateBottomEdgeCellPosition = (
-  col: number,
-  boardSize: number
-) => 2 * boardSize - 3 + (boardSize - col);
-export const calculateLeftEdgeCellPosition = (row: number, boardSize: number) =>
-  3 * boardSize - 4 + (boardSize - row);
-
 interface BoardProps {
   onTileClick?: (n: number) => void;
-  boardSize?: number;
-  cellSize?: number;
+  boardSize: number;
+  cellSize: number;
 }
 
-const BoardPropsContext = createContext<BoardProps>({});
+const BoardPropsContext = createContext<BoardProps>({
+  boardSize: BOARD_SIZE,
+  cellSize: CELL_SIZE
+});
 
 export const useBoardProps = () => useContext(BoardPropsContext);
 
@@ -34,16 +26,49 @@ export default function Board({
 }: BoardProps) {
   return (
     <BoardPropsContext.Provider value={{ onTileClick, boardSize, cellSize }}>
-      <Box width={`${boardSize * cellSize}px`}>
-        <FilledRow row={0} boardSize={boardSize} />
-        {new Array(boardSize - 2).fill(0).map((_, i) => (
-          <SpacedRow key={i + 1} row={i + 1} boardSize={boardSize} />
+      <style>{`
+        #board-grid {
+          display: grid;
+          grid-template-rows: repeat(${boardSize}, ${cellSize}px);
+          grid-template-columns: repeat(${boardSize}, ${cellSize}px);
+          grid-gap: 3px;
+        }
+      `}</style>
+      <Box id="board-grid">
+        {/* Dummy element to space out center of grid */}
+        <Box
+          gridRowStart={2}
+          gridRowEnd={boardSize - 2}
+          gridColumnStart={2}
+          gridColumnEnd={boardSize - 2}
+        />
+        {new Array((boardSize * 4) - 4).fill(0).map((_, i) => (
+          <BoardCell n={i} />
         ))}
-        <FilledRow row={9} boardSize={boardSize} />
       </Box>
     </BoardPropsContext.Provider>
   );
 }
+
+/*
+<FilledRow row={0} boardSize={boardSize} />
+{new Array(boardSize - 2).fill(0).map((_, i) => (
+  <SpacedRow key={i + 1} row={i + 1} boardSize={boardSize} />
+))}
+<FilledRow row={9} boardSize={boardSize} />
+*/
+
+/*
+export const calculateRightEdgeCellPosition = (
+  row: number,
+  boardSize: number
+) => row + boardSize - 1;
+export const calculateBottomEdgeCellPosition = (
+  col: number,
+  boardSize: number
+) => 2 * boardSize - 3 + (boardSize - col);
+export const calculateLeftEdgeCellPosition = (row: number, boardSize: number) =>
+  3 * boardSize - 4 + (boardSize - row);
 
 interface RowProps {
   row: number;
@@ -70,3 +95,4 @@ const SpacedRow = ({ row, boardSize }: RowProps) => {
     </Flex>
   );
 };
+*/
