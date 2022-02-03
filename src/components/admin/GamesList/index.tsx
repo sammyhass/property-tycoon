@@ -29,8 +29,8 @@ export default function GamesList({ games }: GameListProps) {
 
 const GameItem = ({ created_at, name, id, active }: game) => {
   return (
-    <LinkBox>
-      <Link href={`/admin/games/${id}`} passHref>
+    <Link href={`/admin/games/${id}`} passHref>
+      <LinkBox cursor="pointer">
         <Box
           p="10px"
           borderRadius={'8px'}
@@ -48,7 +48,7 @@ const GameItem = ({ created_at, name, id, active }: game) => {
             <Box ml={'auto'}>{created_at?.toDateString()}</Box>
           </Flex>
         </Box>
-      </Link>
-    </LinkBox>
+      </LinkBox>
+    </Link>
   );
 };

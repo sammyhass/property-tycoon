@@ -4,6 +4,7 @@ import GameProperties from '@/components/admin/GameProperties';
 import PropertyGroups from '@/components/admin/PropertyGroups';
 import AdminLayout from '@/components/UI/admin/AdminLayout';
 import { API_URL } from '@/env/env';
+import { enforceAuth } from '@/lib/checkAuth';
 import { prismaClient } from '@/lib/prisma';
 import {
   Box,
@@ -22,10 +23,11 @@ import { GetServerSideProps } from 'next';
 import Link from 'next/link';
 import React from 'react';
 
-export const getGame = async (pc: PrismaClient, id: string) => {
-  return await pc.game.findUnique({
+export const getGame = async (pc: PrismaClient, id: string, userId: string) => {
+  return await pc.game.findFirst({
     where: {
       id,
+      user_id: userId,
     },
     include: {
       board_spaces: true,
@@ -108,16 +110,17 @@ export default function AdminGamePage({ game }: AdminGamePageProps) {
   );
 }
 
-export const getServerSideProps: GetServerSideProps<
-  AdminGamePageProps
-> = async ({ query }) => {
-  const game_id = query.game_id as string;
+export const getServerSideProps: GetServerSideProps = enforceAuth(
+  user =>
+    async ({ query }) => {
+      const game_id = query.game_id as string;
 
-  const game = await getGame(prismaClient, game_id);
+      const game = await getGame(prismaClient, game_id, user.id);
 
-  return {
-    props: {
-      game,
-    },
-  };
-};
+      return {
+        props: {
+          game,
+        },
+      };
+    }
+);

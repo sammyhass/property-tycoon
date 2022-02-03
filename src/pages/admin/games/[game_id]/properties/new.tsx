@@ -1,5 +1,6 @@
 import NewPropertyForm from '@/components/admin/GameProperties/NewPropertyForm';
 import AdminLayout from '@/components/UI/admin/AdminLayout';
+import { enforceAuth } from '@/lib/checkAuth';
 import { prismaClient } from '@/lib/prisma';
 import { Box, Breadcrumb, BreadcrumbItem, Heading } from '@chakra-ui/react';
 import { game, property_group } from '@prisma/client';
@@ -16,6 +17,7 @@ interface NewPropertyPageProps {
 export default function NewPropertyPage({
   gameId,
   groups,
+  game,
 }: NewPropertyPageProps) {
   return (
     <AdminLayout>
@@ -25,7 +27,7 @@ export default function NewPropertyPage({
         </BreadcrumbItem>
 
         <BreadcrumbItem>
-          <Link href={`/admin/games/${gameId}`}>Game</Link>
+          <Link href={`/admin/games/${gameId}`}>{game?.name}</Link>
         </BreadcrumbItem>
 
         <BreadcrumbItem>
@@ -51,38 +53,40 @@ export default function NewPropertyPage({
   );
 }
 
-export const getServerSideProps: GetServerSideProps<
-  NewPropertyPageProps
-> = async ({ query }) => {
-  const game_id = query.game_id as string;
+export const getServerSideProps: GetServerSideProps = enforceAuth(
+  user =>
+    async ({ req, query }) => {
+      const game_id = query.game_id as string;
 
-  const game = await prismaClient.game.findUnique({
-    where: {
-      id: game_id,
-    },
-  });
+      const game = await prismaClient.game.findFirst({
+        where: {
+          id: game_id,
+          user_id: user.id,
+        },
+      });
 
-  if (!game) {
-    return {
-      props: {
-        gameId: game_id,
-        game: null,
-        groups: [],
-      },
-      redirect: {
-        destination: '/admin/games',
-        permanent: false,
-      },
-    };
-  }
+      if (!game) {
+        return {
+          props: {
+            gameId: game_id,
+            game: null,
+            groups: [],
+          },
+          redirect: {
+            destination: '/admin/games',
+            permanent: false,
+          },
+        };
+      }
 
-  const groups = await getPropertyGroups(prismaClient, game_id);
+      const groups = await getPropertyGroups(prismaClient, game_id);
 
-  return {
-    props: {
-      gameId: query.game_id as string,
-      game,
-      groups,
-    },
-  };
-};
+      return {
+        props: {
+          gameId: query.game_id as string,
+          game,
+          groups,
+        },
+      };
+    }
+);

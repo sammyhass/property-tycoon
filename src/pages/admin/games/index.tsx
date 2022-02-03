@@ -28,12 +28,18 @@ export default function AdminGames({ games }: AdminGamesProps) {
   );
 }
 
-export const getServerSideProps: GetServerSideProps = enforceAuth(async () => {
-  const games = await prismaClient.game.findMany();
+export const getServerSideProps: GetServerSideProps = enforceAuth(
+  user => async () => {
+    const games = await prismaClient.game.findMany({
+      where: {
+        user_id: user.id,
+      },
+    });
 
-  return {
-    props: {
-      games,
-    },
-  };
-});
+    return {
+      props: {
+        games,
+      },
+    };
+  }
+);
