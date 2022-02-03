@@ -1,5 +1,6 @@
 import GamesList from '@/components/admin/GamesList';
 import AdminLayout from '@/components/UI/admin/AdminLayout';
+import { enforceAuth } from '@/lib/checkAuth';
 import { prismaClient } from '@/lib/prisma';
 import { Box, Button, Divider, Heading } from '@chakra-ui/react';
 import { game } from '@prisma/client';
@@ -27,9 +28,7 @@ export default function AdminGames({ games }: AdminGamesProps) {
   );
 }
 
-export const getServerSideProps: GetServerSideProps<
-  AdminGamesProps
-> = async () => {
+export const getServerSideProps: GetServerSideProps = enforceAuth(async () => {
   const games = await prismaClient.game.findMany();
 
   return {
@@ -37,4 +36,4 @@ export const getServerSideProps: GetServerSideProps<
       games,
     },
   };
-};
+});

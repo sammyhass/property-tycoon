@@ -1,4 +1,5 @@
 import { prismaClient } from '@/lib/prisma';
+import { supabase } from '@/lib/supabase';
 import Joi from 'joi';
 import { NextApiHandler } from 'next';
 
@@ -20,17 +21,25 @@ const postSchema = Joi.object().keys({
   game_id: Joi.string().required(),
 });
 const handlePOST: NextApiHandler = async (req, res) => {
+  const { user } = await supabase.auth.api.getUser(req.cookies['sb:token']);
+  if (!user) return res.status(401).send('Unauthorized');
+
   const { error } = await postSchema.validate(req.body);
   if (error) throw error;
 
   const gameId = req.body.game_id as string;
 
-  // set other games to inactive
+  // set other games to inactive for this user
   await prismaClient.game.updateMany({
     where: {
-      id: {
-        not: gameId,
-      },
+      AND: [
+        {
+          user_id: user.id,
+          id: {
+            not: gameId,
+          },
+        },
+      ],
     },
     data: {
       active: null,

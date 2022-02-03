@@ -43,16 +43,14 @@ const handlePOST: NextApiHandler = async (req, res) => {
     return;
   }
 
-  const group = await prismaClient.property_group
-    .create({
-      data: {
-        game_id: game_id,
-        color: req.body.color,
-        hotel_cost: req.body.hotel_cost,
-        house_cost: req.body.house_cost,
-      },
-    })
-    .catch(e => console.log(e));
+  const group = await prismaClient.property_group.create({
+    data: {
+      game_id: game_id,
+      color: req.body.color,
+      hotel_cost: req.body.hotel_cost,
+      house_cost: req.body.house_cost,
+    },
+  });
   res.status(200).json(group);
 };
 

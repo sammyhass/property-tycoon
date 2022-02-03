@@ -44,7 +44,7 @@ interface AdminGamePageProps {
 export default function AdminGamePage({ game }: AdminGamePageProps) {
   const setActive = async () => {
     if (!game) return;
-    const { data, status } = await axios.post(`${API_URL}/game/active`, {
+    const { data, status } = await axios.post(`${API_URL}/active`, {
       game_id: game?.id,
     });
 

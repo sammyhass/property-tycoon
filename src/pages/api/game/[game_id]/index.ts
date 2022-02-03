@@ -54,7 +54,6 @@ const handleDELETE: NextApiHandler = async (req, res) => {
 
     return res.status(200).json(game);
   } catch (e) {
-    console.log(e);
     return res.status(500).json({
       message: 'Internal server error',
     });

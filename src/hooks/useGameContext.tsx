@@ -95,7 +95,7 @@ export const GameContextProvider: React.FC = ({ children }) => {
 
   useEffect(() => {
     const fetchBoard = async () => {
-      const response = await fetch('/api/game/active');
+      const response = await fetch('/api/active');
       const board = (await response.json()) as GameSettingsT;
       setLoadingActiveBoard(false);
       setGameSettings(board);

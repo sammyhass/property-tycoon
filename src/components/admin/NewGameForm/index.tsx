@@ -1,16 +1,22 @@
 import { API_URL } from '@/env/env';
 import {
+  Alert,
   Box,
   Button,
   ChakraProps,
   FormControl,
-  FormErrorMessage,
   FormLabel,
   Input,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
-import React, { FormEvent, useCallback, useMemo, useState } from 'react';
+import React, {
+  FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
 type FormData = {
   name: string;
@@ -22,28 +28,35 @@ export default function NewGameForm({ ...chakraProps }: NewGameFormProps) {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    if (error) setError('');
+  }, [name]);
+
   const router = useRouter();
 
   const onSubmit = useCallback(
     async (e: FormEvent) => {
-      e.preventDefault();
-      const { data, status } = await axios.post(`${API_URL}/game`, {
-        name,
-      });
-
-      if (status !== 200) {
-        setError(data.message);
-      }
-      router.push('/admin/games');
+      axios
+        .post(`${API_URL}/game`, {
+          name,
+        })
+        .then(({ status }) => status === 200 && router.push('/admin/games'))
+        .catch(e => setError(e.message));
     },
-    [name, router]
+    [name, router, setError]
   );
 
   const canSubmit = useMemo(() => !!name, [name]);
 
   return (
     <Box {...chakraProps}>
-      <form onSubmit={e => canSubmit && onSubmit(e)}>
+      <form
+        onSubmit={e => {
+          if (!canSubmit) return;
+          e.preventDefault();
+          onSubmit(e);
+        }}
+      >
         <FormControl my="10px">
           <FormLabel>
             <Input
@@ -52,10 +65,15 @@ export default function NewGameForm({ ...chakraProps }: NewGameFormProps) {
               onChange={e => setName(e.target.value)}
             />
           </FormLabel>
-          <FormErrorMessage>{error}</FormErrorMessage>
+
           <Button type="submit" disabled={!canSubmit} w="100%">
             Create Game
           </Button>
+          {error && (
+            <Alert mt="10px" status="error">
+              {error}
+            </Alert>
+          )}
         </FormControl>
       </form>
     </Box>

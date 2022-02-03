@@ -46,6 +46,9 @@ export const AuthProvider: React.FC = ({ children }) => {
     if (store.currentSession) {
       setIsAuthenticated(true);
       setUser(store.currentSession.user);
+      (async () => {
+        await supabase.auth.setSession(store.access_token);
+      })();
     }
   }, []);
 
@@ -84,7 +87,6 @@ export const AuthProvider: React.FC = ({ children }) => {
           setIsAuthenticated(true);
           setUser(session.user);
         }
-
         (await fetch('/api/auth', {
           method: 'POST',
           headers: new Headers({ 'Content-Type': 'application/json' }),
@@ -100,7 +102,7 @@ export const AuthProvider: React.FC = ({ children }) => {
     return () => {
       authListener?.unsubscribe();
     };
-  }, [supabase?.auth.onAuthStateChange]);
+  }, [supabase?.auth.user]);
 
   return (
     <AuthContext.Provider

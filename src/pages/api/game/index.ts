@@ -40,8 +40,6 @@ const postSchema = Joi.object().keys({
 });
 
 const handlePOST: NextApiHandler = async (req, res) => {
-  const token = req.headers.token as string;
-
   const { data, user } = await supabase.auth.api.getUserByCookie(req);
 
   if (!user) {
@@ -93,7 +91,6 @@ const handlePOST: NextApiHandler = async (req, res) => {
       },
     },
   });
-
   res.status(200).json(game);
 };
 const handlePUT: NextApiHandler = async (_req, res) => {
