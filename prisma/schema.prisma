@@ -8,106 +8,96 @@ datasource db {
 }
 
 model user {
-  id          String @id
-  email       String @unique
-  games       game[]
+  id    String @id @db.Uuid
+  email String @unique
+  games game[]
 
   @@map("User")
 }
 
 model game {
-  id       String       @id @default(uuid())
-  active   Boolean?      @unique
-  created_at DateTime? @default(now()) @db.Timestamptz(6)
-  name     String
-  user_id  String
-  user     user @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  board_spaces board_space[]
-  game_cards   game_card[]
+  created_at      DateTime?          @default(now()) @db.Timestamptz(6)
+  name            String
+  active          Boolean?           @unique
+  user_id         String             @db.Uuid
+  id              String             @id @default(uuid()) @db.Uuid
+  user            user               @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  board_spaces    board_space[]
+  game_cards      game_card[]
+  card_actions    game_card_action[]
   game_properties game_property[]
   property_groups property_group[]
-
 
   @@map("Game")
 }
 
 model board_space {
   board_position Int            @default(0)
-  game_id       String            
-  game         game            @relation(fields: [game_id], references: [id], onDelete: Cascade)
   created_at     DateTime?      @default(now()) @db.Timestamptz(6)
   take_card      card_type?
-  property_id    String?         @map("property")
+  property_id    String?        @unique @map("property")
   space_type     space_type     @default(PROPERTY)
+  game_id        String         @db.Uuid
+  game           game           @relation(fields: [game_id], references: [id], onDelete: Cascade)
   game_property  game_property? @relation(fields: [property_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-
-  
 
   @@id([game_id, board_position])
   @@unique([board_position, game_id])
   @@index([board_position, game_id])
-
   @@map("BoardSpace")
 }
 
 model game_card {
-  id         String       @id @default(uuid())
-  game_id    String
-  game       game      @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  created_at DateTime? @default(now()) @db.Timestamptz(6)
-  card_type  card_type
-  text       String
-  
-  card_action_id String? @map("card_action")
-  card_action game_card_action?
-  
+  id             String            @id @default(uuid())
+  created_at     DateTime?         @default(now()) @db.Timestamptz(6)
+  card_type      card_type
+  text           String
+  card_action_id String?           @map("card_action")
+  game_id        String            @db.Uuid
+  game           game              @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  card_action    game_card_action?
+
   @@map("GameCard")
 }
 
 model game_card_action {
-  id          String       @id() @default(uuid())
-  game_id     String
-  created_at  DateTime? @default(now()) @db.Timestamptz(6)
-  cost        Int?      @default(0)
-
-  game_card_id String?
-  game_card game_card? @relation(fields: [game_card_id], references: [id])
+  id           String     @id @default(uuid())
+  created_at   DateTime?  @default(now()) @db.Timestamptz(6)
+  cost         Int?       @default(0)
+  game_card_id String?    @unique
+  game_id      String     @db.Uuid
+  game_card    game_card? @relation(fields: [game_card_id], references: [id])
+  game         game       @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@map("GameCardAction")
 }
 
 model game_property {
-  id             String       @id @default(uuid())
-  game_id        String
-  game           game         @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  name           String
-  price          Int?         @default(0)
+  id                   String               @id @default(uuid())
+  name                 String
+  price                Int?                 @default(0)
   property_group_color property_group_color
-  property_group property_group? @relation(fields: [property_group_color, game_id], references: [color, game_id], onDelete: NoAction, onUpdate: NoAction)
-
-  board_space    board_space?
+  game_id              String               @db.Uuid
+  game                 game                 @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  property_group       property_group       @relation(fields: [property_group_color, game_id], references: [color, game_id], onDelete: NoAction, onUpdate: NoAction)
+  board_space          board_space?
 
   @@map("GameProperty")
 }
 
 model property_group {
-  color      property_group_color @default(NONE) 
-  game_id    String
-  game       game      @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  created_at DateTime? @default(now()) @db.Timestamptz(6)
-  
+  created_at DateTime?            @default(now()) @db.Timestamptz(6)
   house_cost Int?
   hotel_cost Int?
-
+  color      property_group_color @default(NONE)
+  game_id    String               @db.Uuid
+  game       game                 @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   properties game_property[]
 
   @@id([color, game_id])
   @@unique([color, game_id])
-
   @@map("PropertyGroup")
 }
-
 
 enum property_group_color {
   NONE
@@ -137,5 +127,6 @@ enum space_type {
   GO_TO_JAIL
   JUST_VISIT
   FREE_PARKING
+
   @@map("SpaceType")
 }
