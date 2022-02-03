@@ -1,4 +1,4 @@
-import { Box, Flex } from '@chakra-ui/react';
+import { Box } from '@chakra-ui/react';
 import React, { createContext, useContext } from 'react';
 import BoardCell from './BoardCell';
 
@@ -14,7 +14,7 @@ interface BoardProps {
 
 const BoardPropsContext = createContext<BoardProps>({
   boardSize: BOARD_SIZE,
-  cellSize: CELL_SIZE
+  cellSize: CELL_SIZE,
 });
 
 export const useBoardProps = () => useContext(BoardPropsContext);
@@ -26,15 +26,14 @@ export default function Board({
 }: BoardProps) {
   return (
     <BoardPropsContext.Provider value={{ onTileClick, boardSize, cellSize }}>
-      <style>{`
-        #board-grid {
-          display: grid;
-          grid-template-rows: repeat(${boardSize}, ${cellSize}px);
-          grid-template-columns: repeat(${boardSize}, ${cellSize}px);
-          grid-gap: 3px;
-        }
-      `}</style>
-      <Box id="board-grid">
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: `repeat(${boardSize}, ${cellSize}px)`,
+          gridTemplateRows: `repeat(${boardSize}, ${cellSize}px)`,
+          gridGap: 3,
+        }}
+      >
         {/* Dummy element to space out center of grid */}
         <Box
           gridRowStart={2}
@@ -42,8 +41,8 @@ export default function Board({
           gridColumnStart={2}
           gridColumnEnd={boardSize - 2}
         />
-        {new Array((boardSize * 4) - 4).fill(0).map((_, i) => (
-          <BoardCell n={i} />
+        {new Array(boardSize * 4 - 4).fill(0).map((_, i) => (
+          <BoardCell n={i} key={i} />
         ))}
       </Box>
     </BoardPropsContext.Provider>
