@@ -59,7 +59,7 @@ model game_card {
   type    card_type
 
   // Title of the card
-  text         String
+  title         String
 
   // The card description
   description  String  
@@ -70,13 +70,11 @@ model game_card {
   // If the action_type is PAY_* then this is the amount to pay, to the bank, or to a random player in the game
   cost         Int?       @default(0)
 
+  // If the action type is GO_TO_PROPERTY then this is the property id
   property_to_go_to_id String? @map("property")
   property_to_go_to    game_property? @relation(fields: [property_to_go_to_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-
-  game_card_id String?    @unique
   game_id      String     @db.Uuid
-  
   game         game       @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@map("GameCardAction")

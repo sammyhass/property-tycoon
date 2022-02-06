@@ -57,7 +57,7 @@ export default function AdminGamePage({ game }: AdminGamePageProps) {
 
   return (
     <AdminLayout>
-      <Breadcrumb>
+      <Breadcrumb separator={'/'}>
         <BreadcrumbItem>
           <Link href="/admin/games">Game Boards</Link>
         </BreadcrumbItem>
