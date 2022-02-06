@@ -13,12 +13,12 @@ export default function AdminLayout({
       <Head>
         <title>Property Tycoon</title>
       </Head>
-      <div>
+      <Box maxW="100vw" overflowX="hidden">
         <Navbar />
-        <Box w="90%" mt="70px" mx="auto">
+        <Box w="90%" mt="70px" mx="auto" mb="150px">
           {children}
         </Box>
-      </div>
+      </Box>
     </>
   );
 }

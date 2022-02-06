@@ -1,4 +1,4 @@
-import GamesList from '@/components/admin/GamesList';
+import GamesList from '@/components/admin/Games/List';
 import AdminLayout from '@/components/UI/admin/AdminLayout';
 import { enforceAuth } from '@/lib/checkAuth';
 import { prismaClient } from '@/lib/prisma';

@@ -1,4 +1,4 @@
-import NewGameForm from '@/components/admin/NewGameForm';
+import NewGameForm from '@/components/admin/Games/NewGameForm';
 import AdminLayout from '@/components/UI/admin/AdminLayout';
 import { Box, Heading } from '@chakra-ui/react';
 import React from 'react';

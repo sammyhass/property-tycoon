@@ -20,7 +20,7 @@ export default function Navbar() {
         Property Tycoon
       </Heading>
       <Spacer />
-      <Flex gap="10px">
+      <Flex gap="10px" wrap={'wrap'}>
         <Link href={'/'}>
           <Button colorScheme={'green'}>Play</Button>
         </Link>

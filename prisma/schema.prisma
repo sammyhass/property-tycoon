@@ -23,20 +23,23 @@ model game {
   id              String             @id @default(uuid()) @db.Uuid
   user            user               @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   board_spaces    board_space[]
-  game_cards      game_card[]
-  card_actions    game_card_action[]
+  cards    game_card[]
   game_properties game_property[]
   property_groups property_group[]
 
   @@map("Game")
 }
 
+// The board_space model is used to represent the spaces on the board.
 model board_space {
   board_position Int            @default(0)
   created_at     DateTime?      @default(now()) @db.Timestamptz(6)
   take_card      card_type?
   property_id    String?        @unique @map("property")
+
+  // use space_type to determine the type of space, for instance, jail, or go, etc.
   space_type     space_type     @default(PROPERTY)
+  
   game_id        String         @db.Uuid
   game           game           @relation(fields: [game_id], references: [id], onDelete: Cascade)
   game_property  game_property? @relation(fields: [property_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
@@ -47,26 +50,33 @@ model board_space {
   @@map("BoardSpace")
 }
 
+// Game Card define the OPPORTUNITY KNOCKS cards and the POT_LUCK cards
 model game_card {
-  id             String            @id @default(uuid())
-  created_at     DateTime?         @default(now()) @db.Timestamptz(6)
-  card_type      card_type
-  text           String
-  card_action_id String?           @map("card_action")
-  game_id        String            @db.Uuid
-  game           game              @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  card_action    game_card_action?
-
-  @@map("GameCard")
-}
-
-model game_card_action {
   id           String     @id @default(uuid())
   created_at   DateTime?  @default(now()) @db.Timestamptz(6)
+
+  // The card type, OPPURTUNITY_KNOCKS or POT_LUCK
+  type    card_type
+
+  // Title of the card
+  text         String
+
+  // The card description
+  description  String  
+
+  // Use the type of action to determine if the player should go to go, a property, or jail, etc.
+  action_type    card_action_type @default(GO_TO_GO)
+
+  // If the action_type is PAY_* then this is the amount to pay, to the bank, or to a random player in the game
   cost         Int?       @default(0)
+
+  property_to_go_to_id String? @map("property")
+  property_to_go_to    game_property? @relation(fields: [property_to_go_to_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+
   game_card_id String?    @unique
   game_id      String     @db.Uuid
-  game_card    game_card? @relation(fields: [game_card_id], references: [id])
+  
   game         game       @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@map("GameCardAction")
@@ -81,6 +91,7 @@ model game_property {
   game                 game                 @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   property_group       property_group       @relation(fields: [property_group_color, game_id], references: [color, game_id], onDelete: NoAction, onUpdate: NoAction)
   board_space          board_space?
+  related_cards game_card[]
 
   @@map("GameProperty")
 }
@@ -112,6 +123,7 @@ enum property_group_color {
   GREY
 }
 
+// 
 enum card_type {
   POT_LUCK
   OPPORTUNITY_KNOCKS
@@ -119,6 +131,19 @@ enum card_type {
   @@map("CardType")
 }
 
+// The type of action that the card will perform
+enum card_action_type {
+  PAY_PLAYER
+  PAY_BANK
+  PAY_ALL_PLAYERS
+  GO_TO_JAIL
+  GO_TO_GO
+  GO_TO_PROPERTY
+  EARN_FROM_BANK
+  EARN_FROM_PLAYER
+}
+
+// The space type is used to determine if the space is a property, go, jail, etc.
 enum space_type {
   EMPTY
   PROPERTY
