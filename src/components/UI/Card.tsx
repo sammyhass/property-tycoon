@@ -1,4 +1,6 @@
-import { Box, Flex, Heading, Text } from '@chakra-ui/react';
+import { Alert, AlertIcon, Box, Flex, Heading, Text } from '@chakra-ui/react';
+import { faInfo } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { card_action_type, game_card } from '@prisma/client';
 import React from 'react';
 
@@ -24,13 +26,7 @@ export default function GameCard({
   type,
 }: GameCardProps) {
   return (
-    <Box
-      bg="#eee"
-      borderRadius={'6px'}
-      overflow="hidden"
-      minH={'350px'}
-      minW={'350px'}
-    >
+    <Box bg="#eee" borderRadius={'6px'} overflow="hidden">
       <Box
         p="10px"
         color={'white'}
@@ -43,23 +39,25 @@ export default function GameCard({
           {type === 'OPPORTUNITY_KNOCKS' ? 'Opportunity Knocks' : 'Pot Luck'}
         </Heading>
       </Box>
-      <Box pos="relative" display={'flex'} flexDirection={'column'} p="20px">
+      <Flex flexDirection={'column'} p="20px" h="90%">
         <Box flex="1" flexGrow={1}>
           <Heading size="lg">{title}</Heading>
           <Text>{description}</Text>
         </Box>
-        <Flex h="50px" w={'100%'}>
-          <Heading size="sm">
-            {isEarningAction(action_type)
-              ? ` Earn £${cost} from
+        <Alert w={'100%'} status="info" borderRadius={'8px'}>
+          <AlertIcon>
+            <FontAwesomeIcon icon={faInfo} />
+          </AlertIcon>
+          {isEarningAction(action_type)
+            ? `Earn £${cost} from
               ${
                 action_type === card_action_type.EARN_FROM_BANK
                   ? 'the bank'
                   : 'a player of your choice'
               }
             `
-              : isPayingAction(action_type)
-              ? ` Pay £${cost} to
+            : isPayingAction(action_type)
+            ? `Pay £${cost} to
               ${
                 action_type === card_action_type.PAY_ALL_PLAYERS
                   ? 'all players'
@@ -68,10 +66,15 @@ export default function GameCard({
                   : 'a player of your choice'
               }
             `
-              : ``}
-          </Heading>
-        </Flex>
-      </Box>
+            : action_type === 'GO_TO_GO'
+            ? `Go Straight to Go`
+            : action_type === 'GO_TO_PROPERTY'
+            ? `Go Straight to a Property`
+            : action_type === 'GO_TO_JAIL'
+            ? `Go Straight to Jail, do not pass Go, do not collect £200`
+            : null}
+        </Alert>
+      </Flex>
     </Box>
   );
 }

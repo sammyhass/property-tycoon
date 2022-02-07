@@ -11,7 +11,7 @@ import {
 } from '@chakra-ui/react';
 import { card_action_type, card_type, game_card } from '@prisma/client';
 import React, { useMemo, useState } from 'react';
-import GameCard from './Card';
+import GameCard from '../../UI/Card';
 
 export default function NewCardForm({
   initialValues,
@@ -164,19 +164,23 @@ export default function NewCardForm({
             )}
           </Flex>
         </form>
-        <GameCard
-          action_type={actionType}
-          cost={
-            isPayingAction || isEarningAction
-              ? isNaN(actionCost)
-                ? 0
-                : actionCost
-              : null
-          }
-          description={description}
-          title={title}
-          type={cardType}
-        />
+        <Box h={'400px'}>
+          <GameCard
+            action_type={actionType}
+            cost={
+              isPayingAction || isEarningAction
+                ? isNaN(actionCost)
+                  ? 0
+                  : actionCost
+                : null
+            }
+            description={
+              description.length > 0 ? description : 'No description provided'
+            }
+            title={title ?? 'New Card'}
+            type={cardType}
+          />
+        </Box>
       </Grid>
     </Box>
   );
