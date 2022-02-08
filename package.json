@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "e2e": "playwright test",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
