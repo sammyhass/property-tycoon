@@ -1,15 +1,37 @@
+import Card from '@/components/UI/Card';
 import { GameCardsPageProps } from '@/pages/admin/games/[game_id]/cards';
-import { Box, Divider, Heading } from '@chakra-ui/react';
+import {
+  Box,
+  Button,
+  Code,
+  Divider,
+  Flex,
+  Heading,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+} from '@chakra-ui/react';
 import { CardType } from '@prisma/client';
 import Link from 'next/link';
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 
 type CardListProps = {
   cards: GameCardsPageProps['game']['CardActions'];
+  onClick?: 'show_modal' | undefined;
 } & {
   gameId: string;
 };
-export default function CardList({ cards, gameId }: CardListProps) {
+export default function CardList({ cards, gameId, onClick }: CardListProps) {
+  const [selected, setSelected] = useState<string | null>(null);
+
+  const selectedCard = useMemo(
+    () => cards.find(card => card.id === selected),
+    [cards, selected]
+  );
+
   const opportunityKnocksCards = cards.filter(
     card => card.type === CardType.OPPORTUNITY_KNOCKS
   );
@@ -17,12 +39,19 @@ export default function CardList({ cards, gameId }: CardListProps) {
 
   return (
     <>
-      <Box>
+      <Divider my="5px" />
+      <Flex direction={'column'} gap="20px">
         <Box>
           <Heading size="md">Opportunity Knocks</Heading>
-          {opportunityKnocksCards.map(card => (
-            <Box key={card.id}>{card.title}</Box>
-          ))}
+          <Flex wrap="wrap" my="5px">
+            {opportunityKnocksCards.map(card => (
+              <Card
+                key={card.id}
+                {...card}
+                onClick={() => setSelected(card.id)}
+              />
+            ))}
+          </Flex>
           <Link
             href={{
               pathname: '/admin/games/[game_id]/cards/new',
@@ -33,15 +62,21 @@ export default function CardList({ cards, gameId }: CardListProps) {
             }}
             passHref
           >
-            New Opportunity Knocks Card
+            <Button>New Opportunity Knocks Card</Button>
           </Link>
         </Box>
         <Box>
           <Divider />
           <Heading size="md">Pot Luck</Heading>
-          {potLuckCards.map(card => (
-            <Box key={card.id}>{card.title}</Box>
-          ))}
+          <Flex wrap="wrap" my="5px">
+            {potLuckCards.map(card => (
+              <Card
+                {...card}
+                key={card.id}
+                onClick={() => setSelected(card.id)}
+              />
+            ))}
+          </Flex>
           <Link
             href={{
               pathname: '/admin/games/[game_id]/cards/new',
@@ -52,10 +87,28 @@ export default function CardList({ cards, gameId }: CardListProps) {
             }}
             passHref
           >
-            New Pot Luck Card
+            <Button>New Pot Luck Card</Button>
           </Link>
         </Box>
-      </Box>
+      </Flex>
+      <Modal
+        isOpen={onClick === 'show_modal' && !!selected}
+        onClose={() => setSelected(null)}
+        size="lg"
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>{selectedCard?.title}</ModalHeader>
+          <ModalBody p="0">
+            <Code w="100%" p="10px">
+              <pre>{JSON.stringify(selectedCard, null, 2)}</pre>
+            </Code>
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme={'red'}>Delete Card</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </>
   );
 }

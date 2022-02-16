@@ -1,5 +1,6 @@
 import DeleteGameButton from '@/components/admin/DeleteGameButton';
 import GameBoardEditor from '@/components/admin/GameBoardEditor';
+import CardList from '@/components/admin/GameCards/CardList';
 import GameProperties from '@/components/admin/GameProperties';
 import PropertyGroups from '@/components/admin/PropertyGroups';
 import AdminLayout from '@/components/UI/admin/AdminLayout';
@@ -106,6 +107,17 @@ export default function AdminGamePage({ game }: AdminGamePageProps) {
           </Box>
           <Box mt="10px">
             <GameProperties gameId={game.id} properties={game.Properties} />
+          </Box>
+          <Box mt="10px" p="10px" shadow="xl">
+            <Link
+              passHref
+              href={`
+              /admin/games/${game.id}/cards
+            `}
+            >
+              <Heading size="md">Cards</Heading>
+            </Link>
+            <CardList cards={game.CardActions} gameId={game.id} />
           </Box>
         </Box>
       ) : (

@@ -1,7 +1,5 @@
 import CardList from '@/components/admin/GameCards/CardList';
 import AdminLayout from '@/components/UI/admin/AdminLayout';
-import { enforceAuth } from '@/lib/checkAuth';
-import { prismaClient } from '@/lib/prisma';
 import {
   Box,
   Breadcrumb,
@@ -10,7 +8,6 @@ import {
   Heading,
 } from '@chakra-ui/react';
 import { CardAction, Game } from '@prisma/client';
-import { GetServerSideProps } from 'next';
 import Link from 'next/link';
 import React from 'react';
 
@@ -58,7 +55,11 @@ export default function GameCardsPage({ game }: GameCardsPageProps) {
           <Button colorScheme={'green'}>Create a New Card</Button>
         </Link>
         <Box mt="20px">
-          <CardList cards={game?.CardActions} gameId={game.id} />
+          <CardList
+            cards={game?.CardActions}
+            gameId={game.id}
+            onClick="show_modal"
+          />
         </Box>
       </Box>
     </AdminLayout>

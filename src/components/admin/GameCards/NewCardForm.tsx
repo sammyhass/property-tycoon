@@ -1,5 +1,7 @@
+import { API_URL } from '@/env/env';
 import {
   Box,
+  Button,
   Flex,
   FormControl,
   FormLabel,
@@ -9,15 +11,24 @@ import {
   Select,
   Textarea,
 } from '@chakra-ui/react';
-import { CardAction, CardActionType, CardType } from '@prisma/client';
-import React, { useMemo, useState } from 'react';
+import {
+  CardAction,
+  CardActionType,
+  CardType,
+  GameProperty,
+} from '@prisma/client';
+import axios from 'axios';
+import { useRouter } from 'next/router';
+import React, { FormEvent, useCallback, useMemo, useState } from 'react';
 import GameCard from '../../UI/Card';
 
 export default function NewCardForm({
   initialValues,
   gameId,
+  properties = [],
 }: {
   initialValues?: Partial<CardAction>;
+  properties?: GameProperty[];
   gameId: string;
 }) {
   const [cardType, setCardType] = useState<CardType>(
@@ -31,6 +42,10 @@ export default function NewCardForm({
 
   const [actionType, setActionType] = useState<CardActionType>(
     initialValues?.action_type ?? CardActionType.GO_TO_GO
+  );
+
+  const [actionProperty, setActionProperty] = useState<string | undefined>(
+    properties[0]?.id ?? undefined
   );
 
   const [actionCost, setActionCost] = useState<number>(0);
@@ -50,6 +65,36 @@ export default function NewCardForm({
     [actionType]
   );
 
+  const router = useRouter();
+
+  const handleSubmit = useCallback(
+    async (e: FormEvent) => {
+      e.preventDefault();
+
+      const { data, status } = await axios.post(
+        `${API_URL}/game/${gameId}/game_cards`,
+        {
+          property_id: actionProperty,
+          cost: actionCost,
+          title: title,
+          description: description,
+          type: cardType,
+          action_type: actionType,
+        }
+      );
+
+      router.push(`/admin/games/${gameId}/cards`);
+    },
+    [
+      actionCost,
+      actionProperty,
+      actionType,
+      cardType,
+      description,
+      gameId,
+      title,
+    ]
+  );
   return (
     <Box>
       <Heading>New Card</Heading>
@@ -63,11 +108,7 @@ export default function NewCardForm({
         }}
         gap={4}
       >
-        <form
-          onSubmit={e => {
-            e.preventDefault();
-          }}
-        >
+        <form onSubmit={handleSubmit}>
           {' '}
           <Flex
             w="100%"
@@ -162,6 +203,30 @@ export default function NewCardForm({
                 />
               </FormControl>
             )}
+            {actionType === 'GO_TO_PROPERTY' && (
+              <FormControl>
+                <FormLabel htmlFor="card_action_property" m="0" p="0">
+                  Select a Property
+                </FormLabel>
+                <Select
+                  disabled={properties.length === 0}
+                  id="card_action_property"
+                  name="card_action_property"
+                  onChange={e => {
+                    setActionProperty(e.target.value);
+                  }}
+                  value={actionProperty}
+                >
+                  {properties.map(p => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+
+            <Button type="submit">Create Card</Button>
           </Flex>
         </form>
         <Box h={'400px'}>
@@ -174,6 +239,10 @@ export default function NewCardForm({
                   : actionCost
                 : null
             }
+            property_id={
+              actionType === 'GO_TO_PROPERTY' ? actionProperty ?? null : null
+            }
+            propertyName={properties.find(p => p.id === actionProperty)?.name}
             description={
               description.length > 0 ? description : 'No description provided'
             }

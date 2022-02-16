@@ -1,4 +1,12 @@
-import { Alert, AlertIcon, Box, Flex, Heading, Text } from '@chakra-ui/react';
+import {
+  Alert,
+  AlertIcon,
+  Box,
+  ChakraProps,
+  Flex,
+  Heading,
+  Text,
+} from '@chakra-ui/react';
 import { faInfo } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { CardAction, CardActionType } from '@prisma/client';
@@ -6,8 +14,11 @@ import React from 'react';
 
 type GameCardProps = Pick<
   CardAction,
-  'action_type' | 'cost' | 'description' | 'title' | 'type'
->;
+  'action_type' | 'cost' | 'description' | 'title' | 'type' | 'property_id'
+> & {
+  propertyName?: string;
+  onClick?: () => void;
+};
 
 const isPayingAction = (actionType: CardActionType) =>
   actionType === CardActionType.PAY_ALL_PLAYERS ||
@@ -23,10 +34,20 @@ export default function GameCard({
   cost = 0,
   description,
   title,
+  property_id,
+  propertyName,
   type,
-}: GameCardProps) {
+  onClick,
+  ...chakraProps
+}: GameCardProps & ChakraProps) {
   return (
-    <Box bg="#eee" borderRadius={'6px'} overflow="hidden">
+    <Box
+      bg="#eee"
+      borderRadius={'6px'}
+      overflow="hidden"
+      {...chakraProps}
+      onClick={() => onClick && onClick()}
+    >
       <Box
         p="10px"
         color={'white'}
@@ -39,7 +60,7 @@ export default function GameCard({
           {type === 'OPPORTUNITY_KNOCKS' ? 'Opportunity Knocks' : 'Pot Luck'}
         </Heading>
       </Box>
-      <Flex flexDirection={'column'} p="20px" h="90%">
+      <Flex flexDirection={'column'} p="20px">
         <Box flex="1" flexGrow={1}>
           <Heading size="lg">{title}</Heading>
           <Text>{description}</Text>
@@ -69,7 +90,7 @@ export default function GameCard({
             : action_type === CardActionType.GO_TO_GO
             ? `Go Straight to Go`
             : action_type === CardActionType.GO_TO_PROPERTY
-            ? `Go Straight to a Property`
+            ? `Go Straight to ${propertyName}, if you pass Go, collect £200`
             : action_type === CardActionType.GO_TO_JAIL
             ? `Go Straight to Jail, do not pass Go, do not collect £200`
             : null}
