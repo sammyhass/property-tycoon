@@ -18,7 +18,7 @@ const handler: NextApiHandler = async (req, res) => {
 // Get all property groups for this game
 const handleGET: NextApiHandler = async (req, res) => {
   const game_id = req.query.game_id as string;
-  const groups = await prismaClient.property_group.findMany({
+  const groups = await prismaClient.propertyGroup.findMany({
     where: {
       game_id: game_id,
     },
@@ -43,7 +43,7 @@ const handlePOST: NextApiHandler = async (req, res) => {
     return;
   }
 
-  const group = await prismaClient.property_group.create({
+  const group = await prismaClient.propertyGroup.create({
     data: {
       game_id: game_id,
       color: req.body.color,

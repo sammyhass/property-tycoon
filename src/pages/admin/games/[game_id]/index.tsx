@@ -7,6 +7,7 @@ import { API_URL } from '@/env/env';
 import { enforceAuth } from '@/lib/checkAuth';
 import { prismaClient } from '@/lib/prisma';
 import {
+  Alert,
   Box,
   Breadcrumb,
   BreadcrumbItem,
@@ -30,14 +31,15 @@ export const getGame = async (pc: PrismaClient, id: string, userId: string) => {
       user_id: userId,
     },
     include: {
-      board_spaces: true,
-      game_properties: true,
-      property_groups: true,
+      BoardSpaces: true,
+      CardActions: true,
+      Properties: true,
+      PropertyGroups: true,
     },
   });
 };
 
-type GameT = Prisma.PromiseReturnType<typeof getGame>;
+export type GameT = Prisma.PromiseReturnType<typeof getGame>;
 
 interface AdminGamePageProps {
   game: GameT;
@@ -91,16 +93,19 @@ export default function AdminGamePage({ game }: AdminGamePageProps) {
             </Box>
           </Flex>
           <Divider />
-          <GameBoardEditor board_spaces={game.board_spaces} game={game} />
+          <GameBoardEditor board_spaces={game.BoardSpaces} game={game} />
           <Divider />
+          {game.PropertyGroups.length < 1 && (
+            <Alert my="5px" variant={'left-accent'} colorScheme="red">
+              You must create a property group before you can create any
+              properties
+            </Alert>
+          )}
           <Box mt="10px">
-            <GameProperties
-              gameId={game.id}
-              properties={game.game_properties}
-            />
+            <PropertyGroups gameId={game.id} groups={game.PropertyGroups} />
           </Box>
           <Box mt="10px">
-            <PropertyGroups gameId={game.id} groups={game.property_groups} />
+            <GameProperties gameId={game.id} properties={game.Properties} />
           </Box>
         </Box>
       ) : (

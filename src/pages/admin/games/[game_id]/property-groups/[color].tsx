@@ -1,13 +1,13 @@
 import AdminLayout from '@/components/UI/admin/AdminLayout';
 import { prismaClient } from '@/lib/prisma';
 import { Box, Heading } from '@chakra-ui/react';
-import { property_group, property_group_color } from '@prisma/client';
+import { PropertyGroup, PropertyGroupColor } from '@prisma/client';
 import { GetServerSideProps } from 'next';
 import React from 'react';
 
 interface PropertyGroupPageProps {
   gameId: string;
-  propertyGroup: property_group | null;
+  propertyGroup: PropertyGroup | null;
 }
 
 export default function PropertyGroupPage({
@@ -40,7 +40,7 @@ export const getServerSideProps: GetServerSideProps<
   const gameId = query.game_id as string;
   const color = query.color as string;
 
-  if (!Object.keys(property_group_color).includes(color)) {
+  if (!Object.keys(PropertyGroupColor).includes(color)) {
     return {
       redirect: {
         permanent: false,
@@ -53,12 +53,12 @@ export const getServerSideProps: GetServerSideProps<
     };
   }
 
-  const propertyGroup = await prismaClient.property_group.findFirst({
+  const propertyGroup = await prismaClient.propertyGroup.findFirst({
     where: {
-      AND: [{ game_id: gameId }, { color: color as property_group_color }],
+      AND: [{ game_id: gameId }, { color: color as PropertyGroupColor }],
     },
     include: {
-      properties: true,
+      Properties: true,
     },
   });
 

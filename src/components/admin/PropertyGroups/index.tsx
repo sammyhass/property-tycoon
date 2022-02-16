@@ -1,18 +1,29 @@
-import { Box, Button, Flex, Heading, LinkBox } from '@chakra-ui/react';
-import { property_group } from '@prisma/client';
+import { Box, Button, Flex, Heading, LinkBox, Text } from '@chakra-ui/react';
+import { GameProperty, PropertyGroup } from '@prisma/client';
 import Link from 'next/link';
 import React from 'react';
+import GameProperties from '../GameProperties';
 
 export default function PropertyGroups({
   groups,
   gameId,
 }: {
-  groups: property_group[];
+  groups: PropertyGroup[];
   gameId: string;
 }) {
   return (
     <Box p="10px" boxShadow={'xl'} borderRadius={'8px'}>
-      <Heading size="md">Property Groups</Heading>
+      <Link href={`/admin/games/${gameId}/property-groups`} passHref>
+        <Heading
+          cursor="pointer"
+          size="md"
+          _hover={{
+            textDecor: 'underline',
+          }}
+        >
+          Property Groups
+        </Heading>
+      </Link>
       {groups.length === 0 && <Box>No Property Groups created yet</Box>}
       <Flex overflow={'auto'} gap="10px" my="10px">
         {groups.map(group => (
@@ -29,15 +40,35 @@ export default function PropertyGroups({
 PropertyGroups.GroupItem = function GroupItem({
   game_id,
   color,
-}: property_group) {
+  Properties,
+}: PropertyGroup & {
+  Properties?: GameProperty[];
+}) {
   return (
     <Link href={`/admin/games/${game_id}/property-groups/${color}`} passHref>
-      <LinkBox bg={color} borderRadius={'8px'} p="20px">
+      <LinkBox
+        borderRadius={'8px'}
+        px="20px"
+        cursor={'pointer'}
+        py="10px"
+        border={'1px solid #eee'}
+        boxShadow={'xl'}
+        borderTop="solid"
+        borderTopWidth={'20px'}
+        borderTopColor={color}
+      >
         <Flex>
-          <Heading size="sm" color={'whiteAlpha.900'}>
-            {color}
-          </Heading>
+          <Heading size="sm">{color}</Heading>
         </Flex>
+        {Properties &&
+          Properties.map(p => (
+            <GameProperties.PropertyItem key={p.id} {...p} />
+          ))}
+        {typeof Properties === 'object' && Properties.length === 0 ? (
+          <Text>No Properties in this group</Text>
+        ) : (
+          <span />
+        )}
       </LinkBox>
     </Link>
   );

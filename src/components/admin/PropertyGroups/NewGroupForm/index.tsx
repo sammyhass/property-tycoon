@@ -11,26 +11,22 @@ import {
   Select,
   UnorderedList,
 } from '@chakra-ui/react';
-import { property_group, property_group_color } from '@prisma/client';
+import { PropertyGroup, PropertyGroupColor } from '@prisma/client';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import React, { useCallback, useMemo, useState } from 'react';
-
-type AddPropertyInput = Pick<
-  property_group,
-  'color' | 'hotel_cost' | 'house_cost'
->;
 
 export default function NewPropertyGroupForm({
   gameId,
   existingGroups = [],
 }: {
   gameId: string;
-  existingGroups: property_group[];
+  existingGroups: PropertyGroup[];
 }) {
   const [color, setColor] = useState<string>(
-    Object.values(property_group_color)[0]
+    Object.values(PropertyGroupColor)[0]
   );
+
   const [hotelCost, setHotelCost] = useState<number>(100);
   const [houseCost, setHouseCost] = useState<number>(100);
   const [error, setError] = useState('');
@@ -58,7 +54,7 @@ export default function NewPropertyGroupForm({
         setError(data.message ?? 'Error, please try again');
       }
 
-      router.push(`/admin/games/${gameId}`);
+      router.push(`/admin/games/${gameId}/property-groups`);
     },
     [color, hotelCost, houseCost, gameId, router]
   );
@@ -91,12 +87,12 @@ export default function NewPropertyGroupForm({
             value={color}
             onChange={e => setColor(e.target.value)}
           >
-            {Object.keys(property_group_color).map(color => (
+            {Object.keys(PropertyGroupColor).map(color => (
               <option
                 key={color}
                 value={color}
                 disabled={existingGroups.some(
-                  group => group.color === (color as property_group_color)
+                  group => group.color === (color as PropertyGroupColor)
                 )}
               >
                 {color}

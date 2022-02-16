@@ -21,10 +21,10 @@ export default function Navbar() {
       </Heading>
       <Spacer />
       <Flex gap="10px" wrap={'wrap'}>
-        <Link href={'/'}>
+        <Link href={'/'} passHref>
           <Button colorScheme={'green'}>Play</Button>
         </Link>
-        <Link href={user ? '/admin/games' : '/login'}>
+        <Link href={user ? '/admin/games' : '/login'} passHref>
           <Button>{user ? `Welcome, ${user.email}` : 'Sign In'}</Button>
         </Link>
         {user && (

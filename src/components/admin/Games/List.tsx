@@ -1,10 +1,10 @@
 import { Box, Flex, Heading, LinkBox } from '@chakra-ui/react';
-import { game } from '@prisma/client';
+import { Game } from '@prisma/client';
 import Link from 'next/link';
 import React from 'react';
 
 interface GameListProps {
-  games: game[];
+  games: Game[];
 }
 
 export default function GamesList({ games }: GameListProps) {
@@ -27,7 +27,7 @@ export default function GamesList({ games }: GameListProps) {
   );
 }
 
-const GameItem = ({ created_at, name, id, active }: game) => {
+const GameItem = ({ created_at, name, id, active }: Game) => {
   return (
     <Link href={`/admin/games/${id}`} passHref>
       <LinkBox cursor="pointer">

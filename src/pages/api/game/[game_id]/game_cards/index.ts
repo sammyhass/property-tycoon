@@ -1,6 +1,6 @@
 import { prismaClient } from '@/lib/prisma';
 import { supabase } from '@/lib/supabase';
-import { game_card } from '@prisma/client';
+import { CardAction } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import Joi from 'joi';
 import { NextApiHandler } from 'next';
@@ -8,13 +8,8 @@ import { NextApiHandler } from 'next';
 const postSchema =
   Joi.object<
     Pick<
-      game_card,
-      | 'property_to_go_to_id'
-      | 'cost'
-      | 'title'
-      | 'action_type'
-      | 'description'
-      | 'type'
+      CardAction,
+      'property_id' | 'cost' | 'title' | 'action_type' | 'description' | 'type'
     >
   >();
 
@@ -31,14 +26,14 @@ const handlePOST: NextApiHandler = async (req, res) => {
   }
 
   try {
-    const card = await prismaClient.game_card.create({
+    const card = await prismaClient.cardAction.create({
       data: {
         game_id: gameId,
         title: value.title,
         type: value.type,
         action_type: value.action_type,
         cost: value.cost,
-        property_to_go_to_id: value.property_to_go_to_id,
+        property_id: value.property_id,
         description: value.description,
       },
     });

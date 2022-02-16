@@ -1,4 +1,4 @@
-import { board_space, game, game_card, game_property } from '@prisma/client';
+import { GameT } from '@/pages/admin/games/[game_id]';
 import {
   createContext,
   useCallback,
@@ -82,11 +82,7 @@ export const GameContext = createContext<GameContextT>({
 
 export const useGameContext = () => useContext(GameContext);
 
-type GameSettingsT = game & {
-  game_properties: game_property[];
-  cards: game_card[];
-  board_spaces: board_space[];
-};
+type GameSettingsT = GameT;
 
 export const GameContextProvider: React.FC = ({ children }) => {
   const [loadingActiveBoard, setLoadingActiveBoard] = useState(true);

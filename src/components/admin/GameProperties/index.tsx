@@ -1,17 +1,27 @@
-import { Box, Button, Flex, Heading, Square } from '@chakra-ui/react';
-import { game_property } from '@prisma/client';
+import { Box, Button, Flex, Heading, Square, Text } from '@chakra-ui/react';
+import { GameProperty } from '@prisma/client';
 import Link from 'next/link';
 
 export default function GameProperties({
   gameId,
   properties,
 }: {
-  properties: game_property[];
+  properties: GameProperty[];
   gameId: string;
 }) {
   return (
     <Box p="10px" boxShadow={'xl'} borderRadius={'8px'}>
-      <Heading size="md">Game Properties</Heading>
+      <Link href={`/admin/games/${gameId}/properties`} passHref>
+        <Heading
+          size="md"
+          cursor={'pointer'}
+          _hover={{
+            textDecor: 'underline',
+          }}
+        >
+          Game Properties
+        </Heading>
+      </Link>
       <Flex overflow={'auto'} my="10px">
         {properties.map(property => (
           <GameProperties.PropertyItem key={property.id} {...property} />
@@ -31,11 +41,12 @@ GameProperties.PropertyItem = function PropertyItem({
   name,
   price,
   property_group_color,
-}: game_property) {
+}: GameProperty) {
   return (
     <Link href={`/admin/games/${game_id}/properties/${id}`} passHref>
       <Box
         p="10px"
+        cursor={'pointer'}
         borderRadius={'8px'}
         _hover={{
           background: '#eee',
@@ -43,8 +54,10 @@ GameProperties.PropertyItem = function PropertyItem({
       >
         <Flex>
           <Square size={'50px'} bg={property_group_color} />
-          <Heading size="sm">{name}</Heading>
-          <Box ml={'auto'}>{price}</Box>
+          <Box ml="5px">
+            <Heading size="sm">{name}</Heading>
+            <Text>£{price}</Text>
+          </Box>
         </Flex>
       </Box>
     </Link>

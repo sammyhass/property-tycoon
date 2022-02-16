@@ -2,7 +2,7 @@ import NewPropertyGroupForm from '@/components/admin/PropertyGroups/NewGroupForm
 import AdminLayout from '@/components/UI/admin/AdminLayout';
 import { prismaClient } from '@/lib/prisma';
 import { Box, Breadcrumb, BreadcrumbItem } from '@chakra-ui/react';
-import { property_group } from '@prisma/client';
+import { PropertyGroup } from '@prisma/client';
 import { GetServerSideProps } from 'next';
 import Link from 'next/link';
 import React from 'react';
@@ -12,7 +12,7 @@ export default function NewPropertyGroupPage({
   propertyGroups,
 }: {
   gameId: string;
-  propertyGroups: property_group[];
+  propertyGroups: PropertyGroup[];
 }) {
   return (
     <AdminLayout>
@@ -45,7 +45,7 @@ export default function NewPropertyGroupPage({
 }
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
-  const propertyGroups = await prismaClient.property_group.findMany({
+  const propertyGroups = await prismaClient.propertyGroup.findMany({
     where: {
       game_id: query.game_id as string,
     },

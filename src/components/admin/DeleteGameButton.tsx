@@ -8,14 +8,14 @@ import {
   ModalOverlay,
   Text,
 } from '@chakra-ui/react';
-import { game } from '@prisma/client';
+import { Game } from '@prisma/client';
 import { useRouter } from 'next/router';
 import React, { useState } from 'react';
 
 export default function DeleteGameButton({
   name,
   id,
-}: Pick<game, 'name' | 'id'>) {
+}: Pick<Game, 'name' | 'id'>) {
   const router = useRouter();
 
   const [isOpen, setIsOpen] = useState(false);

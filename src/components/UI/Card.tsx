@@ -1,22 +1,22 @@
 import { Alert, AlertIcon, Box, Flex, Heading, Text } from '@chakra-ui/react';
 import { faInfo } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { card_action_type, game_card } from '@prisma/client';
+import { CardAction, CardActionType } from '@prisma/client';
 import React from 'react';
 
 type GameCardProps = Pick<
-  game_card,
+  CardAction,
   'action_type' | 'cost' | 'description' | 'title' | 'type'
 >;
 
-const isPayingAction = (actionType: card_action_type) =>
-  actionType === card_action_type.PAY_ALL_PLAYERS ||
-  actionType === card_action_type.PAY_BANK ||
-  actionType === card_action_type.PAY_PLAYER;
+const isPayingAction = (actionType: CardActionType) =>
+  actionType === CardActionType.PAY_ALL_PLAYERS ||
+  actionType === CardActionType.PAY_BANK ||
+  actionType === CardActionType.PAY_PLAYER;
 
-const isEarningAction = (actionType: card_action_type) =>
-  actionType === card_action_type.EARN_FROM_BANK ||
-  actionType === card_action_type.EARN_FROM_PLAYER;
+const isEarningAction = (actionType: CardActionType) =>
+  actionType === CardActionType.EARN_FROM_BANK ||
+  actionType === CardActionType.EARN_FROM_PLAYER;
 
 export default function GameCard({
   action_type,
@@ -51,7 +51,7 @@ export default function GameCard({
           {isEarningAction(action_type)
             ? `Earn £${cost} from
               ${
-                action_type === card_action_type.EARN_FROM_BANK
+                action_type === CardActionType.EARN_FROM_BANK
                   ? 'the bank'
                   : 'a player of your choice'
               }
@@ -59,18 +59,18 @@ export default function GameCard({
             : isPayingAction(action_type)
             ? `Pay £${cost} to
               ${
-                action_type === card_action_type.PAY_ALL_PLAYERS
+                action_type === CardActionType.PAY_ALL_PLAYERS
                   ? 'all players'
-                  : action_type === card_action_type.PAY_BANK
+                  : action_type === CardActionType.PAY_BANK
                   ? 'the bank'
                   : 'a player of your choice'
               }
             `
-            : action_type === 'GO_TO_GO'
+            : action_type === CardActionType.GO_TO_GO
             ? `Go Straight to Go`
-            : action_type === 'GO_TO_PROPERTY'
+            : action_type === CardActionType.GO_TO_PROPERTY
             ? `Go Straight to a Property`
-            : action_type === 'GO_TO_JAIL'
+            : action_type === CardActionType.GO_TO_JAIL
             ? `Go Straight to Jail, do not pass Go, do not collect £200`
             : null}
         </Alert>

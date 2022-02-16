@@ -7,130 +7,97 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model user {
-  id    String @id @db.Uuid
-  email String @unique
-  games game[]
-
-  @@map("User")
-}
-
-model game {
-  created_at      DateTime?          @default(now()) @db.Timestamptz(6)
-  name            String
-  active          Boolean?           @unique
-  user_id         String             @db.Uuid
-  id              String             @id @default(uuid()) @db.Uuid
-  user            user               @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  board_spaces    board_space[]
-  game_cards    game_card[]
-  game_properties game_property[]
-  property_groups property_group[]
-
-  @@map("Game")
-}
-
-// The board_space model is used to represent the spaces on the board.
-model board_space {
-  board_position Int            @default(0)
-  created_at     DateTime?      @default(now()) @db.Timestamptz(6)
-  take_card      card_type?
-  property_id    String?        @unique @map("property")
-
-  // use space_type to determine the type of space, for instance, jail, or go, etc.
-  space_type     space_type     @default(PROPERTY)
-
-  game_id        String         @db.Uuid
-  game           game           @relation(fields: [game_id], references: [id], onDelete: Cascade)
-  game_property  game_property? @relation(fields: [property_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+model BoardSpace {
+  board_position Int           @default(0)
+  created_at     DateTime?     @default(now()) @db.Timestamptz(6)
+  take_card      CardType?
+  space_type     SpaceType     @default(PROPERTY)
+  game_id        String        @db.Uuid
+  Game           Game          @relation(fields: [game_id], references: [id], onDelete: Cascade)
+  property_id       String?       @unique @db.Uuid
+  Property   GameProperty? @relation(fields: [property_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@id([game_id, board_position])
   @@unique([board_position, game_id])
   @@index([board_position, game_id])
-  @@map("BoardSpace")
 }
 
-// Game Card define the OPPORTUNITY KNOCKS cards and the POT_LUCK cards
-model game_card {
-  id           String     @id @default(uuid())
-  created_at   DateTime?  @default(now()) @db.Timestamptz(6)
+model Game {
+  created_at     DateTime?        @default(now()) @db.Timestamptz(6)
+  name           String
+  active         Boolean?         @unique
+  user_id        String           @db.Uuid
+  id             String           @id @db.Uuid @default(uuid())
+  User           User             @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  BoardSpaces     BoardSpace[]
+  CardActions CardAction[]
+  Properties  GameProperty[]
+  PropertyGroups  PropertyGroup[]
 
-  // The card type, OPPURTUNITY_KNOCKS or POT_LUCK
-  type    card_type
-
-  // Title of the card
-  title         String
-
-  // The card description
-  description  String  
-
-  // Use the type of action to determine if the player should go to go, a property, or jail, etc.
-  action_type    card_action_type @default(GO_TO_GO)
-
-  // If the action_type is PAY_* then this is the amount to pay, to the bank, or to a random player in the game
-  cost         Int?       @default(0)
-
-  // If the action type is GO_TO_PROPERTY then this is the property id
-  property_to_go_to_id String? @map("property")
-  property_to_go_to    game_property? @relation(fields: [property_to_go_to_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  game_id      String     @db.Uuid
-  game         game       @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@map("GameCardAction")
+  @@unique([id, user_id])
 }
 
-model game_property {
-  id                   String               @id @default(uuid())
+model CardAction {
+  id           String           @id @default(uuid()) @db.Uuid
+  created_at   DateTime?        @default(now()) @db.Timestamptz(6)
+  cost         Int?             @default(0)
+  game_id      String           @db.Uuid
+  action_type  CardActionType @default(GO_TO_GO)
+  description  String
+  property_id     String?          @db.Uuid
+  type         CardType
+  title        String
+  Game         Game             @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  GameProperty GameProperty?    @relation(fields: [property_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model GameProperty {
+  id                   String               @id  @db.Uuid @default(uuid())
   name                 String
   price                Int?                 @default(0)
-  property_group_color property_group_color
+  property_group_color PropertyGroupColor
   game_id              String               @db.Uuid
-  game                 game                 @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  property_group       property_group       @relation(fields: [property_group_color, game_id], references: [color, game_id], onDelete: NoAction, onUpdate: NoAction)
-  board_space          board_space?
-  related_cards game_card[]
-
-  @@map("GameProperty")
+  Game                 Game                 @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  PropertyGroup        PropertyGroup        @relation(fields: [property_group_color, game_id], references: [color, game_id], onDelete: NoAction, onUpdate: NoAction)
+  BoardSpace           BoardSpace?
+  CardActions       CardAction[]
 }
 
-model property_group {
-  created_at DateTime?            @default(now()) @db.Timestamptz(6)
-  house_cost Int?
-  hotel_cost Int?
-  color      property_group_color @default(NONE)
-  game_id    String               @db.Uuid
-  game       game                 @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  properties game_property[]
+model PropertyGroup {
+  created_at   DateTime?            @default(now()) @db.Timestamptz(6)
+  house_cost   Int?
+  hotel_cost   Int?
+  color        PropertyGroupColor @default(NONE)
+  game_id      String               @db.Uuid
+  Game         Game                 @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  Properties GameProperty[]
 
   @@id([color, game_id])
   @@unique([color, game_id])
-  @@map("PropertyGroup")
 }
 
-enum property_group_color {
-  NONE
-  BLUE
-  GREEN
-  RED
-  YELLOW
-  TEAL
-  PURPLE
-  PINK
-  ORANGE
-  GREY
+model User {
+  id    String @id @db.Uuid
+  email String @unique
+  Games  Game[]
 }
 
-// 
-enum card_type {
+enum CardType {
   POT_LUCK
   OPPORTUNITY_KNOCKS
-
-  @@map("CardType")
 }
 
-// The type of action that the card will perform
-enum card_action_type {
+enum SpaceType {
+  EMPTY
+  PROPERTY
+  TAKE_CARD
+  GO
+  GO_TO_JAIL
+  JUST_VISIT
+  FREE_PARKING
+}
+
+enum CardActionType {
   PAY_PLAYER
   PAY_BANK
   PAY_ALL_PLAYERS
@@ -141,15 +108,15 @@ enum card_action_type {
   EARN_FROM_PLAYER
 }
 
-// The space type is used to determine if the space is a property, go, jail, etc.
-enum space_type {
-  EMPTY
-  PROPERTY
-  TAKE_CARD
-  GO
-  GO_TO_JAIL
-  JUST_VISIT
-  FREE_PARKING
-
-  @@map("SpaceType")
+enum PropertyGroupColor {
+  NONE
+  BLUE
+  GREEN
+  RED
+  YELLOW
+  TEAL
+  PURPLE
+  PINK
+  ORANGE
+  GREY
 }

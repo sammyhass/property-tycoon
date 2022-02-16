@@ -1,3 +1,4 @@
+import GameProperties from '@/components/admin/GameProperties';
 import AdminLayout from '@/components/UI/admin/AdminLayout';
 import { enforceAuth } from '@/lib/checkAuth';
 import { prismaClient } from '@/lib/prisma';
@@ -11,7 +12,7 @@ import {
   Spacer,
   Text,
 } from '@chakra-ui/react';
-import { game, game_property } from '@prisma/client';
+import { Game, GameProperty } from '@prisma/client';
 import { GetServerSideProps } from 'next';
 import Link from 'next/link';
 import React from 'react';
@@ -20,7 +21,7 @@ export default function GamePropertiesPage({
   game,
 }: {
   gameId: string;
-  game: (game & { game_properties: game_property[] }) | null;
+  game: (Game & { Properties: GameProperty[] }) | null;
 }) {
   return (
     <AdminLayout>
@@ -42,12 +43,12 @@ export default function GamePropertiesPage({
           Game Properties
         </Heading>
         <Spacer />
-        <Link href={`/admin/games/${game?.id}/properties/new`}>
+        <Link href={`/admin/games/${game?.id}/properties/new`} passHref>
           <Button colorScheme={'green'}>Add New Property</Button>
         </Link>
       </Flex>
 
-      {(!game || game?.game_properties.length === 0) && (
+      {(!game || game?.Properties.length === 0) && (
         <Box
           w="100%"
           mt="10px"
@@ -63,6 +64,15 @@ export default function GamePropertiesPage({
           </Text>
         </Box>
       )}
+      {game?.Properties.slice()
+        .sort(
+          (a, b) =>
+            a.property_group_color.charCodeAt(0) -
+            b.property_group_color.charCodeAt(0)
+        )
+        .map(p => (
+          <GameProperties.PropertyItem {...p} key={p.id} />
+        ))}
     </AdminLayout>
   );
 }
@@ -78,7 +88,7 @@ export const getServerSideProps: GetServerSideProps = enforceAuth(
           user_id: user.id,
         },
         include: {
-          game_properties: true,
+          Properties: true,
         },
       });
 

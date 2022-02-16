@@ -1,19 +1,25 @@
 import PropertyGroups from '@/components/admin/PropertyGroups';
 import AdminLayout from '@/components/UI/admin/AdminLayout';
 import { prismaClient } from '@/lib/prisma';
-import { Breadcrumb, BreadcrumbItem, Heading } from '@chakra-ui/react';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  Button,
+  Grid,
+  Heading,
+} from '@chakra-ui/react';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { GetServerSideProps } from 'next';
 import Link from 'next/link';
 import React from 'react';
 
 export const getPropertyGroups = async (pc: PrismaClient, gameId: string) => {
-  return await pc.property_group.findMany({
+  return await pc.propertyGroup.findMany({
     where: {
       game_id: gameId,
     },
     include: {
-      properties: true,
+      Properties: true,
     },
   });
 };
@@ -45,7 +51,21 @@ export default function PropertyGroupsPage({
         </BreadcrumbItem>
       </Breadcrumb>
       <Heading>Property Groups</Heading>
-      <PropertyGroups groups={groups} gameId={gameId} />
+      <Link href={`/admin/games/${gameId}/property-groups/new`} passHref>
+        <Button my="10px">New Group</Button>
+      </Link>
+      <Grid
+        templateColumns={'repeat(auto-fill, minmax(350px, 1fr))'}
+        gap="15px"
+      >
+        {groups.map(g => (
+          <PropertyGroups.GroupItem
+            {...g}
+            Properties={g.Properties ?? []}
+            key={g.color}
+          />
+        ))}
+      </Grid>
     </AdminLayout>
   );
 }

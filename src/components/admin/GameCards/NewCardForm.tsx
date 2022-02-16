@@ -9,7 +9,7 @@ import {
   Select,
   Textarea,
 } from '@chakra-ui/react';
-import { card_action_type, card_type, game_card } from '@prisma/client';
+import { CardAction, CardActionType, CardType } from '@prisma/client';
 import React, { useMemo, useState } from 'react';
 import GameCard from '../../UI/Card';
 
@@ -17,11 +17,11 @@ export default function NewCardForm({
   initialValues,
   gameId,
 }: {
-  initialValues?: Partial<game_card>;
+  initialValues?: Partial<CardAction>;
   gameId: string;
 }) {
-  const [cardType, setCardType] = useState<card_type>(
-    initialValues?.type ?? card_type.OPPORTUNITY_KNOCKS
+  const [cardType, setCardType] = useState<CardType>(
+    initialValues?.type ?? CardType.OPPORTUNITY_KNOCKS
   );
 
   const [title, setTitle] = useState<string>(initialValues?.title ?? '');
@@ -29,24 +29,24 @@ export default function NewCardForm({
     initialValues?.description ?? ''
   );
 
-  const [actionType, setActionType] = useState<card_action_type>(
-    initialValues?.action_type ?? card_action_type.GO_TO_GO
+  const [actionType, setActionType] = useState<CardActionType>(
+    initialValues?.action_type ?? CardActionType.GO_TO_GO
   );
 
   const [actionCost, setActionCost] = useState<number>(0);
 
   const isPayingAction = useMemo(
     () =>
-      actionType === card_action_type.PAY_ALL_PLAYERS ||
-      actionType === card_action_type.PAY_BANK ||
-      actionType === card_action_type.PAY_PLAYER,
+      actionType === CardActionType.PAY_ALL_PLAYERS ||
+      actionType === CardActionType.PAY_BANK ||
+      actionType === CardActionType.PAY_PLAYER,
     [actionType]
   );
 
   const isEarningAction = useMemo(
     () =>
-      actionType === card_action_type.EARN_FROM_BANK ||
-      actionType === card_action_type.EARN_FROM_PLAYER,
+      actionType === CardActionType.EARN_FROM_BANK ||
+      actionType === CardActionType.EARN_FROM_PLAYER,
     [actionType]
   );
 
@@ -84,10 +84,10 @@ export default function NewCardForm({
               <Select
                 id="card_type"
                 name="card_type"
-                onChange={e => setCardType(e.target.value as card_type)}
+                onChange={e => setCardType(e.target.value as CardType)}
                 value={cardType}
               >
-                {Object.entries(card_type).map(([v, k]) => (
+                {Object.entries(CardType).map(([v, k]) => (
                   <option key={v} value={v}>
                     {k}
                   </option>
@@ -127,11 +127,11 @@ export default function NewCardForm({
                 id="card_action_type"
                 name="card_action_type"
                 onChange={e => {
-                  setActionType(e.target.value as card_action_type);
+                  setActionType(e.target.value as CardActionType);
                 }}
                 value={actionType}
               >
-                {Object.entries(card_action_type).map(([v, k]) => (
+                {Object.entries(CardActionType).map(([v, k]) => (
                   <option key={v} value={v}>
                     {k}
                   </option>

@@ -9,16 +9,15 @@ import {
   Button,
   Heading,
 } from '@chakra-ui/react';
-import { game, game_card } from '@prisma/client';
+import { CardAction, Game } from '@prisma/client';
 import { GetServerSideProps } from 'next';
 import Link from 'next/link';
 import React from 'react';
 
 export interface GameCardsPageProps {
-  game:
-    | game & {
-        game_cards: game_card[];
-      };
+  game: Game & {
+    CardActions: CardAction[];
+  };
 }
 
 export default function GameCardsPage({ game }: GameCardsPageProps) {
@@ -59,7 +58,7 @@ export default function GameCardsPage({ game }: GameCardsPageProps) {
           <Button colorScheme={'green'}>Create a New Card</Button>
         </Link>
         <Box mt="20px">
-          <CardList cards={game?.game_cards} gameId={game.id} />
+          <CardList cards={game?.CardActions} gameId={game.id} />
         </Box>
       </Box>
     </AdminLayout>
@@ -77,7 +76,7 @@ export const getServerSideProps: GetServerSideProps = enforceAuth(
           user_id: user.id,
         },
         include: {
-          game_cards: true,
+          CardActions: true,
         },
       });
 

@@ -67,10 +67,10 @@ const handleGET: NextApiHandler = async (_req, res) => {
       active: true,
     },
     include: {
-      board_spaces: true,
-      property_groups: true,
-      game_cards: true,
-      game_properties: true,
+      BoardSpaces: true,
+      PropertyGroups: true,
+      CardActions: true,
+      Properties: true,
     },
   });
 

@@ -15,7 +15,7 @@ const handleGET: NextApiHandler = async (req, res) => {
 
   try {
     const nId = parseInt(pos as string);
-    const space = await prismaClient.board_space.findFirst({
+    const space = await prismaClient.boardSpace.findFirst({
       where: {
         board_position: nId,
         game_id,

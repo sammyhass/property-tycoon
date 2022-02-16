@@ -10,13 +10,7 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
-import React, {
-  FormEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import React, { FormEvent, useCallback, useMemo, useState } from 'react';
 
 type FormData = {
   name: string;
@@ -26,11 +20,7 @@ interface NewGameFormProps extends ChakraProps {}
 
 export default function NewGameForm({ ...chakraProps }: NewGameFormProps) {
   const [name, setName] = useState('');
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (error) setError('');
-  }, [name]);
+  const [error, setError] = useState<string | undefined>();
 
   const router = useRouter();
 
@@ -62,7 +52,10 @@ export default function NewGameForm({ ...chakraProps }: NewGameFormProps) {
             <Input
               placeholder="Game Name"
               value={name}
-              onChange={e => setName(e.target.value)}
+              onChange={e => {
+                setName(e.target.value);
+                setError(undefined);
+              }}
             />
           </FormLabel>
 

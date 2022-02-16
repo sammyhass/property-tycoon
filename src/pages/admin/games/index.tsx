@@ -3,13 +3,13 @@ import AdminLayout from '@/components/UI/admin/AdminLayout';
 import { enforceAuth } from '@/lib/checkAuth';
 import { prismaClient } from '@/lib/prisma';
 import { Box, Button, Divider, Heading } from '@chakra-ui/react';
-import { game } from '@prisma/client';
+import { Game } from '@prisma/client';
 import { GetServerSideProps } from 'next';
 import Link from 'next/link';
 import React from 'react';
 
 interface AdminGamesProps {
-  games: game[];
+  games: Game[];
 }
 
 export default function AdminGames({ games }: AdminGamesProps) {

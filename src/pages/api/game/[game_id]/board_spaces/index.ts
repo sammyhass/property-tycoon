@@ -21,13 +21,12 @@ const handler: NextApiHandler = async (req, res) => {
 
 const handleGET: NextApiHandler = async (req, res) => {
   const game_id = req.query.game_id as string;
-  const spaces = await prismaClient.board_space.findMany({
+  const spaces = await prismaClient.boardSpace.findMany({
     select: {
       board_position: true,
       space_type: true,
       created_at: true,
       property_id: true,
-      game_property: true,
       take_card: true,
     },
     where: {
@@ -57,7 +56,7 @@ const handlePOST: NextApiHandler = async (req, res) => {
     });
     return;
   }
-  const space = await prismaClient.board_space.create({
+  const space = await prismaClient.boardSpace.create({
     data: {
       game_id: gameId,
       board_position: req.body.board_position,

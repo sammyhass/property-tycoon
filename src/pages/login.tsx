@@ -12,7 +12,7 @@ export default function LoginPage() {
     if (isAuthenticated) {
       router.push('/admin/games');
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, router]);
 
   return (
     <AdminLayout>

@@ -1,5 +1,6 @@
 import { API_URL } from '@/env/env';
 import {
+  Alert,
   Button,
   FormControl,
   FormErrorMessage,
@@ -10,9 +11,9 @@ import {
   UnorderedList,
 } from '@chakra-ui/react';
 import {
-  game_property,
-  property_group,
-  property_group_color,
+  GameProperty,
+  PropertyGroup,
+  PropertyGroupColor,
 } from '@prisma/client';
 import axios from 'axios';
 import { useRouter } from 'next/router';
@@ -23,11 +24,11 @@ export default function NewPropertyForm({
   existingGroups = [],
 }: {
   gameId: string;
-  existingGroups: property_group[];
+  existingGroups: PropertyGroup[];
 }) {
   const [name, setName] = useState('');
   const [price, setPrice] = useState(0);
-  const [propertyGroup, setPropertyGroup] = useState<property_group_color>(
+  const [propertyGroup, setPropertyGroup] = useState<PropertyGroupColor>(
     existingGroups[0]?.color
   );
 
@@ -46,7 +47,7 @@ export default function NewPropertyForm({
           name,
           price,
           property_group_color: propertyGroup,
-        } as Pick<game_property, 'name' | 'price' | 'property_group_color'>
+        } as Pick<GameProperty, 'name' | 'price' | 'property_group_color'>
       );
       if (status !== 200) {
         setError(data.message ?? 'Error, please try again');
@@ -59,6 +60,11 @@ export default function NewPropertyForm({
 
   return (
     <form onSubmit={e => canSubmit && onSubmit(e)}>
+      {(existingGroups?.length ?? 0) < 1 && (
+        <Alert variant="left-accent" colorScheme={'red'}>
+          You must create a property group before creating any properties.
+        </Alert>
+      )}
       <FormControl my="10px">
         <FormLabel m={0} p={0}>
           Name
@@ -91,9 +97,7 @@ export default function NewPropertyForm({
           mt="10px"
           value={propertyGroup}
           bg={propertyGroup}
-          onChange={e =>
-            setPropertyGroup(e.target.value as property_group_color)
-          }
+          onChange={e => setPropertyGroup(e.target.value as PropertyGroupColor)}
         >
           {existingGroups.map(({ color }) => (
             <option key={color} value={color}>

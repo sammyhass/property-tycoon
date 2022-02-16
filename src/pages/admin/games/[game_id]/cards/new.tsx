@@ -3,7 +3,7 @@ import AdminLayout from '@/components/UI/admin/AdminLayout';
 import { enforceAuth } from '@/lib/checkAuth';
 import { prismaClient } from '@/lib/prisma';
 import { Breadcrumb, BreadcrumbItem } from '@chakra-ui/react';
-import { card_type, game, game_card } from '@prisma/client';
+import { CardAction, CardType, Game } from '@prisma/client';
 import { GetServerSideProps } from 'next';
 import Link from 'next/link';
 import React from 'react';
@@ -12,8 +12,8 @@ export default function NewCardPage({
   game,
   initialValues,
 }: {
-  game: game;
-  initialValues?: Partial<game_card>;
+  game: Game;
+  initialValues?: Partial<CardAction>;
 }) {
   return (
     <AdminLayout>
@@ -59,8 +59,8 @@ export const getServerSideProps: GetServerSideProps = enforceAuth(
     async ({ params, req, query }) => {
       const gameId = params?.game_id as string;
 
-      const initialValues: Partial<game_card> = {
-        type: query.type as card_type,
+      const initialValues: Partial<CardAction> = {
+        type: query.type as CardType,
       };
 
       const game = await prismaClient.game.findFirst({

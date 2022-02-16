@@ -20,7 +20,7 @@ const handler: NextApiHandler = async (req, res) => {
 
 const handleGET: NextApiHandler = async (req, res) => {
   let gameId = req.query.game_id as string;
-  const gameProperties = await prismaClient.game_property.findMany({
+  const gameProperties = await prismaClient.gameProperty.findMany({
     where: {
       game_id: gameId,
     },
@@ -44,7 +44,7 @@ const handlePOST: NextApiHandler = async (req, res) => {
   }
 
   const gameId = req.query.game_id as string;
-  const gameProperty = await prismaClient.game_property.create({
+  const gameProperty = await prismaClient.gameProperty.create({
     data: {
       game_id: gameId,
       name: req.body.name,

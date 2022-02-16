@@ -1,17 +1,19 @@
 import { GameCardsPageProps } from '@/pages/admin/games/[game_id]/cards';
 import { Box, Divider, Heading } from '@chakra-ui/react';
-import { card_type } from '@prisma/client';
+import { CardType } from '@prisma/client';
 import Link from 'next/link';
 import React from 'react';
 
-type CardListProps = { cards: GameCardsPageProps['game']['game_cards'] } & {
+type CardListProps = {
+  cards: GameCardsPageProps['game']['CardActions'];
+} & {
   gameId: string;
 };
 export default function CardList({ cards, gameId }: CardListProps) {
   const opportunityKnocksCards = cards.filter(
-    card => card.type === card_type.OPPORTUNITY_KNOCKS
+    card => card.type === CardType.OPPORTUNITY_KNOCKS
   );
-  const potLuckCards = cards.filter(card => card.type === card_type.POT_LUCK);
+  const potLuckCards = cards.filter(card => card.type === CardType.POT_LUCK);
 
   return (
     <>
@@ -26,7 +28,7 @@ export default function CardList({ cards, gameId }: CardListProps) {
               pathname: '/admin/games/[game_id]/cards/new',
               query: {
                 game_id: gameId,
-                type: card_type.OPPORTUNITY_KNOCKS,
+                type: CardType.OPPORTUNITY_KNOCKS,
               },
             }}
             passHref
@@ -45,7 +47,7 @@ export default function CardList({ cards, gameId }: CardListProps) {
               pathname: '/admin/games/[game_id]/cards/new',
               query: {
                 game_id: gameId,
-                type: card_type.POT_LUCK,
+                type: CardType.POT_LUCK,
               },
             }}
             passHref

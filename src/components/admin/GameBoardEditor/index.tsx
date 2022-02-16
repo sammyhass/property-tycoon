@@ -1,18 +1,18 @@
 import { Flex } from '@chakra-ui/react';
-import { board_space, game, space_type } from '@prisma/client';
+import { BoardSpace, Game, SpaceType } from '@prisma/client';
 import React from 'react';
 
-const spaceTypeColors: Record<space_type, string> = {
-  [space_type.GO]: 'green.500',
-  [space_type.GO_TO_JAIL]: 'red.500',
-  [space_type.FREE_PARKING]: 'blue.500',
-  [space_type.PROPERTY]: 'white',
-  [space_type.EMPTY]: 'white',
+const spaceTypeColors: Record<SpaceType, string> = {
+  [SpaceType.GO]: 'green.500',
+  [SpaceType.GO_TO_JAIL]: 'red.500',
+  [SpaceType.FREE_PARKING]: 'blue.500',
+  [SpaceType.PROPERTY]: 'white',
+  [SpaceType.EMPTY]: 'white',
   TAKE_CARD: 'white',
   JUST_VISIT: 'orange.500',
 };
 
-const loudSpaceTypes: space_type[] = [
+const loudSpaceTypes: SpaceType[] = [
   'GO',
   'FREE_PARKING',
   'GO_TO_JAIL',
@@ -26,8 +26,8 @@ export default function GameBoardEditor({
   game,
   board_spaces,
 }: {
-  game: game;
-  board_spaces: board_space[];
+  game: Game;
+  board_spaces: BoardSpace[];
 }) {
   return (
     <Flex direction={'column'} maxW={'100%'}>

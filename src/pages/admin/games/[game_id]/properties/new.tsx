@@ -3,7 +3,7 @@ import AdminLayout from '@/components/UI/admin/AdminLayout';
 import { enforceAuth } from '@/lib/checkAuth';
 import { prismaClient } from '@/lib/prisma';
 import { Box, Breadcrumb, BreadcrumbItem, Heading } from '@chakra-ui/react';
-import { game, property_group } from '@prisma/client';
+import { Game, PropertyGroup } from '@prisma/client';
 import { GetServerSideProps } from 'next';
 import Link from 'next/link';
 import React from 'react';
@@ -11,8 +11,8 @@ import { getPropertyGroups } from '../property-groups';
 
 interface NewPropertyPageProps {
   gameId: string;
-  game: game | null;
-  groups: property_group[];
+  game: Game | null;
+  groups: PropertyGroup[];
 }
 export default function NewPropertyPage({
   gameId,
@@ -40,6 +40,7 @@ export default function NewPropertyPage({
           </Link>
         </BreadcrumbItem>
       </Breadcrumb>
+
       <Box
         boxShadow={'xl'}
         border="1px solid #eee"
