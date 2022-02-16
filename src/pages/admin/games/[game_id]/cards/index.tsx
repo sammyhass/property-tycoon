@@ -1,5 +1,7 @@
 import CardList from '@/components/admin/GameCards/CardList';
 import AdminLayout from '@/components/UI/admin/AdminLayout';
+import { enforceAuth } from '@/lib/checkAuth';
+import { prismaClient } from '@/lib/prisma';
 import {
   Box,
   Breadcrumb,
@@ -8,6 +10,7 @@ import {
   Heading,
 } from '@chakra-ui/react';
 import { CardAction, Game } from '@prisma/client';
+import { GetServerSideProps } from 'next';
 import Link from 'next/link';
 import React from 'react';
 
