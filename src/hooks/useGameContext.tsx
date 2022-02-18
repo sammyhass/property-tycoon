@@ -8,8 +8,8 @@ import {
   useState,
 } from 'react';
 
-// Token the player can use in the game
-// TODO:
+const NUM_TILES = 40;
+
 type TokenType = 'blue' | 'green' | 'red' | 'yellow';
 
 type PositionsT = Partial<{
@@ -46,12 +46,6 @@ export type GameContextT = {
 
   setCurrentPlayer: (player: TokenType) => void;
 
-  boardSize: number;
-  setBoardSize: (boardSize: number) => void;
-
-  cellSize: number;
-  setCellSize: (cellSize: number) => void;
-
   isPaused: boolean;
 
   setIsPaused: (isPaused: boolean) => void;
@@ -70,12 +64,6 @@ export const GameContext = createContext<GameContextT>({
   setPlayerPosition: () => {},
   resetGame: () => {},
   setCurrentPlayer: () => {},
-
-  boardSize: 10,
-  setBoardSize: () => {},
-
-  cellSize: 80,
-  setCellSize: () => {},
   isPaused: false,
   setIsPaused: () => {},
 });
@@ -89,6 +77,7 @@ export const GameContextProvider: React.FC = ({ children }) => {
 
   const [gameSettings, setGameSettings] = useState<GameSettingsT | null>(null);
 
+  // Load in the active board
   useEffect(() => {
     const fetchBoard = async () => {
       const response = await fetch('/api/active');
@@ -107,13 +96,7 @@ export const GameContextProvider: React.FC = ({ children }) => {
   const [currentPlayerToken, _setCurrentPlayerToken] =
     useState<TokenType | null>(null);
 
-  const [boardSize, setBoardSize] = useState<number>(10);
-  const [cellSize, setCellSize] = useState<number>(80);
   const [time, setTime] = useState<number>(0);
-
-  const numTiles = useMemo(() => {
-    return boardSize * boardSize - (boardSize - 2) * (boardSize - 2);
-  }, [boardSize]);
 
   const currentPlayer = useMemo((): Player | null => {
     const idx = players.findIndex(p => p.token === currentPlayerToken);
@@ -171,7 +154,7 @@ export const GameContextProvider: React.FC = ({ children }) => {
       if (
         !players.find(p => p.token === token) ||
         position < 0 ||
-        position > numTiles - 1
+        position > NUM_TILES
       )
         return;
 
@@ -204,13 +187,9 @@ export const GameContextProvider: React.FC = ({ children }) => {
         getTimeDisplay,
         addPlayer,
         removePlayer,
-        boardSize,
-        cellSize,
         setPlayerPosition,
         resetGame,
         setCurrentPlayer,
-        setBoardSize,
-        setCellSize,
         isPaused,
         setIsPaused,
       }}
