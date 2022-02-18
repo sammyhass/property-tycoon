@@ -1,6 +1,6 @@
 import { Box } from '@chakra-ui/react';
 import React, { createContext, useContext } from 'react';
-import BoardCell from './BoardCell';
+import BoardSpace from './BoardSpace';
 
 const CELL_SIZE = 80;
 
@@ -8,8 +8,12 @@ const BOARD_SIZE = 10;
 
 interface BoardProps {
   onTileClick?: (n: number) => void;
-  boardSize: number;
-  cellSize: number;
+
+  // TODO: Board size and cell size are unnecessary. Grid should just contain 40 tiles as per monopoly.
+  // Board should take the GameSettingsT as props, as described in the GameContext.
+
+  boardSize?: number;
+  cellSize?: number;
 }
 
 const BoardPropsContext = createContext<BoardProps>({
@@ -42,7 +46,7 @@ export default function Board({
           gridColumnEnd={boardSize - 2}
         />
         {new Array(boardSize * 4 - 4).fill(0).map((_, i) => (
-          <BoardCell n={i} key={i} />
+          <BoardSpace n={i} key={i} />
         ))}
       </Box>
     </BoardPropsContext.Provider>
