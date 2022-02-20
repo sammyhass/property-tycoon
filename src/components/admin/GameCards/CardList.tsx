@@ -1,4 +1,4 @@
-import Card from '@/components/UI/Card';
+import Card from '@/components/UI/Board/Card';
 import { GameCardsPageProps } from '@/pages/admin/games/[game_id]/cards';
 import {
   Box,

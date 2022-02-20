@@ -1,4 +1,6 @@
 import { GameT } from '@/pages/admin/games/[game_id]';
+import { shuffled } from '@/util/shuffled';
+import { CardAction, CardType } from '@prisma/client';
 import {
   createContext,
   useCallback,
@@ -10,11 +12,24 @@ import {
 
 const NUM_TILES = 40;
 
+// GameState describes whether game is:
+// - SETUP:  being setup (adding players, choosing tokens)
+// - IN_PLAY: game is in play, we'll show the board
+// - PAUSED: game is paused, show pause screen, stop the timer.
+type GameState = 'SETUP' | 'IN_PLAY' | 'PAUSED';
+
+// Tokens a player can use in the game (gonna be emoji)
 type TokenType = 'blue' | 'green' | 'red' | 'yellow';
 
-type PositionsT = Partial<{
+type PlayerState = Partial<{
   [token in TokenType]: {
     pos: number;
+
+    // Ids of properties owned
+    propertiesOwned: string[];
+
+    // Current money belonging to player.
+    money: number;
   };
 }>;
 
@@ -27,7 +42,7 @@ export type GameContextT = {
   gameSettings: GameSettingsT | null;
 
   players: Player[];
-  positions: PositionsT;
+  state: PlayerState;
   currentPlayer: Player | null;
 
   setPlayers: (players: Player[]) => void;
@@ -49,12 +64,16 @@ export type GameContextT = {
   isPaused: boolean;
 
   setIsPaused: (isPaused: boolean) => void;
+
+  onLand: (player: TokenType, pos: number) => void;
+
+  takeCard: (type: CardType) => CardAction | null;
 };
 
 export const GameContext = createContext<GameContextT>({
   gameSettings: null,
   players: [],
-  positions: {},
+  state: {},
   currentPlayer: null,
   setPlayers: () => {},
   move: () => {},
@@ -65,7 +84,9 @@ export const GameContext = createContext<GameContextT>({
   resetGame: () => {},
   setCurrentPlayer: () => {},
   isPaused: false,
+  takeCard: (type: CardType) => null,
   setIsPaused: () => {},
+  onLand: (player, pos: number) => {},
 });
 
 export const useGameContext = () => useContext(GameContext);
@@ -82,8 +103,11 @@ export const GameContextProvider: React.FC = ({ children }) => {
     const fetchBoard = async () => {
       const response = await fetch('/api/active');
       const board = (await response.json()) as GameSettingsT;
+
       setLoadingActiveBoard(false);
-      setGameSettings(board);
+      setGameSettings(
+        board ? { ...board, CardActions: shuffled(board.CardActions) } : null
+      );
     };
 
     fetchBoard();
@@ -92,7 +116,8 @@ export const GameContextProvider: React.FC = ({ children }) => {
   const [isPaused, setIsPaused] = useState(false);
 
   const [players, setPlayers] = useState<Player[]>([]);
-  const [positions, setPositions] = useState<PositionsT>({});
+  const [state, setState] = useState<PlayerState>({});
+
   const [currentPlayerToken, _setCurrentPlayerToken] =
     useState<TokenType | null>(null);
 
@@ -105,13 +130,30 @@ export const GameContextProvider: React.FC = ({ children }) => {
   }, [currentPlayerToken]);
 
   const move = (player: string, position: number) => {
-    setPositions({
-      ...positions,
+    setState({
+      ...state,
       [player]: {
         pos: position,
       },
     });
   };
+
+  const takeCard = useCallback(
+    (type: CardType) => {
+      const card = gameSettings?.CardActions?.find(c => c.type === type);
+      if (!card) return null;
+      setGameSettings(
+        gameSettings
+          ? {
+              ...gameSettings,
+              CardActions: [...gameSettings.CardActions.slice(1), card],
+            }
+          : null
+      );
+      return card;
+    },
+    [gameSettings]
+  );
 
   const setCurrentPlayer = useCallback(
     (player: TokenType) => {
@@ -158,19 +200,19 @@ export const GameContextProvider: React.FC = ({ children }) => {
       )
         return;
 
-      setPositions({
-        ...positions,
+      setState({
+        ...state,
         [token]: {
           pos: position,
         },
       });
     },
-    [positions, players]
+    [state, players]
   );
 
   const resetGame = useCallback(() => {
     setPlayers([]);
-    setPositions({});
+    setState({});
     _setCurrentPlayerToken(null);
     setTime(0);
   }, []);
@@ -180,7 +222,7 @@ export const GameContextProvider: React.FC = ({ children }) => {
       value={{
         gameSettings,
         players,
-        positions,
+        state,
         currentPlayer,
         setPlayers,
         move,
@@ -192,6 +234,8 @@ export const GameContextProvider: React.FC = ({ children }) => {
         setCurrentPlayer,
         isPaused,
         setIsPaused,
+        onLand: () => {},
+        takeCard,
       }}
     >
       {children}
