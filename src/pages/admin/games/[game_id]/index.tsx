@@ -1,5 +1,5 @@
+import BoardSpacesEditor from '@/components/admin/BoardSpacesEditor';
 import DeleteGameButton from '@/components/admin/DeleteGameButton';
-import GameBoardEditor from '@/components/admin/GameBoardEditor';
 import CardList from '@/components/admin/GameCards/CardList';
 import GameProperties from '@/components/admin/GameProperties';
 import PropertyGroups from '@/components/admin/PropertyGroups';
@@ -94,7 +94,11 @@ export default function AdminGamePage({ game }: AdminGamePageProps) {
             </Box>
           </Flex>
           <Divider />
-          <GameBoardEditor board_spaces={game.BoardSpaces} game={game} />
+          <BoardSpacesEditor
+            boardSpaces={game.BoardSpaces}
+            properties={game.Properties}
+            gameId={game.id}
+          />
           <Divider />
           {game.PropertyGroups.length < 1 && (
             <Alert my="5px" variant={'left-accent'} colorScheme="red">
