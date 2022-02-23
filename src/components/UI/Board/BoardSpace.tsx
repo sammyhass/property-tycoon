@@ -15,6 +15,7 @@ const EXAMPLE_SPACES: BoardSpace[] = [
     take_card: CardType.POT_LUCK,
     property_id: '',
     space_type: SpaceType.TAKE_CARD,
+    locked: false,
   },
   {
     // SpaceType = FreeParking,
@@ -24,12 +25,14 @@ const EXAMPLE_SPACES: BoardSpace[] = [
     created_at: new Date(),
     property_id: null,
     space_type: SpaceType.FREE_PARKING,
+    locked: false,
   },
   {
     // SpaceType = Property, property_id will be the id of the property present
     board_position: 2,
     game_id: '',
     take_card: null,
+    locked: false,
     created_at: new Date(),
     property_id: '1',
     space_type: SpaceType.PROPERTY,
@@ -41,6 +44,7 @@ const EXAMPLE_SPACES: BoardSpace[] = [
     game_id: '',
     take_card: null,
     created_at: new Date(),
+    locked: false,
     property_id: null,
   },
 ];
