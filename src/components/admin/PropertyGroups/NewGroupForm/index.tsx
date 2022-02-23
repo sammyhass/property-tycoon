@@ -1,4 +1,5 @@
 import { API_URL } from '@/env/env';
+import { propertyGroupToCSS } from '@/util/property-colors';
 import {
   Box,
   Button,
@@ -27,6 +28,11 @@ export default function NewPropertyGroupForm({
     Object.values(PropertyGroupColor)[0]
   );
 
+  const isStationOrUtilities = useMemo(
+    () => color === 'STATION' || color === 'UTILITIES',
+    [color]
+  );
+
   const [hotelCost, setHotelCost] = useState<number>(100);
   const [houseCost, setHouseCost] = useState<number>(100);
   const [error, setError] = useState('');
@@ -34,8 +40,8 @@ export default function NewPropertyGroupForm({
   const router = useRouter();
 
   const canSubmit = useMemo(
-    () => !!color && hotelCost > 0 && houseCost > 0,
-    [color, hotelCost, houseCost]
+    () => !!color && ((hotelCost > 0 && houseCost > 0) || isStationOrUtilities),
+    [color, hotelCost, houseCost, isStationOrUtilities]
   );
 
   const onSubmit = useCallback(
@@ -45,8 +51,12 @@ export default function NewPropertyGroupForm({
         `${API_URL}/game/${gameId}/property_groups`,
         {
           color: color,
-          hotel_cost: hotelCost,
-          house_cost: houseCost,
+          ...(isStationOrUtilities
+            ? {}
+            : {
+                hotel_cost: hotelCost,
+                house_cost: houseCost,
+              }),
         }
       );
 
@@ -81,9 +91,9 @@ export default function NewPropertyGroupForm({
           </FormHelperText>
           <Select
             mt="6px"
-            color="blackAlpha.500"
+            color="white"
             fontWeight={'bold'}
-            bg={color}
+            bg={propertyGroupToCSS[color as PropertyGroupColor]}
             value={color}
             onChange={e => setColor(e.target.value)}
           >
@@ -100,40 +110,44 @@ export default function NewPropertyGroupForm({
             ))}
           </Select>
         </FormControl>
-        <FormControl mb="10px">
-          <FormLabel m="0" p="0">
-            House Cost
-          </FormLabel>
+        {!isStationOrUtilities && (
+          <>
+            <FormControl mb="10px">
+              <FormLabel m="0" p="0">
+                House Cost
+              </FormLabel>
 
-          <FormHelperText m="0" p="0">
-            Cost per house in this group
-          </FormHelperText>
+              <FormHelperText m="0" p="0">
+                Cost per house in this group
+              </FormHelperText>
 
-          <Input
-            type="number"
-            placeholder="Cost in £"
-            min={0}
-            value={houseCost}
-            onChange={e => setHouseCost(parseInt(e.target.value))}
-          />
-        </FormControl>
-        <FormControl mb="10px">
-          <FormLabel m="0" p="0">
-            Hotel Cost
-          </FormLabel>
+              <Input
+                type="number"
+                placeholder="Cost in £"
+                min={0}
+                value={houseCost}
+                onChange={e => setHouseCost(parseInt(e.target.value))}
+              />
+            </FormControl>
+            <FormControl mb="10px">
+              <FormLabel m="0" p="0">
+                Hotel Cost
+              </FormLabel>
 
-          <FormHelperText m="0" p="0">
-            Cost per hotel in this group
-          </FormHelperText>
+              <FormHelperText m="0" p="0">
+                Cost per hotel in this group
+              </FormHelperText>
 
-          <Input
-            type="number"
-            placeholder="Cost in £"
-            value={hotelCost}
-            min={0}
-            onChange={e => setHotelCost(parseInt(e.target.value))}
-          />
-        </FormControl>
+              <Input
+                type="number"
+                placeholder="Cost in £"
+                value={hotelCost}
+                min={0}
+                onChange={e => setHotelCost(parseInt(e.target.value))}
+              />
+            </FormControl>
+          </>
+        )}
         <Button type="submit" my="10px" w="100%" disabled={!canSubmit}>
           Submit
         </Button>

@@ -1,3 +1,4 @@
+import { propertyGroupToCSS } from '@/util/property-colors';
 import { Box, Button, Flex, Heading, LinkBox, Text } from '@chakra-ui/react';
 import { GameProperty, PropertyGroup } from '@prisma/client';
 import Link from 'next/link';
@@ -40,6 +41,8 @@ export default function PropertyGroups({
 PropertyGroups.GroupItem = function GroupItem({
   game_id,
   color,
+  hotel_cost,
+  house_cost,
   Properties,
 }: PropertyGroup & {
   Properties?: GameProperty[];
@@ -55,10 +58,19 @@ PropertyGroups.GroupItem = function GroupItem({
         boxShadow={'xl'}
         borderTop="solid"
         borderTopWidth={'20px'}
-        borderTopColor={color}
+        borderTopColor={propertyGroupToCSS[color]}
       >
-        <Flex>
-          <Heading size="sm">{color}</Heading>
+        <Flex align="center">
+          <Heading flex="1" size="sm">
+            {color}
+          </Heading>
+          {(hotel_cost !== null || house_cost !== null) && (
+            <Box ml="25px">
+              Hotel Price: £{hotel_cost}
+              <br />
+              House Price: £{house_cost}
+            </Box>
+          )}
         </Flex>
         {Properties &&
           Properties.map(p => (

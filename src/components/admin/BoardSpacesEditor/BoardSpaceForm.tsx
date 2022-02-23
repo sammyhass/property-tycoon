@@ -1,4 +1,5 @@
 import { API_URL } from '@/env/env';
+import { propertyGroupToCSS } from '@/util/property-colors';
 import {
   Alert,
   AlertDescription,
@@ -130,7 +131,11 @@ export default function BoardSpaceForm({
             <Select
               defaultValue={boardSpace.property_id as string}
               name="property_id"
-              backgroundColor={selectedProperty?.property_group_color}
+              backgroundColor={
+                propertyGroupToCSS[
+                  selectedProperty?.property_group_color ?? 'NONE'
+                ]
+              }
               id="property_id"
               value={propertyId as string}
               onChange={v => setPropertyId(v.target.value as string)}

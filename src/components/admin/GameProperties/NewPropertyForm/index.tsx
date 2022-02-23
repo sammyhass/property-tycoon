@@ -148,34 +148,40 @@ export default function NewPropertyForm({
           </FormErrorMessage>
         )}
       </FormControl>
-      <FormControl>
-        <FormLabel m="0" p="0">
-          Rent
-        </FormLabel>
-        <Flex p="5px" direction={'column'} gap="10px">
-          {Object.keys(rents).map(r => (
-            <>
-              <FormLabel fontSize={'xs'} m="0" p="0">
-                {r}
-              </FormLabel>
-              <NumberInput
-                m="0"
-                value={rents[r as keyof RentInputT]}
-                keepWithinRange
-                defaultValue={0}
-                min={0}
-                onChange={(_, n) => handleChangeRent(r as keyof RentInputT, n)}
-              >
-                <NumberInputField />
-                <NumberInputStepper>
-                  <NumberIncrementStepper />
-                  <NumberDecrementStepper />
-                </NumberInputStepper>
-              </NumberInput>
-            </>
-          ))}
-        </Flex>
-      </FormControl>
+      {!(['STATION', 'UTILITIES'] as PropertyGroupColor[]).includes(
+        propertyGroup
+      ) && (
+        <FormControl>
+          <FormLabel m="0" p="0">
+            Rent
+          </FormLabel>
+          <Flex p="5px" direction={'column'} gap="10px">
+            {Object.keys(rents).map(r => (
+              <>
+                <FormLabel fontSize={'xs'} m="0" p="0">
+                  {r}
+                </FormLabel>
+                <NumberInput
+                  m="0"
+                  value={rents[r as keyof RentInputT]}
+                  keepWithinRange
+                  defaultValue={0}
+                  min={0}
+                  onChange={(_, n) =>
+                    handleChangeRent(r as keyof RentInputT, n)
+                  }
+                >
+                  <NumberInputField />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+              </>
+            ))}
+          </Flex>
+        </FormControl>
+      )}
       <Button
         type="submit"
         my="10px"

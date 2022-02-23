@@ -1,3 +1,4 @@
+import { propertyGroupToCSS } from '@/util/property-colors';
 import { Box, Button, Flex, Heading, Square, Text } from '@chakra-ui/react';
 import { GameProperty } from '@prisma/client';
 import Link from 'next/link';
@@ -53,7 +54,7 @@ GameProperties.PropertyItem = function PropertyItem({
         }}
       >
         <Flex>
-          <Square size={'50px'} bg={property_group_color} />
+          <Square size={'50px'} bg={propertyGroupToCSS[property_group_color]} />
           <Box ml="5px">
             <Heading size="sm">{name}</Heading>
             <Text>£{price}</Text>

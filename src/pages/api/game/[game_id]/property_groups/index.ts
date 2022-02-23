@@ -32,8 +32,8 @@ const handlePOST: NextApiHandler = async (req, res) => {
   const { error } = Joi.object()
     .keys({
       color: Joi.string().required(),
-      house_cost: Joi.number().required(),
-      hotel_cost: Joi.number().required(),
+      house_cost: Joi.number().optional(),
+      hotel_cost: Joi.number().optional(),
     })
     .validate(req.body);
   if (error) {
@@ -47,8 +47,8 @@ const handlePOST: NextApiHandler = async (req, res) => {
     data: {
       game_id: game_id,
       color: req.body.color,
-      hotel_cost: req.body.hotel_cost,
-      house_cost: req.body.house_cost,
+      hotel_cost: req.body.hotel_cost ?? null,
+      house_cost: req.body.house_cost ?? null,
     },
   });
   res.status(200).json(group);

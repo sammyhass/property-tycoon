@@ -63,12 +63,12 @@ model GameProperty {
   BoardSpace           BoardSpace?
   CardActions       CardAction[]
 
-  rent_unimproved   Int
-  rent_one_house    Int
-  rent_two_house    Int
-  rent_three_house  Int
-  rent_four_house   Int
-  rent_hotel        Int
+  rent_unimproved   Int?
+  rent_one_house    Int?
+  rent_two_house    Int?
+  rent_three_house  Int?
+  rent_four_house   Int?
+  rent_hotel        Int?
 }
 
 model PropertyGroup {
@@ -119,12 +119,18 @@ enum CardActionType {
 enum PropertyGroupColor {
   NONE
   BLUE
+  UTILITIES
   GREEN
   RED
   YELLOW
   TEAL
+  DEEP_BLUE
   PURPLE
+
+  // Stations and utilities will be special groups as the rent should be calculated for them in the game.
+  STATION
   PINK
+  BROWN
   ORANGE
   GREY
 }
