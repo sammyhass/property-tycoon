@@ -11,7 +11,7 @@ import {
   Flex,
   FormControl,
   FormLabel,
-  Select
+  Select,
 } from '@chakra-ui/react';
 import { BoardSpace, CardType, GameProperty, SpaceType } from '@prisma/client';
 import axios from 'axios';
@@ -38,7 +38,7 @@ export default function BoardSpaceForm({
     setSpaceType(boardSpace.space_type);
     setCardType(boardSpace.take_card);
     setPropertyId(boardSpace.property_id);
-  }, []);
+  }, [boardSpace.space_type, boardSpace.take_card, boardSpace.property_id]);
 
   useEffect(() => {
     if (spaceType === SpaceType.TAKE_CARD) {
@@ -51,7 +51,7 @@ export default function BoardSpaceForm({
       setCardType(null);
       setPropertyId(null);
     }
-  }, [spaceType]);
+  }, [spaceType, properties]);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -73,7 +73,14 @@ export default function BoardSpaceForm({
     } catch (e: any) {
       setError(e?.message ?? 'Unknown error');
     }
-  }, [spaceType, cardType, propertyId]);
+  }, [
+    spaceType,
+    cardType,
+    propertyId,
+    boardSpace.board_position,
+    onComplete,
+    gameId,
+  ]);
 
   return (
     <form
@@ -92,15 +99,13 @@ export default function BoardSpaceForm({
             value={spaceType}
             onChange={v => setSpaceType(v.target.value as SpaceType)}
           >
-            {[
-              SpaceType.EMPTY,
-              SpaceType.PROPERTY,
-              SpaceType.TAKE_CARD,
-            ].map(k => (
-              <option key={k} value={k} disabled={k === 'EMPTY'}>
-                {SpaceType[k as keyof typeof SpaceType]}
-              </option>
-            ))}
+            {[SpaceType.EMPTY, SpaceType.PROPERTY, SpaceType.TAKE_CARD].map(
+              k => (
+                <option key={k} value={k} disabled={k === 'EMPTY'}>
+                  {SpaceType[k as keyof typeof SpaceType]}
+                </option>
+              )
+            )}
           </Select>
         </FormControl>
         {spaceType === 'TAKE_CARD' ? (
@@ -154,8 +159,8 @@ export default function BoardSpaceForm({
             <Divider />
             {spaceType === 'PROPERTY' && (
               <AlertDescription>
-                Ensure you haven't already assigned this property to a board
-                space
+                Ensure you haven&apos;t already assigned this property to a
+                board space
               </AlertDescription>
             )}
           </Box>
