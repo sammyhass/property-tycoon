@@ -54,29 +54,35 @@ const handlePOST: NextApiHandler = async (req, res) => {
   const { error } = postSchema.validate(req.body);
   if (error) throw error;
 
-  const spaces: Pick<BoardSpace, 'board_position' | 'space_type'>[] = [
-    {
-      board_position: 0,
-      space_type: SpaceType.GO,
-    },
+  const spaces: Pick<BoardSpace, 'board_position' | 'space_type' | 'locked'>[] =
+    [
+      {
+        board_position: 0,
+        space_type: SpaceType.GO,
+        locked: true,
+      },
 
-    {
-      board_position: 11,
-      space_type: SpaceType.JUST_VISIT,
-    },
-    {
-      board_position: 21,
-      space_type: SpaceType.FREE_PARKING,
-    },
-    {
-      board_position: 31,
-      space_type: SpaceType.GO_TO_JAIL,
-    },
-  ];
+      {
+        board_position: 11,
+        space_type: SpaceType.JUST_VISIT,
+        locked: true,
+      },
+      {
+        board_position: 21,
+        space_type: SpaceType.FREE_PARKING,
+        locked: true,
+      },
+      {
+        board_position: 31,
+        space_type: SpaceType.GO_TO_JAIL,
+        locked: true,
+      },
+    ];
 
-  const otherSpaces = new Array(39).fill(0).map((_, i) => ({
+  const otherSpaces: typeof spaces = new Array(39).fill(0).map((_, i) => ({
     board_position: i + 1,
     space_type: SpaceType.EMPTY,
+    locked: false,
   }));
 
   const game = await prismaClient.game.create({

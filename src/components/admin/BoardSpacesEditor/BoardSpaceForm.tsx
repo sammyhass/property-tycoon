@@ -11,7 +11,7 @@ import {
   Flex,
   FormControl,
   FormLabel,
-  Select,
+  Select
 } from '@chakra-ui/react';
 import { BoardSpace, CardType, GameProperty, SpaceType } from '@prisma/client';
 import axios from 'axios';
@@ -46,7 +46,7 @@ export default function BoardSpaceForm({
       setPropertyId(null);
     } else if (spaceType === SpaceType.PROPERTY) {
       setCardType(null);
-      setPropertyId(properties[0].id);
+      setPropertyId(properties[0]?.id ?? null);
     } else {
       setCardType(null);
       setPropertyId(null);
@@ -92,7 +92,11 @@ export default function BoardSpaceForm({
             value={spaceType}
             onChange={v => setSpaceType(v.target.value as SpaceType)}
           >
-            {Object.keys(SpaceType).map(k => (
+            {[
+              SpaceType.EMPTY,
+              SpaceType.PROPERTY,
+              SpaceType.TAKE_CARD,
+            ].map(k => (
               <option key={k} value={k} disabled={k === 'EMPTY'}>
                 {SpaceType[k as keyof typeof SpaceType]}
               </option>
@@ -131,6 +135,9 @@ export default function BoardSpaceForm({
                   {p.name}
                 </option>
               ))}
+              {properties.length < 1 && (
+                <option disabled>No properties to choose from</option>
+              )}
             </Select>
           </FormControl>
         ) : null}

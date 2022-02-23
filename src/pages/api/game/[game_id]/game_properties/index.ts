@@ -1,4 +1,5 @@
 import { prismaClient } from '@/lib/prisma';
+import { GameProperty } from '@prisma/client';
 import Joi from 'joi';
 import { NextApiHandler } from 'next';
 
@@ -28,11 +29,21 @@ const handleGET: NextApiHandler = async (req, res) => {
   res.status(200).json(gameProperties);
 };
 
-const postSchema = Joi.object().keys({
-  name: Joi.string().required(),
-  price: Joi.number().required(),
-  property_group_color: Joi.string().required(),
-});
+const postSchema =
+  Joi.object<
+    Pick<
+      GameProperty,
+      | 'name'
+      | 'price'
+      | 'property_group_color'
+      | 'rent_unimproved'
+      | 'rent_four_house'
+      | 'rent_one_house'
+      | 'rent_two_house'
+      | 'rent_hotel'
+      | 'rent_three_house'
+    >
+  >();
 
 const handlePOST: NextApiHandler = async (req, res) => {
   const { error } = await postSchema.validate(req.body);
@@ -50,6 +61,12 @@ const handlePOST: NextApiHandler = async (req, res) => {
       name: req.body.name,
       price: req.body.price,
       property_group_color: req.body.property_group_color,
+      rent_one_house: req.body.rent_one_house,
+      rent_two_house: req.body.rent_two_house,
+      rent_three_house: req.body.rent_three_house,
+      rent_four_house: req.body.rent_four_house,
+      rent_unimproved: req.body.rent_unimproved,
+      rent_hotel: req.body.rent_hotel,
     },
   });
   res.status(200).json(gameProperty);

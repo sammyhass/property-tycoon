@@ -2,11 +2,17 @@ import { API_URL } from '@/env/env';
 import {
   Alert,
   Button,
+  Flex,
   FormControl,
   FormErrorMessage,
   FormHelperText,
   FormLabel,
   Input,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
   Select,
   UnorderedList,
 } from '@chakra-ui/react';
@@ -18,6 +24,16 @@ import {
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import React, { useCallback, useMemo, useState } from 'react';
+
+type RentInputT = Pick<
+  GameProperty,
+  | 'rent_unimproved'
+  | 'rent_one_house'
+  | 'rent_two_house'
+  | 'rent_three_house'
+  | 'rent_four_house'
+  | 'rent_hotel'
+>;
 
 export default function NewPropertyForm({
   gameId,
@@ -31,6 +47,23 @@ export default function NewPropertyForm({
   const [propertyGroup, setPropertyGroup] = useState<PropertyGroupColor>(
     existingGroups[0]?.color
   );
+
+  // Rents are an array of numbers with rent for: unimproved, +1 house, +2 house, ..., +hotel
+  const [rents, setRents] = useState<RentInputT>({
+    rent_unimproved: 0,
+    rent_one_house: 0,
+    rent_two_house: 0,
+    rent_three_house: 0,
+    rent_four_house: 0,
+    rent_hotel: 0,
+  });
+
+  const handleChangeRent = (t: keyof RentInputT, rent: number) => {
+    setRents({
+      ...rents,
+      [t]: rent,
+    });
+  };
 
   const router = useRouter();
 
@@ -47,7 +80,11 @@ export default function NewPropertyForm({
           name,
           price,
           property_group_color: propertyGroup,
-        } as Pick<GameProperty, 'name' | 'price' | 'property_group_color'>
+          ...rents,
+        } as Pick<
+          GameProperty,
+          'name' | 'price' | 'property_group_color' | keyof RentInputT
+        >
       );
       if (status !== 200) {
         setError(data.message ?? 'Error, please try again');
@@ -55,7 +92,7 @@ export default function NewPropertyForm({
 
       router.push(`/admin/games/${gameId}`);
     },
-    [gameId, name, price, propertyGroup, router]
+    [gameId, name, price, propertyGroup, router, rents]
   );
 
   return (
@@ -111,7 +148,41 @@ export default function NewPropertyForm({
           </FormErrorMessage>
         )}
       </FormControl>
-      <Button type="submit" my="10px" w="100%" disabled={!canSubmit}>
+      <FormControl>
+        <FormLabel m="0" p="0">
+          Rent
+        </FormLabel>
+        <Flex p="5px" direction={'column'} gap="10px">
+          {Object.keys(rents).map(r => (
+            <>
+              <FormLabel fontSize={'xs'} m="0" p="0">
+                {r}
+              </FormLabel>
+              <NumberInput
+                m="0"
+                value={rents[r as keyof RentInputT]}
+                keepWithinRange
+                defaultValue={0}
+                min={0}
+                onChange={(_, n) => handleChangeRent(r as keyof RentInputT, n)}
+              >
+                <NumberInputField />
+                <NumberInputStepper>
+                  <NumberIncrementStepper />
+                  <NumberDecrementStepper />
+                </NumberInputStepper>
+              </NumberInput>
+            </>
+          ))}
+        </Flex>
+      </FormControl>
+      <Button
+        type="submit"
+        my="10px"
+        w="100%"
+        disabled={!canSubmit}
+        colorScheme="green"
+      >
         Submit
       </Button>
       {error ? (
@@ -121,6 +192,8 @@ export default function NewPropertyForm({
           <UnorderedList color="red.500">
             {!name && <li>Name is required</li>}
             {price <= 0 && <li>Price must be greater than 0</li>}
+            {Object.values(rents).filter(r => r <= 0 || isNaN(r)).length >
+              0 && <li>Rent values must all be positive numbers</li>}
           </UnorderedList>
         )
       )}

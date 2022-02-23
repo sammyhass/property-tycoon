@@ -8,8 +8,10 @@ import {
   Tbody,
   Th,
   Thead,
-  Tr,
+  Tr
 } from '@chakra-ui/react';
+import { faLock } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { BoardSpace, GameProperty } from '@prisma/client';
 import { useRouter } from 'next/router';
 import React, { useState } from 'react';
@@ -41,15 +43,18 @@ export default function BoardSpacesEditor({
           {boardSpaces
             .slice()
             .sort((a, b) => a.board_position - b.board_position)
-            .map((space, i) => (
+            .map(space => (
               <Tr
                 key={space.board_position}
-                _hover={{ bg: 'gray.50' }}
-                cursor="pointer"
-                onClick={() => setSelectedSpace(space)}
+                _hover={{ bg: !space.locked ? 'gray.50' : '' }}
+                cursor={space.locked ? 'not-allowed' : 'pointer'}
+                onClick={() => !space.locked && setSelectedSpace(space)}
               >
                 <Th>{space.board_position}</Th>
-                <Th>{space.space_type}</Th>
+                <Th>
+                  {space.locked && <FontAwesomeIcon style={{marginRight: '5px'}} icon={faLock} />}
+                  {space.space_type}
+                </Th>
                 <Th>
                   {properties.find(p => p.id === space.property_id)?.name}
                 </Th>
