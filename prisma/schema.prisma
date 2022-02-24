@@ -7,6 +7,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// BoardSpace represents a space in the game board. This could be a property, or could be an action like taking a card.
+// The correct board space to render may be inferred from its space_type, which is an enum, SpaceType
 model BoardSpace {
   board_position Int           @default(0)
   created_at     DateTime?     @default(now()) @db.Timestamptz(6)
@@ -23,6 +25,8 @@ model BoardSpace {
   @@index([board_position, game_id])
 }
 
+// Game represents a gameboard in our game. Each gameboard consists of a collection of board spaces, a collection of card actions, and a collection of properties.
+// we use this approach so that our board can be heavily customized as the user sees fit.
 model Game {
   created_at     DateTime?        @default(now()) @db.Timestamptz(6)
   name           String
@@ -30,6 +34,7 @@ model Game {
   user_id        String           @db.Uuid
   id             String           @id @db.Uuid @default(uuid())
   User           User             @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
   BoardSpaces     BoardSpace[]
   CardActions CardAction[]
   Properties  GameProperty[]
@@ -38,6 +43,8 @@ model Game {
   @@unique([id, user_id])
 }
 
+// CardAction essentially represents a Card in the board game. The nature of this action can be inferred from its action_type, the CardActionType enum. 
+// The correct card to render may be inferred from its card_type, which is an enum, CardType
 model CardAction {
   id           String           @id @default(uuid()) @db.Uuid
   created_at   DateTime?        @default(now()) @db.Timestamptz(6)
@@ -52,6 +59,7 @@ model CardAction {
   GameProperty GameProperty?    @relation(fields: [property_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
+// GameProperty represents a property belonging to a game. It's required that a property exists as part of a property group.
 model GameProperty {
   id                   String               @id  @db.Uuid @default(uuid())
   name                 String
@@ -69,8 +77,11 @@ model GameProperty {
   rent_three_house  Int?
   rent_four_house   Int?
   rent_hotel        Int?
+
+  @@unique([game_id, name])
 }
 
+// PropertyGroup represents a group of properties that are all of the same color/type for instance, the blue property group, the stations, the utilities, etc.
 model PropertyGroup {
   created_at   DateTime?            @default(now()) @db.Timestamptz(6)
   house_cost   Int?
@@ -84,17 +95,20 @@ model PropertyGroup {
   @@unique([color, game_id])
 }
 
+// A user that can create game boards and play them.
 model User {
   id    String @id @db.Uuid
   email String @unique
   Games  Game[]
 }
 
+// Different types of card the game can have.
 enum CardType {
   POT_LUCK
   OPPORTUNITY_KNOCKS
 }
 
+// Different types of spaces in the game board. Important for rendering the correct board space and executing the correct action when a player lands on a space.
 enum SpaceType {
   EMPTY
   PROPERTY
@@ -105,6 +119,7 @@ enum SpaceType {
   FREE_PARKING
 }
 
+// Different types of card actions. Important for rendering the correct card action and executing moves in the game according the card action type.
 enum CardActionType {
   PAY_PLAYER
   PAY_BANK
@@ -116,6 +131,7 @@ enum CardActionType {
   EARN_FROM_PLAYER
 }
 
+// Property group colors / types.
 enum PropertyGroupColor {
   NONE
   BLUE
