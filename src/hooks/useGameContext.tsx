@@ -12,14 +12,23 @@ import {
 
 const NUM_TILES = 40;
 
-// GameState describes whether game is:
-// - SETUP:  being setup (adding players, choosing tokens)
-// - IN_PLAY: game is in play, we'll show the board
-// - PAUSED: game is paused, show pause screen, stop the timer.
-type GameState = 'SETUP' | 'IN_PLAY' | 'PAUSED';
-
 // Tokens a player can use in the game (gonna be emoji)
-type TokenType = 'blue' | 'green' | 'red' | 'yellow';
+export type TokenType =
+  | 'boot'
+  | 'smartphone'
+  | 'ship'
+  | 'hatstand'
+  | 'cat'
+  | 'iron';
+
+export const TOKENS_MAP: { [key in TokenType]: string } = {
+  boot: '🥾',
+  smartphone: '📱',
+  ship: '🚢',
+  hatstand: '🎩',
+  cat: '🐱',
+  iron: '🔨',
+};
 
 type PlayerState = Partial<{
   [token in TokenType]: {
@@ -68,6 +77,9 @@ export type GameContextT = {
   onLand: (player: TokenType, pos: number) => void;
 
   takeCard: (type: CardType) => CardAction | null;
+
+  hasStarted: boolean;
+  setHasStarted: (hasStarted: boolean) => void;
 };
 
 export const GameContext = createContext<GameContextT>({
@@ -87,6 +99,8 @@ export const GameContext = createContext<GameContextT>({
   takeCard: (type: CardType) => null,
   setIsPaused: () => {},
   onLand: (player, pos: number) => {},
+  hasStarted: false,
+  setHasStarted: () => {},
 });
 
 export const useGameContext = () => useContext(GameContext);
@@ -95,6 +109,8 @@ type GameSettingsT = GameT;
 
 export const GameContextProvider: React.FC = ({ children }) => {
   const [loadingActiveBoard, setLoadingActiveBoard] = useState(true);
+
+  const [hasStarted, setHasStarted] = useState(false);
 
   const [gameSettings, setGameSettings] = useState<GameSettingsT | null>(null);
 
@@ -224,6 +240,8 @@ export const GameContextProvider: React.FC = ({ children }) => {
         players,
         state,
         currentPlayer,
+        hasStarted,
+        setHasStarted,
         setPlayers,
         move,
         getTimeDisplay,
