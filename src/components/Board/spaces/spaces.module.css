@@ -2,13 +2,13 @@
   box-sizing: border-box;
 }
 
-.board-space,
+.boardSpace,
 .card,
-.deck-base {
+.deckBase {
   user-select: none;
 }
 
-.board-space {
+.boardSpace {
   text-transform: uppercase;
   text-align: center;
   border: 3px solid #000;
@@ -23,7 +23,7 @@
   overflow: hidden;
   word-break: break-word;
 }
-.board-space.square {
+.boardSpace.square {
   width: 11rem;
 }
 
@@ -31,13 +31,13 @@
 Sometimes, the board space's background will be overridden by our frontend framework
 so that we can give properties different colours with ease
 */
-.board-space {
+.boardSpace {
   background-color: #cdffdc;
 }
-.board-space > .board-background {
+.boardSpace > .boardBackground {
   background-color: #cdffdc;
 }
-.board-space > .board-background {
+.boardSpace > .boardBackground {
   position: absolute;
   top: 0;
   left: 0;
@@ -45,12 +45,12 @@ so that we can give properties different colours with ease
   height: 100%;
   z-index: 0;
 }
-.board-space > *:not(.board-background) {
+.boardSpace > *:not(.boardBackground) {
   z-index: 1;
 }
 
 /* For board corners */
-.board-space > div.rotate {
+.boardSpace > div.rotate {
   position: absolute;
   top: 0;
   left: 0;
@@ -62,33 +62,33 @@ so that we can give properties different colours with ease
 Realistically, if our players are going to be playing on screens, we don't want
 to do the typical monopoly rotation otherwise players are going to break their necks.
 
-.board-space > div.rotate.top-left {
+.boardSpace > div.rotate.topLeft {
 	transform: rotate(135deg);
 }
-.board-space > div.rotate.top-right {
+.boardSpace > div.rotate.topRight {
 	transform: rotate(-135deg);
 }
 */
-.board-space > div.rotate.bottom-left,
-.board-space > div.rotate.top-left {
+.boardSpace > div.rotate.bottomLeft,
+.boardSpace > div.rotate.topLeft {
   transform: rotate(45deg);
 }
-.board-space > div.rotate.bottom-right,
-.board-space > div.rotate.top-right {
+.boardSpace > div.rotate.bottomRight,
+.boardSpace > div.rotate.topRight {
   transform: rotate(-45deg);
 }
 
 /* GO */
-.board-space.go .go-text {
+.boardSpace.go .goText {
   width: 70%;
   margin: auto;
 }
-.board-space.go .go-text-big {
+.boardSpace.go .goTextBig {
   font-size: 5em;
   font-weight: bold;
   margin-top: -0.7rem;
 }
-.board-space.go svg {
+.boardSpace.go svg {
   position: absolute;
   margin-top: auto;
   margin-bottom: auto;
@@ -97,13 +97,13 @@ to do the typical monopoly rotation otherwise players are going to break their n
 }
 
 /* PROPERTY */
-.board-space.property > .board-background {
+.boardSpace.property > .boardBackground {
   height: 79%;
   border-top: 3px solid #000;
   top: auto;
   bottom: 0;
 }
-.board-space.property > .property-content {
+.boardSpace.property > .propertyContent {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -115,18 +115,18 @@ to do the typical monopoly rotation otherwise players are going to break their n
   padding-left: 0.8rem;
   padding-right: 0.8rem;
 }
-.board-space.property .property-text {
+.boardSpace.property .propertyText {
   flex: 1;
 }
 
 /* GO TO JAIL */
-.board-space.go-to-jail {
+.boardSpace.goToJail {
   font-size: 1.1em;
 }
-.board-space.go-to-jail > div.rotate {
+.boardSpace.goToJail > div.rotate {
   margin: 0.7rem;
 }
-.board-space.go-to-jail img {
+.boardSpace.goToJail img {
   width: 6rem;
   height: 5rem;
   display: block;
@@ -136,10 +136,10 @@ to do the typical monopoly rotation otherwise players are going to break their n
 }
 
 /* IN JAIL */
-.board-space.in-jail {
+.boardSpace.inJail {
   font-weight: bold;
 }
-.board-space.in-jail .inner {
+.boardSpace.inJail .inner {
   position: absolute;
   right: 0;
   bottom: 0;
@@ -150,21 +150,21 @@ to do the typical monopoly rotation otherwise players are going to break their n
   border-bottom: none;
   background-color: #e5671b;
 }
-.board-space.in-jail .just,
-.board-space.in-jail .visiting {
+.boardSpace.inJail .just,
+.boardSpace.inJail .visiting {
   position: absolute;
   font-size: 1.5em;
 }
-.board-space.in-jail .just {
+.boardSpace.inJail .just {
   left: 0%;
   bottom: 27%;
   transform: rotate(-90deg);
 }
-.board-space.in-jail .visiting {
+.boardSpace.inJail .visiting {
   right: 11%;
   top: 8%;
 }
-.board-space.in-jail .inner > div {
+.boardSpace.inJail .inner > div {
   position: absolute;
   top: 0;
   left: 0;
@@ -172,7 +172,7 @@ to do the typical monopoly rotation otherwise players are going to break their n
   height: 100%;
   transform: rotate(-45deg);
 }
-.board-space.in-jail .inner > div img {
+.boardSpace.inJail .inner > div img {
   width: 4.5rem;
   height: 4.5rem;
   display: block;
@@ -182,13 +182,13 @@ to do the typical monopoly rotation otherwise players are going to break their n
 }
 
 /* FREE PARKING */
-.board-space.free-parking {
+.boardSpace.freeParking {
   font-size: 1.1em;
 }
-.board-space.free-parking > div.rotate {
+.boardSpace.freeParking > div.rotate {
   margin: 0.7rem;
 }
-.board-space.free-parking img {
+.boardSpace.freeParking img {
   width: 5rem;
   height: 5rem;
   display: block;
@@ -199,28 +199,28 @@ to do the typical monopoly rotation otherwise players are going to break their n
 
 /* SPECIAL */
 /* Utility, Chance, Community Chest */
-.board-space.special {
+.boardSpace.special {
   padding: 0.75rem;
 }
-.board-space.special img {
+.boardSpace.special img {
   width: 100%;
   flex: 1;
   flex-basis: 100%;
   margin-top: 0.5rem;
 }
-.board-space.special.significant .special-text {
+.boardSpace.special.significant .specialText {
   font-size: 1.3em;
 }
-.board-space.special .special-text {
+.boardSpace.special .specialText {
   flex: 1;
   flex-basis: 0;
 }
-.board-space.special .special-price {
+.boardSpace.special .specialPrice {
   margin-top: 0.5rem;
 }
 
 /* DECK BASES */
-.deck-base {
+.deckBase {
   width: 22rem;
   height: 13.5rem;
   overflow: hidden;
@@ -233,10 +233,10 @@ to do the typical monopoly rotation otherwise players are going to break their n
   padding: 3.5rem;
   border: 3px dashed #00000087;
 }
-.deck-base img {
+.deckBase img {
   height: 100%;
 }
-.deck-base .deck-base-background-color {
+.deckBase .deckBaseBackground-color {
   position: absolute;
   top: 0;
   left: 0;
@@ -246,16 +246,16 @@ to do the typical monopoly rotation otherwise players are going to break their n
   z-index: 0;
   border: 3px solid;
 }
-.deck-base > *:not(.deck-base-background-color) {
+.deckBase > *:not(.deckBaseBackground-color) {
   z-index: 1;
 }
 
-.deck-base.opportunity-knocks .deck-base-background-color {
+.deckBase.opportunityKnocks .deckBaseBackground-color {
   border-color: #9c4007;
   background: linear-gradient(#e5671b, #ffae7c);
 }
 
-.deck-base.pot-luck .deck-base-background-color {
+.deckBase.potLuck .deckBaseBackground-color {
   border-color: #07809c;
   background: linear-gradient(#1b91e5, #7ccfff);
 }
@@ -280,18 +280,18 @@ to do the typical monopoly rotation otherwise players are going to break their n
   box-shadow: 0 0 4px 2px #0000002e;
   text-align: center;
 }
-.card .card-type {
+.card .cardType {
   text-transform: none;
   font-size: 2em;
   font-weight: normal;
   font-family: 'Script BC', serif;
   text-align: left;
 }
-.card .card-title {
+.card .cardTitle {
   font-weight: bold;
   margin-bottom: 0.5rem;
 }
-.card .card-content {
+.card .cardContent {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -304,9 +304,9 @@ to do the typical monopoly rotation otherwise players are going to break their n
   grid-row: 1 / 3;
 }
 
-.card.opportunity-knocks {
+.card.opportunityKnocks {
   background-color: #ffae7c;
 }
-.card.pot-luck {
+.card.potLuck {
   background-color: #fff8a8;
 }
