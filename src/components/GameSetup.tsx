@@ -104,6 +104,7 @@ export default function GameSetup() {
           </Button>
         </form>
       </Box>
+      <Divider my="10px" />
       <Heading size="lg" textAlign={'center'} mt="40px">
         Players
       </Heading>
@@ -139,7 +140,9 @@ export default function GameSetup() {
         ))}
       </Flex>
       {players.length === 0 && (
-        <Heading>No players have been added yet.</Heading>
+        <Heading size="sm" fontWeight={'normal'} textAlign="center">
+          No players have been added yet.
+        </Heading>
       )}
       <Button
         w="100%"
