@@ -236,7 +236,7 @@ to do the typical monopoly rotation otherwise players are going to break their n
 .deckBase img {
   height: 100%;
 }
-.deckBase .deckBaseBackground-color {
+.deckBase .deckBaseBackgroundColor {
   position: absolute;
   top: 0;
   left: 0;
@@ -246,16 +246,16 @@ to do the typical monopoly rotation otherwise players are going to break their n
   z-index: 0;
   border: 3px solid;
 }
-.deckBase > *:not(.deckBaseBackground-color) {
+.deckBase > *:not(.deckBaseBackgroundColor) {
   z-index: 1;
 }
 
-.deckBase.opportunityKnocks .deckBaseBackground-color {
+.deckBase.opportunityKnocks .deckBaseBackgroundColor {
   border-color: #9c4007;
   background: linear-gradient(#e5671b, #ffae7c);
 }
 
-.deckBase.potLuck .deckBaseBackground-color {
+.deckBase.potLuck .deckBaseBackgroundColor {
   border-color: #07809c;
   background: linear-gradient(#1b91e5, #7ccfff);
 }
