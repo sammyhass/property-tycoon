@@ -11,16 +11,18 @@ export default function BoardSpacePlayers({
 }) {
   return (
     <Flex
-      pos="absolute"
-      w="100%"
-      h="100%"
-      justify={'center'}
-      align="center"
+      pos={'absolute'}
+      top={0}
+      left={0}
+      right={0}
       wrap="wrap"
-      zIndex={10}
+      bottom={0}
+      justify={'center'}
+      align={'center'}
+      zIndex={100}
     >
       {players.map(player => (
-        <PlayerToken token={player} />
+        <PlayerToken token={player} key={player} />
       ))}
     </Flex>
   );

@@ -18,9 +18,17 @@ type BoardSpaceProps = BoardSpaceT & {
   property: GameProperty | null;
 } & HasPlayerT;
 
+export default function BoardSpace(props: BoardSpaceProps) {
+  return (
+    <Box pos={'relative'}>
+      <BoardSpacePlayers players={props.hasPlayers ?? []} />
+      <BoardSpace.Inner {...props} />
+    </Box>
+  );
+}
 // Board Spaces on the board. There are different types of board spaces, so
 // so we need to determine which type of board space we are rendering.
-export default function BoardSpace(props: BoardSpaceProps) {
+BoardSpace.Inner = (props: BoardSpaceProps) => {
   switch (props.space_type) {
     case 'PROPERTY':
       return (
@@ -47,7 +55,7 @@ export default function BoardSpace(props: BoardSpaceProps) {
     default:
       return <BoardSpace.Empty />;
   }
-}
+};
 
 BoardSpace.Property = ({
   property,
@@ -126,18 +134,15 @@ BoardSpace.GoToJail = (props: HasPlayerT) => (
 
 BoardSpace.Go = (props: HasPlayerT) => {
   return (
-    <Box pos="relative">
-      <BoardSpacePlayers players={props.hasPlayers ?? []} />
-      <div className={`${styles.boardSpace} ${styles.square} ${styles.go}`}>
-        <svg className="arrow" viewBox="0 0 14 70" fill="#AB3126" stroke="#000">
-          <polygon points="0.861 12.096 7.133 1.054 13.214 11.969 9.32 11.969 9.32 56.581 12.467 59.728 12.467 68.746 6.87 63.66 1.582 69.057 1.471 59.688 4.817 56.564 4.817 12.061" />
-        </svg>
-        <div className={`${styles.rotate} ${styles.bottomLeft}`}>
-          <div className={styles.goText}>Collect £200 salary as you pass</div>
-          <div className={styles.goTextBig}>GO</div>
-        </div>
+    <div className={`${styles.boardSpace} ${styles.square} ${styles.go}`}>
+      <svg className="arrow" viewBox="0 0 14 70" fill="#AB3126" stroke="#000">
+        <polygon points="0.861 12.096 7.133 1.054 13.214 11.969 9.32 11.969 9.32 56.581 12.467 59.728 12.467 68.746 6.87 63.66 1.582 69.057 1.471 59.688 4.817 56.564 4.817 12.061" />
+      </svg>
+      <div className={`${styles.rotate} ${styles.bottomLeft}`}>
+        <div className={styles.goText}>Collect £200 salary as you pass</div>
+        <div className={styles.goTextBig}>GO</div>
       </div>
-    </Box>
+    </div>
   );
 };
 
