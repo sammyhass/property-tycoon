@@ -5,7 +5,6 @@ import { config } from '@fortawesome/fontawesome-svg-core';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 import type { AppProps } from 'next/app';
 import { Provider } from 'react-supabase';
-import { GameContextProvider } from '../hooks/useGameContext';
 import '../styles/globals.css';
 
 config.autoAddCss = false;
@@ -15,9 +14,7 @@ function MyApp({ Component, pageProps }: AppProps) {
     <ChakraProvider resetCSS={true}>
       <Provider value={supabase}>
         <AuthProvider>
-          <GameContextProvider>
-            <Component {...pageProps} />
-          </GameContextProvider>
+          <Component {...pageProps} />
         </AuthProvider>
       </Provider>
     </ChakraProvider>

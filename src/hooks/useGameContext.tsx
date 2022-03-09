@@ -1,5 +1,4 @@
 import { GameT } from '@/pages/admin/games/[game_id]';
-import { shuffled } from '@/util/shuffled';
 import { CardAction, CardType } from '@prisma/client';
 import {
   createContext,
@@ -11,6 +10,7 @@ import {
 } from 'react';
 
 const NUM_TILES = 40;
+const STARTING_MONEY = 50000;
 
 // Tokens a player can use in the game (gonna be emoji)
 export type TokenType =
@@ -79,7 +79,7 @@ export type GameContextT = {
   takeCard: (type: CardType) => CardAction | null;
 
   hasStarted: boolean;
-  setHasStarted: (hasStarted: boolean) => void;
+  handleStartGame: () => void;
 };
 
 export const GameContext = createContext<GameContextT>({
@@ -100,34 +100,25 @@ export const GameContext = createContext<GameContextT>({
   setIsPaused: () => {},
   onLand: (player, pos: number) => {},
   hasStarted: false,
-  setHasStarted: () => {},
+  handleStartGame: () => {},
 });
 
 export const useGameContext = () => useContext(GameContext);
 
 type GameSettingsT = GameT;
 
-export const GameContextProvider: React.FC = ({ children }) => {
-  const [loadingActiveBoard, setLoadingActiveBoard] = useState(true);
+export const GameContextProvider = ({
+  children,
+  initialGameSettings,
+}: {
+  children: React.ReactNode;
+  initialGameSettings: GameSettingsT;
+}) => {
+  const [gameSettings, setGameSettings] = useState<GameSettingsT | null>(
+    initialGameSettings
+  );
 
   const [hasStarted, setHasStarted] = useState(false);
-
-  const [gameSettings, setGameSettings] = useState<GameSettingsT | null>(null);
-
-  // Load in the active board
-  useEffect(() => {
-    const fetchBoard = async () => {
-      const response = await fetch('/api/active');
-      const board = (await response.json()) as GameSettingsT;
-
-      setLoadingActiveBoard(false);
-      setGameSettings(
-        board ? { ...board, CardActions: shuffled(board.CardActions) } : null
-      );
-    };
-
-    fetchBoard();
-  }, []);
 
   const [isPaused, setIsPaused] = useState(false);
 
@@ -233,6 +224,25 @@ export const GameContextProvider: React.FC = ({ children }) => {
     setTime(0);
   }, []);
 
+  /// Handle start game should be run when the game is started (after initial setup where players are added)
+  // it initializes the board state, gives starting money to players, and sets the current player
+  const handleStartGame = useCallback(() => {
+    setHasStarted(true);
+    setState(
+      players.reduce(
+        (acc, player) => ({
+          ...acc,
+          [player.token]: {
+            pos: 0,
+            propertiesOwned: [],
+            money: STARTING_MONEY,
+          },
+        }),
+        {}
+      )
+    );
+  }, [players, setHasStarted]);
+
   return (
     <GameContext.Provider
       value={{
@@ -241,7 +251,7 @@ export const GameContextProvider: React.FC = ({ children }) => {
         state,
         currentPlayer,
         hasStarted,
-        setHasStarted,
+        handleStartGame,
         setPlayers,
         move,
         getTimeDisplay,

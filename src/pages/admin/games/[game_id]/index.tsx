@@ -3,6 +3,7 @@ import DeleteGameButton from '@/components/admin/DeleteGameButton';
 import CardList from '@/components/admin/GameCards/CardList';
 import GameProperties from '@/components/admin/GameProperties';
 import PropertyGroups from '@/components/admin/PropertyGroups';
+import ShareGameButton from '@/components/admin/ShareGameButton';
 import AdminLayout from '@/components/UI/admin/AdminLayout';
 import { API_URL } from '@/env/env';
 import { enforceAuth } from '@/lib/checkAuth';
@@ -91,6 +92,10 @@ export default function AdminGamePage({ game }: AdminGamePageProps) {
                 Created {game.created_at?.toDateString()}
               </Text>
               <DeleteGameButton id={game.id} name={game.name} />
+              <ShareGameButton
+                gameId={game.id}
+                shareCode={game.share_code ?? undefined}
+              />
             </Box>
           </Flex>
           <Divider />

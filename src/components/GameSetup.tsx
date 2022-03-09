@@ -17,7 +17,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useCallback, useState } from 'react';
 
 export default function GameSetup() {
-  const { setHasStarted, gameSettings, addPlayer, players, removePlayer } =
+  const { handleStartGame, gameSettings, addPlayer, players, removePlayer } =
     useGameContext();
 
   const [newPlayerName, setNewPlayerName] = useState('');
@@ -147,7 +147,7 @@ export default function GameSetup() {
       <Button
         w="100%"
         colorScheme="green"
-        onClick={() => setHasStarted(true)}
+        onClick={handleStartGame}
         size={'lg'}
         disabled={players.length === 0}
         mt="10px"

@@ -1,3 +1,4 @@
+import { TokenType } from '@/hooks/useGameContext';
 import { formatPrice } from '@/util/formatPrice';
 import { propertyGroupToCSS } from '@/util/property-colors';
 import { Box, Text } from '@chakra-ui/react';
@@ -9,7 +10,12 @@ import {
 import React from 'react';
 import styles from './spaces.module.css';
 
-type BoardSpaceProps = BoardSpaceT & { property: GameProperty | null };
+// Has player can be used to show the player's token on the board
+type HasPlayerT = { hasPlayers?: TokenType[] };
+
+type BoardSpaceProps = BoardSpaceT & {
+  property: GameProperty | null;
+} & HasPlayerT;
 
 export default function BoardSpace(props: BoardSpaceProps) {
   switch (props.space_type) {
@@ -30,7 +36,9 @@ export default function BoardSpace(props: BoardSpaceProps) {
   }
 }
 
-BoardSpace.Property = ({ property }: { property: GameProperty | null }) => (
+BoardSpace.Property = ({
+  property,
+}: { property: GameProperty | null } & HasPlayerT) => (
   <div
     className={`${styles.boardSpace} ${styles.property}`}
     style={{
@@ -47,7 +55,7 @@ BoardSpace.Property = ({ property }: { property: GameProperty | null }) => (
   </div>
 );
 
-BoardSpace.Empty = () => (
+BoardSpace.Empty = (props: HasPlayerT) => (
   <div className={styles.boardSpace}>
     <div className={styles.boardBackground} />
     <div>
@@ -67,14 +75,14 @@ BoardSpace.Special = ({
 }: {
   title: string;
   imageComponent: React.FC;
-}) => (
+} & HasPlayerT) => (
   <div className={`${styles.boardSpace} ${styles.special}`}>
     <div className={styles.specialText}>{title}</div>
     <ImageComponent />
   </div>
 );
 
-BoardSpace.Jail = () => (
+BoardSpace.Jail = (props: HasPlayerT) => (
   <div className={`${styles.boardSpace} ${styles.square} ${styles.inJail}`}>
     <div className={styles.just}>Just</div>
     <div className={styles.visiting}>Visiting</div>
@@ -90,7 +98,7 @@ BoardSpace.Jail = () => (
   </div>
 );
 
-BoardSpace.GoToJail = () => (
+BoardSpace.GoToJail = (props: HasPlayerT) => (
   <div className={`${styles.boardSpace} ${styles.square} ${styles.goToJail}`}>
     <div className="rotate bottomRight">
       Go to
@@ -102,7 +110,7 @@ BoardSpace.GoToJail = () => (
   </div>
 );
 
-BoardSpace.Go = () => {
+BoardSpace.Go = (props: HasPlayerT) => {
   return (
     <div className={`${styles.boardSpace} ${styles.square} ${styles.go}`}>
       <svg className="arrow" viewBox="0 0 14 70" fill="#AB3126" stroke="#000">
@@ -116,7 +124,7 @@ BoardSpace.Go = () => {
   );
 };
 
-BoardSpace.FreeParking = () => (
+BoardSpace.FreeParking = (props: HasPlayerT) => (
   <div
     className={`${styles.boardSpace} ${styles.square} ${styles.freeParking}`}
   >
@@ -130,9 +138,13 @@ BoardSpace.FreeParking = () => (
   </div>
 );
 
-BoardSpace.TakeCard = ({ cardType }: { cardType: CardType }) => (
+BoardSpace.TakeCard = ({
+  cardType,
+  hasPlayers = [],
+}: { cardType: CardType } & HasPlayerT) => (
   <BoardSpace.Special
     title={cardType === 'POT_LUCK' ? 'Pot Luck' : 'Opportunity Knocks'}
+    hasPlayers={hasPlayers}
     imageComponent={() => (
       <Text fontSize={'6xl'}>{cardType === 'POT_LUCK' ? '🎲' : '🔥'}</Text>
     )}
