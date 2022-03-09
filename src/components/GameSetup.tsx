@@ -51,7 +51,7 @@ export default function GameSetup() {
       mx="auto"
       bg="white"
     >
-      <Heading size="xl">Game Setup</Heading>
+      <Heading size="xl">Game Setup - {gameSettings?.name}</Heading>
       <Divider />
       <Box p="10px">
         <form
