@@ -10,7 +10,7 @@ export default function PlayGameLayout({
   children: React.ReactNode;
 }) {
   return (
-    <Box bg="green.600" minH="100vh" pb="50px">
+    <Box bg="#333" minH="100vh" pb="50px">
       {children}
     </Box>
   );

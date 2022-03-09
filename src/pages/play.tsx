@@ -1,3 +1,4 @@
+import Board from '@/components/Board';
 import GameSetup from '@/components/GameSetup';
 import Navbar from '@/components/UI/admin/Navbar';
 import PlayGameLayout from '@/components/UI/PlayLayout';
@@ -9,7 +10,7 @@ import React from 'react';
  * Page where game is played and setup.
  */
 export default function PlayPage() {
-  const { hasStarted, isPaused } = useGameContext();
+  const { hasStarted, isPaused, gameSettings } = useGameContext();
 
   return (
     <PlayGameLayout>
@@ -19,7 +20,12 @@ export default function PlayPage() {
           <GameSetup />
         </Box>
       ) : (
-        <Box>Game Started</Box>
+        <Box>
+          {/* Board */}
+          <Box bg="white">
+            <Board settings={gameSettings} />
+          </Box>
+        </Box>
       )}
     </PlayGameLayout>
   );

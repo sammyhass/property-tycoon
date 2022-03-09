@@ -20,7 +20,7 @@ import {
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import React, { FormEvent, useCallback, useMemo, useState } from 'react';
-import GameCard from '../../UI/Board/Card';
+import GameCard from '../../Board/cards/Card';
 
 export default function NewCardForm({
   initialValues,
