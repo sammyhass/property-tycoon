@@ -115,6 +115,7 @@ enum SpaceType {
   TAKE_CARD
   GO
   GO_TO_JAIL
+  // JUST_VISIT represents Jail and the "Just Visiting" space.
   JUST_VISIT
   FREE_PARKING
 }

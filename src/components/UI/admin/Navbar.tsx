@@ -21,7 +21,7 @@ export default function Navbar() {
       </Heading>
       <Spacer />
       <Flex gap="10px" wrap={'wrap'}>
-        <Link href={'/'} passHref>
+        <Link href={'/play'} passHref>
           <Button colorScheme={'green'}>Play</Button>
         </Link>
         <Link href={user ? '/admin/games' : '/login'} passHref>

@@ -148,9 +148,10 @@ export default function NewPropertyForm({
           </FormErrorMessage>
         )}
       </FormControl>
-      {!(['STATION', 'UTILITIES'] as PropertyGroupColor[]).includes(
-        propertyGroup
-      ) && (
+      {![
+        'STATION' as PropertyGroupColor,
+        'UTILITIES' as PropertyGroupColor,
+      ].includes(propertyGroup) && (
         <FormControl>
           <FormLabel m="0" p="0">
             Rent
@@ -163,7 +164,7 @@ export default function NewPropertyForm({
                 </FormLabel>
                 <NumberInput
                   m="0"
-                  value={rents[r as keyof RentInputT]}
+                  value={rents[r as keyof RentInputT] as number}
                   keepWithinRange
                   defaultValue={0}
                   min={0}
@@ -198,7 +199,7 @@ export default function NewPropertyForm({
           <UnorderedList color="red.500">
             {!name && <li>Name is required</li>}
             {price <= 0 && <li>Price must be greater than 0</li>}
-            {Object.values(rents).filter(r => r <= 0 || isNaN(r)).length >
+            {Object.values(rents).filter(r => !r || r <= 0 || isNaN(r)).length >
               0 && <li>Rent values must all be positive numbers</li>}
           </UnorderedList>
         )

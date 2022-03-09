@@ -9,13 +9,13 @@ import {
   Heading,
   Input,
   Select,
-  Textarea,
+  Textarea
 } from '@chakra-ui/react';
 import {
   CardAction,
   CardActionType,
   CardType,
-  GameProperty,
+  GameProperty
 } from '@prisma/client';
 import axios from 'axios';
 import { useRouter } from 'next/router';
@@ -91,6 +91,7 @@ export default function NewCardForm({
       actionType,
       cardType,
       description,
+      router,
       gameId,
       title,
     ]

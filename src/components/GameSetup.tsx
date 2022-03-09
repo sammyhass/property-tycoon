@@ -40,7 +40,7 @@ export default function GameSetup() {
     if (nextToken) {
       setNewPlayerToken(nextToken);
     }
-  }, [newPlayerName, newPlayerToken]);
+  }, [newPlayerName, newPlayerToken, addPlayer]);
 
   return (
     <Box

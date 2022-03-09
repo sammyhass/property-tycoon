@@ -1,15 +1,30 @@
 import AdminLayout from '@/components/UI/admin/AdminLayout';
-import { Box, Flex } from '@chakra-ui/react';
+import { Box, Button, ButtonGroup, Heading } from '@chakra-ui/react';
 import type { NextPage } from 'next';
-import Board from '../components/UI/Board/Board';
+import Link from 'next/link';
 
 const Home: NextPage = () => {
   return (
     <AdminLayout>
-      <Box bg="black" h="100%">
-        <Flex justify={'center'} align={'center'} minH="90vh">
-          <Board />
-        </Flex>
+      <Heading>Welcome to Property Tycoon!</Heading>
+      <Box bg="#eee" p="20px" borderRadius={'8px'} boxShadow="sm">
+        <ButtonGroup spacing={'10px'}>
+          <Link passHref href="/play">
+            <Button size="lg" colorScheme={'green'}>
+              Play
+            </Button>
+          </Link>
+          <Link passHref href="/admin/games">
+            <Button size="lg" colorScheme={'teal'}>
+              Manage your Games
+            </Button>
+          </Link>
+          <Link passHref href="#">
+            <Button size="lg" colorScheme={'purple'}>
+              Explore Boards
+            </Button>
+          </Link>
+        </ButtonGroup>
       </Box>
     </AdminLayout>
   );

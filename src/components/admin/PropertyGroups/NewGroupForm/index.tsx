@@ -66,7 +66,7 @@ export default function NewPropertyGroupForm({
 
       router.push(`/admin/games/${gameId}/property-groups`);
     },
-    [color, hotelCost, houseCost, gameId, router]
+    [color, hotelCost, houseCost, gameId, router, isStationOrUtilities]
   );
 
   return (
