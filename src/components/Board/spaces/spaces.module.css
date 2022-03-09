@@ -8,7 +8,9 @@
   text-align: center;
   text-transform: uppercase;
   border: 3px solid #000;
+  flex-shrink: 0;
   width: 7rem;
+
   height: 11rem;
   font-size: 0.8em;
   position: relative;
@@ -29,6 +31,7 @@ so that we can give properties different colours with ease
 .boardSpace {
   background-color: #cdffdc;
 }
+
 .boardSpace > .boardBackground {
   background-color: #cdffdc;
 }
@@ -40,6 +43,7 @@ so that we can give properties different colours with ease
   height: 100%;
   z-index: 0;
 }
+
 .boardSpace > *:not(.boardBackground) {
   z-index: 1;
 }
@@ -56,7 +60,7 @@ so that we can give properties different colours with ease
 /*
 Realistically, if our players are going to be playing on screens, we don't want
 to do the typical monopoly rotation otherwise players are going to break their necks.
-
+90
 .boardSpace > div.rotate.topLeft {
 	transform: rotate(135deg);
 }
@@ -240,9 +244,6 @@ to do the typical monopoly rotation otherwise players are going to break their n
   height: calc(100% - 0.5rem);
   z-index: 0;
   border: 3px solid;
-}
-.deckBase > *:not(.deckBaseBackgroundColor) {
-  z-index: 1;
 }
 
 .deckBase.opportunityKnocks .deckBaseBackgroundColor {

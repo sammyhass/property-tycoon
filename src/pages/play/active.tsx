@@ -23,7 +23,7 @@ export function PlayPageInner() {
       ) : (
         <Box>
           {/* Board */}
-          <Box bg="white">
+          <Box>
             <Board
               settings={gameSettings}
               positions={Object.entries(state).reduce(

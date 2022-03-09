@@ -1,5 +1,5 @@
 import { GameContextT, TokenType } from '@/hooks/useGameContext';
-import { Box } from '@chakra-ui/react';
+import { Flex } from '@chakra-ui/react';
 import BoardSpace from './spaces';
 
 // Gameboard with players on the board
@@ -10,7 +10,7 @@ export interface GameBoardProps {
 
 export default function GameBoard({ settings, positions }: GameBoardProps) {
   return (
-    <Box>
+    <Flex wrap="wrap">
       {(settings?.BoardSpaces ?? [])
         .sort((a, b) => a.board_position - b.board_position)
         .map(space => (
@@ -27,6 +27,6 @@ export default function GameBoard({ settings, positions }: GameBoardProps) {
             {...space}
           />
         ))}
-    </Box>
+    </Flex>
   );
 }

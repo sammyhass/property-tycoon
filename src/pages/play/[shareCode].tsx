@@ -7,8 +7,8 @@ import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { GetServerSideProps } from 'next';
 import React from 'react';
-import { PlayPageInner } from '.';
 import { GameT } from '../admin/games/[game_id]';
+import { PlayPageInner } from './active';
 
 export default function SharedGamePage({ game }: { game: GameT }) {
   return (

@@ -13,8 +13,8 @@ const handler: NextApiHandler = async (req, res) => {
   }
 };
 
+// Handle POST requests - create a new share code for a game
 const handlePOST: NextApiHandler = async (req, res) => {
-  // Generate sharecode for game as base64 string of 12, must be alphanumeric only
   let isValidShareCode = false;
   let shareCode = '';
   while (!isValidShareCode) {
