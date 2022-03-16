@@ -1,4 +1,5 @@
 import { Box } from '@chakra-ui/react';
+import Head from 'next/head';
 import React from 'react';
 
 /**
@@ -10,8 +11,13 @@ export default function PlayGameLayout({
   children: React.ReactNode;
 }) {
   return (
-    <Box bg="#333" minH="100vh" pb="50px">
-      {children}
-    </Box>
+    <>
+      <Head>
+        <title>Play Game</title>
+      </Head>
+      <Box bg="#333" minH="100vh" pb="50px">
+        {children}
+      </Box>
+    </>
   );
 }
