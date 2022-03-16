@@ -1,18 +1,18 @@
+import BoardSpace from '@/components/Board/spaces';
 import {
+  Box,
+  Button,
+  Collapse,
+  Flex,
   Modal,
   ModalBody,
   ModalContent,
   ModalHeader,
   ModalOverlay,
-  Table,
-  Tbody,
-  Th,
-  Thead,
-  Tr
 } from '@chakra-ui/react';
-import { faLock } from '@fortawesome/free-solid-svg-icons';
+import { faArrowDown, faArrowUp } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { BoardSpace, GameProperty } from '@prisma/client';
+import { BoardSpace as BoardSpaceT, GameProperty } from '@prisma/client';
 import { useRouter } from 'next/router';
 import React, { useState } from 'react';
 import BoardSpaceForm from './BoardSpaceForm';
@@ -22,71 +22,76 @@ export default function BoardSpacesEditor({
   gameId,
   properties,
 }: {
-  boardSpaces: BoardSpace[];
+  boardSpaces: BoardSpaceT[];
   properties: GameProperty[];
   gameId: string;
 }) {
-  const [selectedSpace, setSelectedSpace] = useState<BoardSpace | null>(null);
+  const [expanded, setExpanded] = useState<boolean>(true);
+  const [selectedSpace, setSelectedSpace] = useState<BoardSpaceT | null>(null);
   const router = useRouter();
   return (
-    <>
-      <Table>
-        <Thead>
-          <Tr>
-            <Th>Position</Th>
-            <Th>Space Type</Th>
-            <Th>Property at Space</Th>
-            <Th>Card Type</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
+    <Box pos="relative">
+      <Button
+        onClick={() => setExpanded(!expanded)}
+        variant="outline"
+        bg="#fff"
+        backdropFilter="opacity(0.5)"
+        colorScheme="purple"
+        my="5px"
+        aria-label={`${expanded ? 'Hide' : 'Show'} Board Spaces`}
+        leftIcon={
+          <FontAwesomeIcon icon={!expanded ? faArrowDown : faArrowUp} />
+        }
+      >
+        {expanded ? 'Hide' : 'Show'} Board Spaces
+      </Button>
+      <Collapse in={expanded} startingHeight={'50px'}>
+        <Flex wrap="wrap">
           {boardSpaces
             .slice()
             .sort((a, b) => a.board_position - b.board_position)
             .map(space => (
-              <Tr
+              <Box
                 key={space.board_position}
                 _hover={{ bg: !space.locked ? 'gray.50' : '' }}
+                p="10px"
                 cursor={space.locked ? 'not-allowed' : 'pointer'}
                 onClick={() => !space.locked && setSelectedSpace(space)}
               >
-                <Th>{space.board_position}</Th>
-                <Th>
-                  {space.locked && <FontAwesomeIcon style={{marginRight: '5px'}} icon={faLock} />}
-                  {space.space_type}
-                </Th>
-                <Th>
-                  {properties.find(p => p.id === space.property_id)?.name}
-                </Th>
-                <Th>{space.take_card}</Th>
-              </Tr>
+                <BoardSpace
+                  property={
+                    properties.find(p => p.id === space.property_id) ?? null
+                  }
+                  {...space}
+                />
+              </Box>
             ))}
-        </Tbody>
-      </Table>
-      <Modal isOpen={!!selectedSpace} onClose={() => setSelectedSpace(null)}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>
-            {selectedSpace &&
-              `Editing position ${selectedSpace.board_position}`}
-          </ModalHeader>
-          <ModalBody>
-            {selectedSpace && (
-              <BoardSpaceForm
-                onComplete={space => {
-                  setSelectedSpace(null);
-                  setTimeout(() => {
-                    router.reload();
-                  }, 100);
-                }}
-                gameId={gameId}
-                properties={properties}
-                boardSpace={selectedSpace}
-              />
-            )}
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-    </>
+        </Flex>
+        <Modal isOpen={!!selectedSpace} onClose={() => setSelectedSpace(null)}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>
+              {selectedSpace &&
+                `Editing position ${selectedSpace.board_position}`}
+            </ModalHeader>
+            <ModalBody>
+              {selectedSpace && (
+                <BoardSpaceForm
+                  onComplete={space => {
+                    setSelectedSpace(null);
+                    setTimeout(() => {
+                      router.reload();
+                    }, 100);
+                  }}
+                  gameId={gameId}
+                  properties={properties}
+                  boardSpace={selectedSpace}
+                />
+              )}
+            </ModalBody>
+          </ModalContent>
+        </Modal>
+      </Collapse>
+    </Box>
   );
 }

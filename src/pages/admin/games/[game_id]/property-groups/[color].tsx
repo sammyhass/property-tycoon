@@ -1,13 +1,28 @@
+import BoardSpace from '@/components/Board/spaces';
 import AdminLayout from '@/components/UI/admin/AdminLayout';
+import GameNotFound from '@/components/UI/GameNotFound';
 import { prismaClient } from '@/lib/prisma';
-import { Box, Heading } from '@chakra-ui/react';
-import { PropertyGroup, PropertyGroupColor } from '@prisma/client';
+import {
+  Box,
+  Breadcrumb,
+  BreadcrumbItem,
+  Flex,
+  Heading,
+} from '@chakra-ui/react';
+import {
+  GameProperty,
+  PropertyGroup,
+  PropertyGroupColor,
+} from '@prisma/client';
 import { GetServerSideProps } from 'next';
+import Link from 'next/link';
 import React from 'react';
 
 interface PropertyGroupPageProps {
   gameId: string;
-  propertyGroup: PropertyGroup | null;
+  propertyGroup:
+    | (PropertyGroup & { Properties: GameProperty[]; Game: { name?: string } })
+    | null;
 }
 
 export default function PropertyGroupPage({
@@ -19,6 +34,33 @@ export default function PropertyGroupPage({
   }
   return (
     <AdminLayout>
+      <Box>
+        <Breadcrumb>
+          <BreadcrumbItem>
+            <Link href="/admin/games">Game Boards</Link>
+          </BreadcrumbItem>
+
+          <BreadcrumbItem>
+            <Link href={`/admin/games/${gameId}`}>
+              {propertyGroup.Game?.name}
+            </Link>
+          </BreadcrumbItem>
+
+          <BreadcrumbItem>
+            <Link href={`/admin/games/${gameId}/property-groups`}>
+              Property Groups
+            </Link>
+          </BreadcrumbItem>
+
+          <BreadcrumbItem isCurrentPage>
+            <Link
+              href={`/admin/games/${gameId}/property-groups/${propertyGroup.color}`}
+            >
+              {propertyGroup.color}
+            </Link>
+          </BreadcrumbItem>
+        </Breadcrumb>
+      </Box>
       <Box mt="70px" mx={'auto'} w="800px" maxW={'100%'}>
         <Heading
           textDecorationColor={propertyGroup.color}
@@ -29,6 +71,17 @@ export default function PropertyGroupPage({
           {propertyGroup?.color[0].toUpperCase() +
             propertyGroup?.color.slice(1)}
         </Heading>
+        <Flex my="10px" gap="10px">
+          {propertyGroup.Properties.map(property => (
+            <BoardSpace.Property property={property} />
+          ))}
+        </Flex>
+        {propertyGroup.Properties.length === 0 && (
+          <GameNotFound
+            message="No properties in this group"
+            title="Nothing to show"
+          />
+        )}
       </Box>
     </AdminLayout>
   );
@@ -59,6 +112,11 @@ export const getServerSideProps: GetServerSideProps<
     },
     include: {
       Properties: true,
+      Game: {
+        select: {
+          name: true,
+        },
+      },
     },
   });
 

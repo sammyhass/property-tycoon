@@ -3,7 +3,7 @@ import { GameCardsPageProps } from '@/pages/admin/games/[game_id]/cards';
 import {
   Box,
   Button,
-  Code,
+  chakra,
   Divider,
   Flex,
   Heading,
@@ -11,15 +11,17 @@ import {
   ModalBody,
   ModalContent,
   ModalFooter,
-  ModalHeader,
   ModalOverlay,
 } from '@chakra-ui/react';
 import { CardType } from '@prisma/client';
+import axios from 'axios';
 import Link from 'next/link';
-import React, { useMemo, useState } from 'react';
+import { useRouter } from 'next/router';
+import React, { useCallback, useMemo, useState } from 'react';
 
 type CardListProps = {
   cards: GameCardsPageProps['game']['CardActions'];
+
   onClick?: 'show_modal' | undefined;
 } & {
   gameId: string;
@@ -37,16 +39,28 @@ export default function CardList({ cards, gameId, onClick }: CardListProps) {
   );
   const potLuckCards = cards.filter(card => card.type === CardType.POT_LUCK);
 
+  const router = useRouter();
+
+  const handleDelete = useCallback(async () => {
+    if (selectedCard) {
+      await axios.delete(`/api/game/${gameId}/game_cards/${selectedCard.id}`);
+      setSelected(null);
+
+      router.reload();
+    }
+  }, [gameId, selectedCard]);
+
   return (
     <>
       <Divider my="5px" />
       <Flex direction={'column'} gap="20px">
         <Box>
           <Heading size="md">Opportunity Knocks</Heading>
-          <Flex wrap="wrap" my="5px">
+          <Flex overflowX="auto" my="5px" gap="5px" py="10px">
             {opportunityKnocksCards.map(card => (
               <Card
                 key={card.id}
+                propertyName={card.GameProperty?.name}
                 {...card}
                 onClick={() => setSelected(card.id)}
               />
@@ -68,11 +82,12 @@ export default function CardList({ cards, gameId, onClick }: CardListProps) {
         <Box>
           <Divider />
           <Heading size="md">Pot Luck</Heading>
-          <Flex wrap="wrap" my="5px">
+          <Flex overflowX="auto" my="5px" gap="5px">
             {potLuckCards.map(card => (
               <Card
                 {...card}
                 key={card.id}
+                propertyName={card.GameProperty?.name}
                 onClick={() => setSelected(card.id)}
               />
             ))}
@@ -98,14 +113,15 @@ export default function CardList({ cards, gameId, onClick }: CardListProps) {
       >
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>{selectedCard?.title}</ModalHeader>
-          <ModalBody p="0">
-            <Code w="100%" p="10px">
-              <pre>{JSON.stringify(selectedCard, null, 2)}</pre>
-            </Code>
+          <ModalBody p="0" overflowX={'auto'}>
+            <chakra.pre w="100%" p="10px">
+              {JSON.stringify(selectedCard, null, 2)}
+            </chakra.pre>
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme={'red'}>Delete Card</Button>
+            <Button onClick={() => handleDelete()} colorScheme={'red'}>
+              Delete Card
+            </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

@@ -1,12 +1,18 @@
+import BoardSpace, {
+  BOARD_SPACE_ASPECT_RATIO,
+} from '@/components/Board/spaces';
 import { API_URL } from '@/env/env';
+import { propertyGroupToCSS } from '@/util/property-colors';
 import {
   Alert,
+  Box,
   Button,
   Flex,
   FormControl,
   FormErrorMessage,
   FormHelperText,
   FormLabel,
+  Heading,
   Input,
   NumberDecrementStepper,
   NumberIncrementStepper,
@@ -96,114 +102,144 @@ export default function NewPropertyForm({
   );
 
   return (
-    <form onSubmit={e => canSubmit && onSubmit(e)}>
-      {(existingGroups?.length ?? 0) < 1 && (
-        <Alert variant="left-accent" colorScheme={'red'}>
-          You must create a property group before creating any properties.
-        </Alert>
-      )}
-      <FormControl my="10px">
-        <FormLabel m={0} p={0}>
-          Name
-        </FormLabel>
-        <Input
-          placeholder="Property Name"
-          value={name}
-          onChange={e => setName(e.target.value)}
-        />
-      </FormControl>
-      <FormControl mb="10px">
-        <FormLabel m="0" p="0">
-          Price
-        </FormLabel>
-        <Input
-          placeholder="Property Price in £"
-          type="number"
-          value={price}
-          onChange={e => setPrice(Number(e.target.value))}
-        />
-      </FormControl>
-      <FormControl mb="10px">
-        <FormLabel m="0" p="0">
-          Property Group
-        </FormLabel>
-        <FormHelperText p="0" m={0}>
-          Which property group does this property belong to?
-        </FormHelperText>
-        <Select
-          mt="10px"
-          value={propertyGroup}
-          bg={propertyGroup}
-          onChange={e => setPropertyGroup(e.target.value as PropertyGroupColor)}
-        >
-          {existingGroups.map(({ color }) => (
-            <option key={color} value={color}>
-              {color}
-            </option>
-          ))}
-        </Select>
-        {existingGroups.length === 0 && (
-          <FormErrorMessage>
-            You need to create a property group first!
-          </FormErrorMessage>
-        )}
-      </FormControl>
-      {![
-        'STATION' as PropertyGroupColor,
-        'UTILITIES' as PropertyGroupColor,
-      ].includes(propertyGroup) && (
-        <FormControl>
-          <FormLabel m="0" p="0">
-            Rent
-          </FormLabel>
-          <Flex p="5px" direction={'column'} gap="10px">
-            {Object.keys(rents).map(r => (
-              <>
-                <FormLabel fontSize={'xs'} m="0" p="0">
-                  {r}
-                </FormLabel>
-                <NumberInput
-                  m="0"
-                  value={rents[r as keyof RentInputT] as number}
-                  keepWithinRange
-                  defaultValue={0}
-                  min={0}
-                  onChange={(_, n) =>
-                    handleChangeRent(r as keyof RentInputT, n)
-                  }
-                >
-                  <NumberInputField />
-                  <NumberInputStepper>
-                    <NumberIncrementStepper />
-                    <NumberDecrementStepper />
-                  </NumberInputStepper>
-                </NumberInput>
-              </>
-            ))}
-          </Flex>
-        </FormControl>
-      )}
-      <Button
-        type="submit"
-        my="10px"
-        w="100%"
-        disabled={!canSubmit}
-        colorScheme="green"
+    <Flex flexShrink={0} wrap="wrap">
+      <form
+        onSubmit={e => canSubmit && onSubmit(e)}
+        style={{ flexShrink: 0, flex: 1, minWidth: '70%' }}
       >
-        Submit
-      </Button>
-      {error ? (
-        <FormErrorMessage>{error}</FormErrorMessage>
-      ) : (
-        !canSubmit && (
-          <UnorderedList color="red.500">
-            {!name && <li>Name is required</li>}
-            {price <= 0 && <li>Price must be greater than 0</li>}
-            {Object.values(rents).filter(r => !r || r <= 0 || isNaN(r)).length >
-              0 && <li>Rent values must all be positive numbers</li>}
-          </UnorderedList>
-        )
-      )}
-    </form>
+        {(existingGroups?.length ?? 0) < 1 && (
+          <Alert variant="left-accent" colorScheme={'red'}>
+            You must create a property group before creating any properties.
+          </Alert>
+        )}
+        <FormControl my="10px">
+          <FormLabel m={0} p={0}>
+            Name
+          </FormLabel>
+          <Input
+            placeholder="Property Name"
+            value={name}
+            onChange={e => setName(e.target.value)}
+          />
+        </FormControl>
+        <FormControl mb="10px">
+          <FormLabel m="0" p="0">
+            Price
+          </FormLabel>
+          <Input
+            placeholder="Property Price in £"
+            type="number"
+            value={price}
+            onChange={e => setPrice(Number(e.target.value))}
+          />
+        </FormControl>
+        <FormControl mb="10px">
+          <FormLabel m="0" p="0">
+            Property Group
+          </FormLabel>
+          <FormHelperText p="0" m={0}>
+            Which property group does this property belong to?
+          </FormHelperText>
+          <Select
+            mt="10px"
+            value={propertyGroup}
+            bg={propertyGroupToCSS[propertyGroup]}
+            color="white"
+            fontWeight={'bold'}
+            onChange={e =>
+              setPropertyGroup(e.target.value as PropertyGroupColor)
+            }
+          >
+            {existingGroups.map(({ color }) => (
+              <option key={color} value={color}>
+                {color}
+              </option>
+            ))}
+          </Select>
+          {existingGroups.length === 0 && (
+            <FormErrorMessage>
+              You need to create a property group first!
+            </FormErrorMessage>
+          )}
+        </FormControl>
+        {![
+          'STATION' as PropertyGroupColor,
+          'UTILITIES' as PropertyGroupColor,
+        ].includes(propertyGroup) && (
+          <FormControl>
+            <FormLabel m="0" p="0">
+              Rent
+            </FormLabel>
+            <Flex p="5px" direction={'column'} gap="10px">
+              {Object.keys(rents).map(r => (
+                <>
+                  <FormLabel fontSize={'xs'} m="0" p="0">
+                    {r}
+                  </FormLabel>
+                  <NumberInput
+                    m="0"
+                    value={rents[r as keyof RentInputT] as number}
+                    keepWithinRange
+                    defaultValue={0}
+                    min={0}
+                    onChange={(_, n) =>
+                      handleChangeRent(r as keyof RentInputT, n)
+                    }
+                  >
+                    <NumberInputField />
+                    <NumberInputStepper>
+                      <NumberIncrementStepper />
+                      <NumberDecrementStepper />
+                    </NumberInputStepper>
+                  </NumberInput>
+                </>
+              ))}
+            </Flex>
+          </FormControl>
+        )}
+
+        <Button
+          type="submit"
+          my="10px"
+          w="100%"
+          disabled={!canSubmit}
+          colorScheme="green"
+        >
+          Submit
+        </Button>
+        {error ? (
+          <FormErrorMessage>{error}</FormErrorMessage>
+        ) : (
+          !canSubmit && (
+            <UnorderedList color="red.500">
+              {!name && <li>Name is required</li>}
+              {price <= 0 && <li>Price must be greater than 0</li>}
+              {Object.values(rents).filter(r => !r || r <= 0 || isNaN(r))
+                .length > 0 && (
+                <li>Rent values must all be positive numbers</li>
+              )}
+            </UnorderedList>
+          )
+        )}
+      </form>
+      <Box p="10px" shadow="md" mx="10px" height="fit-content" minW="200px">
+        <Heading fontSize="lg" mb="10px">
+          Preview
+        </Heading>
+        <BoardSpace.Property
+          w={175}
+          h={155 * BOARD_SPACE_ASPECT_RATIO}
+          fontSize={'lg'}
+          property={{
+            name: !!name ? name : 'New Property',
+            price: price ?? 0,
+            property_group_color: propertyGroup,
+            ...rents,
+            game_id: gameId,
+            id: '',
+          }}
+        />
+      </Box>
+    </Flex>
   );
 }

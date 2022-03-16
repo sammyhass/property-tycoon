@@ -57,7 +57,7 @@ const handlePOST: NextApiHandler = async (req, res) => {
   const spaces: Pick<BoardSpace, 'board_position' | 'space_type' | 'locked'>[] =
     [
       {
-        board_position: 0,
+        board_position: 1,
         space_type: SpaceType.GO,
         locked: true,
       },
@@ -79,7 +79,7 @@ const handlePOST: NextApiHandler = async (req, res) => {
       },
     ];
 
-  const otherSpaces: typeof spaces = new Array(39).fill(0).map((_, i) => ({
+  const otherSpaces: typeof spaces = new Array(40).fill(0).map((_, i) => ({
     board_position: i + 1,
     space_type: SpaceType.EMPTY,
     locked: false,

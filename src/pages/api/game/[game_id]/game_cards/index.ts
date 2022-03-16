@@ -9,7 +9,7 @@ const postSchema =
   Joi.object<
     Pick<
       CardAction,
-      'property_id' | 'cost' | 'title' | 'action_type' | 'description' | 'type'
+      'property_id' | 'cost' | 'action_type' | 'description' | 'type'
     >
   >();
 
@@ -29,7 +29,6 @@ const handlePOST: NextApiHandler = async (req, res) => {
     const card = await prismaClient.cardAction.create({
       data: {
         game_id: gameId,
-        title: value.title,
         type: value.type,
         action_type: value.action_type,
         cost: value.cost,
@@ -49,38 +48,6 @@ const handlePOST: NextApiHandler = async (req, res) => {
   }
 };
 
-const handleDELETE: NextApiHandler = async (req, res) => {
-  const gameId = req.query.game_id as string;
-
-  const cardId = req.body.card_id as string;
-
-  if (!cardId) {
-    res.status(400).json({
-      message: 'Invalid card id',
-    });
-    return;
-  }
-
-  try {
-    const card = await prismaClient.cardAction.delete({
-      where: {
-        id: cardId,
-      },
-    });
-    if (!card) {
-      res.status(404).json({
-        message: 'Card not found',
-      });
-    }
-
-    return res.status(200).json(card);
-  } catch (e) {
-    return res.status(500).json({
-      message: 'Internal server error',
-    });
-  }
-};
-
 const handler: NextApiHandler = async (req, res) => {
   const user = await supabase.auth.api.getUserByCookie(req);
 
@@ -95,9 +62,7 @@ const handler: NextApiHandler = async (req, res) => {
     case 'POST':
       await handlePOST(req, res);
       break;
-    case 'DELETE':
-      await handleDELETE(req, res);
-      break;
+
     default:
       break;
   }

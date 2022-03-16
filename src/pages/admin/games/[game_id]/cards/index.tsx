@@ -9,14 +9,16 @@ import {
   Button,
   Heading,
 } from '@chakra-ui/react';
-import { CardAction, Game } from '@prisma/client';
+import { CardAction, Game, GameProperty } from '@prisma/client';
 import { GetServerSideProps } from 'next';
 import Link from 'next/link';
 import React from 'react';
 
 export interface GameCardsPageProps {
   game: Game & {
-    CardActions: CardAction[];
+    CardActions: (CardAction & {
+      GameProperty?: GameProperty;
+    })[];
   };
 }
 
@@ -80,7 +82,11 @@ export const getServerSideProps: GetServerSideProps = enforceAuth(
           user_id: user.id,
         },
         include: {
-          CardActions: true,
+          CardActions: {
+            include: {
+              GameProperty: true,
+            },
+          },
         },
       });
 

@@ -9,13 +9,13 @@ import {
   Heading,
   Input,
   Select,
-  Textarea
+  Textarea,
 } from '@chakra-ui/react';
 import {
   CardAction,
   CardActionType,
   CardType,
-  GameProperty
+  GameProperty,
 } from '@prisma/client';
 import axios from 'axios';
 import { useRouter } from 'next/router';
@@ -35,7 +35,6 @@ export default function NewCardForm({
     initialValues?.type ?? CardType.OPPORTUNITY_KNOCKS
   );
 
-  const [title, setTitle] = useState<string>(initialValues?.title ?? '');
   const [description, setDescription] = useState<string>(
     initialValues?.description ?? ''
   );
@@ -54,7 +53,8 @@ export default function NewCardForm({
     () =>
       actionType === CardActionType.PAY_ALL_PLAYERS ||
       actionType === CardActionType.PAY_BANK ||
-      actionType === CardActionType.PAY_PLAYER,
+      actionType === CardActionType.PAY_PLAYER ||
+      actionType === CardActionType.PAY_FREE_PARKING,
     [actionType]
   );
 
@@ -76,7 +76,6 @@ export default function NewCardForm({
         {
           property_id: actionProperty,
           cost: actionCost,
-          title: title,
           description: description,
           type: cardType,
           action_type: actionType,
@@ -93,7 +92,6 @@ export default function NewCardForm({
       description,
       router,
       gameId,
-      title,
     ]
   );
   return (
@@ -136,18 +134,7 @@ export default function NewCardForm({
                 ))}
               </Select>
             </FormControl>
-            <FormControl>
-              <FormLabel htmlFor="card_title" m="0" p="0">
-                Card Title
-              </FormLabel>
-              <Input
-                id="card_title"
-                isInvalid={title.length === 0}
-                name="card_title"
-                value={title}
-                onChange={e => setTitle(e.target.value)}
-              />
-            </FormControl>
+
             <FormControl>
               <FormLabel htmlFor="card_description" m="0" p="0">
                 Card Description
@@ -247,7 +234,6 @@ export default function NewCardForm({
             description={
               description.length > 0 ? description : 'No description provided'
             }
-            title={title ?? 'New Card'}
             type={cardType}
           />
         </Box>

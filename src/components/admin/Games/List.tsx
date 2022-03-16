@@ -1,4 +1,12 @@
-import { Box, Flex, Heading, LinkBox } from '@chakra-ui/react';
+import GameNotFound from '@/components/UI/GameNotFound';
+import {
+  Alert,
+  AlertDescription,
+  Box,
+  Flex,
+  Heading,
+  LinkBox,
+} from '@chakra-ui/react';
 import { Game } from '@prisma/client';
 import Link from 'next/link';
 import React from 'react';
@@ -13,15 +21,25 @@ export default function GamesList({ games }: GameListProps) {
     <>
       <Flex direction={'column'} mx="auto">
         {activeGame ? (
-          <GameItem {...activeGame} />
+          games.length > 0 ? (
+            <GameItem {...activeGame} />
+          ) : null
         ) : (
-          <Box p="10px">No Active Game</Box>
+          <Alert status="error" borderRadius={'8px'} my="10px">
+            <AlertDescription>No Active Game</AlertDescription>
+          </Alert>
         )}
         {games
           .filter(g => !g.active)
           .map(game => (
             <GameItem key={game.id} {...game} />
           ))}
+        {games.length === 0 && (
+          <GameNotFound
+            title="No Games Found"
+            message="Create a game to get started"
+          />
+        )}
       </Flex>
     </>
   );

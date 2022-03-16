@@ -1,5 +1,5 @@
-import { propertyGroupToCSS } from '@/util/property-colors';
-import { Box, Button, Flex, Heading, Square, Text } from '@chakra-ui/react';
+import BoardSpace from '@/components/Board/spaces';
+import { Box, Button, Flex, Heading } from '@chakra-ui/react';
 import { GameProperty } from '@prisma/client';
 import Link from 'next/link';
 
@@ -23,10 +23,14 @@ export default function GameProperties({
           Game Properties
         </Heading>
       </Link>
-      <Flex overflow={'auto'} my="10px">
-        {properties.map(property => (
-          <GameProperties.PropertyItem key={property.id} {...property} />
-        ))}
+      <Flex overflow={'auto'} my="10px" gap="5px">
+        {properties
+          .sort((a, b) =>
+            a.property_group_color.localeCompare(b.property_group_color)
+          )
+          .map(property => (
+            <GameProperties.PropertyItem key={property.id} {...property} />
+          ))}
       </Flex>
       {properties.length === 0 && <Box>No Properties created yet</Box>}
       <Link href={`/admin/games/${gameId}/properties/new`} passHref>
@@ -36,31 +40,13 @@ export default function GameProperties({
   );
 }
 
-GameProperties.PropertyItem = function PropertyItem({
-  game_id,
-  id,
-  name,
-  price,
-  property_group_color,
-}: GameProperty) {
+GameProperties.PropertyItem = function PropertyItem(props: GameProperty) {
   return (
-    <Link href={`/admin/games/${game_id}/properties/${id}`} passHref>
-      <Box
-        p="10px"
-        cursor={'pointer'}
-        borderRadius={'8px'}
-        _hover={{
-          background: '#eee',
-        }}
-      >
-        <Flex>
-          <Square size={'50px'} bg={propertyGroupToCSS[property_group_color]} />
-          <Box ml="5px">
-            <Heading size="sm">{name}</Heading>
-            <Text>£{price}</Text>
-          </Box>
-        </Flex>
-      </Box>
+    <Link
+      href={`/admin/games/${props.game_id}/properties/${props.id}`}
+      passHref
+    >
+      <BoardSpace.Property property={props} cursor="pointer" />
     </Link>
   );
 };

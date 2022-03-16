@@ -26,7 +26,7 @@ export default function PropertyGroups({
         </Heading>
       </Link>
       {groups.length === 0 && <Box>No Property Groups created yet</Box>}
-      <Flex overflow={'auto'} gap="10px" my="10px">
+      <Flex overflow={'auto'} gap="10px" py="15px" flexGrow={'0'}>
         {groups.map(group => (
           <PropertyGroups.GroupItem key={group.color} {...group} />
         ))}
@@ -55,9 +55,9 @@ PropertyGroups.GroupItem = function GroupItem({
         cursor={'pointer'}
         py="10px"
         border={'1px solid #eee'}
-        boxShadow={'xl'}
         borderTop="solid"
         borderTopWidth={'20px'}
+        flexShrink="0"
         borderTopColor={propertyGroupToCSS[color]}
       >
         <Flex align="center">
@@ -72,10 +72,12 @@ PropertyGroups.GroupItem = function GroupItem({
             </Box>
           )}
         </Flex>
-        {Properties &&
-          Properties.map(p => (
-            <GameProperties.PropertyItem key={p.id} {...p} />
-          ))}
+        <Flex wrap={'wrap'} gap="10px">
+          {Properties &&
+            Properties.map(p => (
+              <GameProperties.PropertyItem key={p.id} {...p} />
+            ))}
+        </Flex>
         {typeof Properties === 'object' && Properties.length === 0 ? (
           <Text>No Properties in this group</Text>
         ) : (

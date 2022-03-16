@@ -1,5 +1,6 @@
+import ActionModal, { ActionType } from '@/components/ActionModal';
 import { GameT } from '@/pages/admin/games/[game_id]';
-import { CardAction, CardType } from '@prisma/client';
+import { CardAction, CardType, SpaceType } from '@prisma/client';
 import {
   createContext,
   useCallback,
@@ -56,9 +57,9 @@ export type GameContextT = {
 
   setPlayers: (players: Player[]) => void;
 
-  move: (player: string, position: number) => void;
+  move: (player: TokenType, position: number) => void;
 
-  getTimeDisplay: () => number;
+  time: number;
 
   addPlayer: (player: Player) => void;
 
@@ -74,12 +75,15 @@ export type GameContextT = {
 
   setIsPaused: (isPaused: boolean) => void;
 
-  onLand: (player: TokenType, pos: number) => void;
-
   takeCard: (type: CardType) => CardAction | null;
 
   hasStarted: boolean;
   handleStartGame: () => void;
+
+  showActionModal: (action: ActionType) => void;
+  hideActionModal: () => void;
+
+  buy: (player: TokenType, property_id: string) => void;
 };
 
 export const GameContext = createContext<GameContextT>({
@@ -89,7 +93,6 @@ export const GameContext = createContext<GameContextT>({
   currentPlayer: null,
   setPlayers: () => {},
   move: () => {},
-  getTimeDisplay: () => 0,
   addPlayer: () => {},
   removePlayer: () => {},
   setPlayerPosition: () => {},
@@ -98,9 +101,12 @@ export const GameContext = createContext<GameContextT>({
   isPaused: false,
   takeCard: (type: CardType) => null,
   setIsPaused: () => {},
-  onLand: (player, pos: number) => {},
   hasStarted: false,
   handleStartGame: () => {},
+  showActionModal: () => {},
+  hideActionModal: () => {},
+  buy: () => {},
+  time: 0,
 });
 
 export const useGameContext = () => useContext(GameContext);
@@ -118,11 +124,18 @@ export const GameContextProvider = ({
     initialGameSettings
   );
 
+  const [showModal, setShowActionModal] = useState(false);
+
+  // Current action the current player is taking
+  const [currentAction, setCurrentAction] = useState<ActionType | null>(null);
+
   const [hasStarted, setHasStarted] = useState(false);
 
   const [isPaused, setIsPaused] = useState(false);
 
   const [players, setPlayers] = useState<Player[]>([]);
+
+  // The current state of the game is stored in this object
   const [state, setState] = useState<PlayerState>({});
 
   const [currentPlayerToken, _setCurrentPlayerToken] =
@@ -136,13 +149,50 @@ export const GameContextProvider = ({
     return players[idx];
   }, [currentPlayerToken]);
 
-  const move = (player: string, position: number) => {
+  const move = (player: TokenType, position: number) => {
+    console.log('move', player, position);
+    // Based on what the player lands on, we want to open an action modal
+    const nextBoardSpace = gameSettings?.BoardSpaces.find(
+      bs => bs.board_position === (state[player]?.pos ?? 0) + position
+    );
+
     setState({
       ...state,
       [player]: {
-        pos: position,
+        ...state[player],
+        pos: (state[player]?.pos ?? 0) + position,
       },
     });
+
+    // Now we must choose which action modal to show based on the space
+    switch (nextBoardSpace?.space_type) {
+      case SpaceType.GO:
+        setCurrentAction('GO');
+      case SpaceType.TAKE_CARD:
+        showActionModal(
+          nextBoardSpace.take_card === 'POT_LUCK'
+            ? 'TAKE_POT_LUCK'
+            : 'TAKE_OPPORTUNITY_KNOCKS'
+        );
+        break;
+      case SpaceType.GO_TO_JAIL:
+        showActionModal('GO_TO_JAIL');
+        break;
+      case SpaceType.FREE_PARKING:
+        showActionModal('FREE_PARKING');
+        break;
+      case SpaceType.PROPERTY:
+        if (!nextBoardSpace.property_id) break; // We know that if the board space is property, it must have a property id
+        if (isOwned(nextBoardSpace.property_id)) {
+          // If the property is owned, show the rent modal, otherwise show the buy modal
+          showActionModal('PAY_RENT');
+        } else {
+          showActionModal('BUY');
+        }
+        break;
+      default:
+        setCurrentAction(null);
+    }
   };
 
   const takeCard = useCallback(
@@ -162,6 +212,32 @@ export const GameContextProvider = ({
     [gameSettings]
   );
 
+  const buy = useCallback(
+    (player: TokenType, property_id: string) => {
+      const playerState = state[player];
+      if (!playerState) return;
+      const property = gameSettings?.Properties.find(p => p.id === property_id);
+
+      if (!property) return;
+
+      const newMoney = playerState.money - (property.price ?? 0);
+      if (newMoney < 0) return;
+
+      setState({
+        ...state,
+        [player]: {
+          ...playerState,
+          money: newMoney,
+          propertiesOwned: [
+            ...(playerState.propertiesOwned ?? []),
+            property_id,
+          ],
+        },
+      });
+    },
+    [state, gameSettings]
+  );
+
   const setCurrentPlayer = useCallback(
     (player: TokenType) => {
       const playerIndex = players.findIndex(p => p.token === player);
@@ -171,21 +247,17 @@ export const GameContextProvider = ({
     [players]
   );
 
-  const getTimeDisplay = () => {
-    return time;
-  };
-
   useEffect(() => {
     setIsPaused(false);
     const timer = setInterval(() => {
-      if (!isPaused) {
+      if (!isPaused && hasStarted) {
         setTime(time + 1);
       }
     }, 1000);
     return () => {
       clearInterval(timer);
     };
-  }, []);
+  }, [hasStarted, isPaused, time]);
 
   const addPlayer = (player: Player) => {
     setPlayers([...players, player]);
@@ -224,10 +296,16 @@ export const GameContextProvider = ({
     setTime(0);
   }, []);
 
+  const beginTurn = useCallback(() => {
+    setCurrentAction('ROLL');
+  }, []);
+
   /// Handle start game should be run when the game is started (after initial setup where players are added)
   // it initializes the board state, gives starting money to players, and sets the current player
   const handleStartGame = useCallback(() => {
     setHasStarted(true);
+
+    // Initialize board state
     setState(
       players.reduce(
         (acc, player) => ({
@@ -241,12 +319,56 @@ export const GameContextProvider = ({
         {}
       )
     );
+
+    // Begin the first turn
+    setCurrentPlayer(players[0].token);
+    showActionModal('ROLL');
   }, [players, setHasStarted]);
+
+  // Deals with showing the action modal
+  const showActionModal = useCallback(
+    (action: ActionType) => {
+      setTimeout(() => {
+        setCurrentAction(action);
+        setShowActionModal(true);
+      }, 200);
+    },
+    [setCurrentAction]
+  );
+
+  // Deals with hiding the action modal
+  const hideActionModal = useCallback(() => {
+    setShowActionModal(false);
+    setCurrentAction(null);
+  }, [setShowActionModal]);
+
+  // Work out if a property is owned and by which player
+  const isOwned = useCallback(
+    (propertyId: string) => {
+      const property = gameSettings?.Properties.find(p => p.id === propertyId);
+
+      if (!property) return null;
+
+      const [token, playerState] = (Object.entries(state).find(([, v]) =>
+        v?.propertiesOwned.includes(propertyId)
+      ) as [TokenType, PlayerState[TokenType]]) ?? [null, null];
+
+      if (!token || !playerState) return null;
+
+      return {
+        token,
+        playerState,
+      };
+    },
+    [gameSettings, state]
+  );
 
   return (
     <GameContext.Provider
       value={{
         gameSettings,
+        showActionModal,
+        buy,
         players,
         state,
         currentPlayer,
@@ -254,7 +376,8 @@ export const GameContextProvider = ({
         handleStartGame,
         setPlayers,
         move,
-        getTimeDisplay,
+        time,
+        hideActionModal,
         addPlayer,
         removePlayer,
         setPlayerPosition,
@@ -262,11 +385,15 @@ export const GameContextProvider = ({
         setCurrentPlayer,
         isPaused,
         setIsPaused,
-        onLand: () => {},
         takeCard,
       }}
     >
       {children}
+      <ActionModal
+        action={currentAction}
+        onClose={hideActionModal}
+        isOpen={!!currentAction && showModal}
+      />
     </GameContext.Provider>
   );
 };

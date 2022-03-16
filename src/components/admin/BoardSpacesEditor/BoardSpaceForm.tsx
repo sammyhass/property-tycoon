@@ -12,6 +12,11 @@ import {
   Flex,
   FormControl,
   FormLabel,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
   Select,
 } from '@chakra-ui/react';
 import { BoardSpace, CardType, GameProperty, SpaceType } from '@prisma/client';
@@ -34,12 +39,19 @@ export default function BoardSpaceForm({
   const [spaceType, setSpaceType] = useState(boardSpace.space_type);
   const [cardType, setCardType] = useState<CardType | null>(null);
   const [propertyId, setPropertyId] = useState<string | null>(null);
+  const [taxAmount, setTaxAmount] = useState<number | null>(null);
 
   useEffect(() => {
     setSpaceType(boardSpace.space_type);
     setCardType(boardSpace.take_card);
     setPropertyId(boardSpace.property_id);
-  }, [boardSpace.space_type, boardSpace.take_card, boardSpace.property_id]);
+    setTaxAmount(boardSpace.tax_cost);
+  }, [
+    boardSpace.space_type,
+    boardSpace.take_card,
+    boardSpace.property_id,
+    boardSpace.tax_cost,
+  ]);
 
   useEffect(() => {
     if (spaceType === SpaceType.TAKE_CARD) {
@@ -47,8 +59,8 @@ export default function BoardSpaceForm({
       setPropertyId(null);
     } else if (spaceType === SpaceType.PROPERTY) {
       setCardType(null);
-      setPropertyId(properties[0]?.id ?? null);
-    } else {
+      setPropertyId(boardSpace.property_id ?? properties[0]?.id ?? null);
+    } else if (spaceType === SpaceType.TAX) {
       setCardType(null);
       setPropertyId(null);
     }
@@ -68,6 +80,7 @@ export default function BoardSpaceForm({
           space_type: spaceType,
           take_card: cardType,
           property_id: propertyId,
+          tax_cost: taxAmount,
         }
       );
       onComplete(data);
@@ -79,6 +92,7 @@ export default function BoardSpaceForm({
     cardType,
     propertyId,
     boardSpace.board_position,
+    taxAmount,
     onComplete,
     gameId,
   ]);
@@ -100,13 +114,16 @@ export default function BoardSpaceForm({
             value={spaceType}
             onChange={v => setSpaceType(v.target.value as SpaceType)}
           >
-            {[SpaceType.EMPTY, SpaceType.PROPERTY, SpaceType.TAKE_CARD].map(
-              k => (
-                <option key={k} value={k} disabled={k === 'EMPTY'}>
-                  {SpaceType[k as keyof typeof SpaceType]}
-                </option>
-              )
-            )}
+            {[
+              SpaceType.EMPTY,
+              SpaceType.PROPERTY,
+              SpaceType.TAKE_CARD,
+              SpaceType.TAX,
+            ].map(k => (
+              <option key={k} value={k} disabled={k === 'EMPTY'}>
+                {SpaceType[k as keyof typeof SpaceType]}
+              </option>
+            ))}
           </Select>
         </FormControl>
         {spaceType === 'TAKE_CARD' ? (
@@ -150,6 +167,24 @@ export default function BoardSpaceForm({
               )}
             </Select>
           </FormControl>
+        ) : spaceType === 'TAX' ? (
+          <FormControl
+            isInvalid={taxAmount === null || isNaN(taxAmount) || taxAmount < 0}
+          >
+            <FormLabel htmlFor="tax_amount">Tax Amount</FormLabel>
+            <NumberInput
+              name="tax_amount"
+              placeholder="£"
+              value={taxAmount ?? 0}
+              onChange={v => setTaxAmount(parseInt(v))}
+            >
+              <NumberInputField />
+              <NumberInputStepper>
+                <NumberIncrementStepper />
+                <NumberDecrementStepper />
+              </NumberInputStepper>
+            </NumberInput>
+          </FormControl>
         ) : null}
       </Flex>
       <Button mt="10px" w="100%" type="submit" colorScheme={'green'}>
@@ -169,7 +204,12 @@ export default function BoardSpaceForm({
               </AlertDescription>
             )}
           </Box>
-          <CloseButton position="absolute" right="8px" top="8px" />
+          <CloseButton
+            position="absolute"
+            right="8px"
+            top="8px"
+            onClick={() => setError(null)}
+          />
         </Alert>
       )}
     </form>

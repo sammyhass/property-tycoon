@@ -61,10 +61,15 @@ const handlePOST: NextApiHandler = async (req, res) => {
   });
 };
 
-const handleGET: NextApiHandler = async (_req, res) => {
-  const game = await prismaClient.game.findUnique({
+const handleGET: NextApiHandler = async (req, res) => {
+  const { user } = await supabase.auth.api.getUser(req.cookies['sb:token']);
+
+  if (!user) return res.status(401).send('Unauthorized');
+
+  const game = await prismaClient.game.findFirst({
     where: {
       active: true,
+      user_id: user.id,
     },
     include: {
       BoardSpaces: true,
@@ -73,6 +78,10 @@ const handleGET: NextApiHandler = async (_req, res) => {
       Properties: true,
     },
   });
+
+  if (!game) {
+    res.status(404).send('No active game');
+  }
 
   res.status(200).json(game);
 };

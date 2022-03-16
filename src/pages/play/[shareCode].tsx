@@ -1,10 +1,8 @@
 import Navbar from '@/components/UI/admin/Navbar';
+import GameNotFound from '@/components/UI/GameNotFound';
 import PlayGameLayout from '@/components/UI/PlayLayout';
 import { GameContextProvider } from '@/hooks/useGameContext';
 import { prismaClient } from '@/lib/prisma';
-import { Box, Heading, Text } from '@chakra-ui/react';
-import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { GetServerSideProps } from 'next';
 import React from 'react';
 import { GameT } from '../admin/games/[game_id]';
@@ -19,25 +17,7 @@ export default function SharedGamePage({ game }: { game: GameT }) {
           <PlayPageInner />
         </GameContextProvider>
       ) : (
-        <Box
-          bg="white"
-          w="90%"
-          mt="50px"
-          mx="auto"
-          p="20px"
-          borderRadius={'8px'}
-          shdaow="md"
-        >
-          <Heading>
-            <FontAwesomeIcon
-              icon={faExclamationCircle}
-              color="red"
-              style={{ margin: '0 2px' }}
-            />
-            No Game Found
-          </Heading>
-          <Text size="sm">Check the sharecode and try again.</Text>
-        </Box>
+        <GameNotFound />
       )}
     </PlayGameLayout>
   );

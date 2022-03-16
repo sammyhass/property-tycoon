@@ -36,10 +36,14 @@ const handleGET: NextApiHandler = async (req, res) => {
 };
 
 const postSchema =
-  Joi.object<Pick<BoardSpace, 'take_card' | 'space_type' | 'property_id'>>();
+  Joi.object<
+    Pick<BoardSpace, 'take_card' | 'space_type' | 'property_id' | 'tax_cost'>
+  >();
 const handlePOST: NextApiHandler = async (req, res) => {
   const game_id = req.query.game_id as string;
   const pos = req.query.position;
+
+  console.log(req.body);
 
   const { error } = postSchema.validate(req.body);
   if (error) {
@@ -62,6 +66,7 @@ const handlePOST: NextApiHandler = async (req, res) => {
         take_card: req.body.take_card ?? null,
         space_type: req.body.space_type,
         property_id: req.body.property_id ?? null,
+        tax_cost: req.body.tax_cost ?? null,
       },
     });
     res.status(200).json(space);

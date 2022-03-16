@@ -29,16 +29,18 @@ export default function ShareGameButton({
   return (
     <Box>
       {shareCode ? (
-        <Box>
+        <Box mt="5px">
           <Link passHref href={`/play/${shareCode}`}>
-            <Button colorScheme="green">
-              <FontAwesomeIcon icon={faCheck} />
+            <Button
+              colorScheme="green"
+              leftIcon={<FontAwesomeIcon icon={faCheck} />}
+            >
               Play Game: {shareCode}
             </Button>
           </Link>
         </Box>
       ) : (
-        <Button colorScheme="blue" onClick={() => handleShareGame()}>
+        <Button mt="5px" colorScheme="blue" onClick={() => handleShareGame()}>
           Share Game
         </Button>
       )}

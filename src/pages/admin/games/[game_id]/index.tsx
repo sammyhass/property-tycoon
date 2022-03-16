@@ -26,7 +26,7 @@ import { GetServerSideProps } from 'next';
 import Link from 'next/link';
 import React from 'react';
 
-export const getGame = async (pc: PrismaClient, id: string, userId: string) => {
+const getGame = async (pc: PrismaClient, id: string, userId: string) => {
   return await pc.game.findFirst({
     where: {
       id,
@@ -47,6 +47,7 @@ interface AdminGamePageProps {
   game: GameT;
 }
 
+// Admin overview of a game board, its properties and its cards.
 export default function AdminGamePage({ game }: AdminGamePageProps) {
   const setActive = async () => {
     if (!game) return;

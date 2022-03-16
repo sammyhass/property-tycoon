@@ -64,15 +64,14 @@ export default function GamePropertiesPage({
           </Text>
         </Box>
       )}
-      {game?.Properties.slice()
-        .sort(
-          (a, b) =>
-            a.property_group_color.charCodeAt(0) -
-            b.property_group_color.charCodeAt(0)
-        )
-        .map(p => (
-          <GameProperties.PropertyItem {...p} key={p.id} />
-        ))}
+      <GameProperties
+        gameId={game?.id ?? ''}
+        properties={
+          game?.Properties.sort((a, b) =>
+            a.property_group_color.localeCompare(b.property_group_color)
+          ) ?? []
+        }
+      />
     </AdminLayout>
   );
 }

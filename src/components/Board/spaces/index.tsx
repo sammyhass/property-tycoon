@@ -1,7 +1,9 @@
 import { TokenType } from '@/hooks/useGameContext';
 import { formatPrice } from '@/util/formatPrice';
 import { propertyGroupToCSS } from '@/util/property-colors';
-import { Box, Text } from '@chakra-ui/react';
+import { Box, ChakraProps, Flex, Text } from '@chakra-ui/react';
+import { faFaucet, faTrain } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   BoardSpace as BoardSpaceT,
   CardType,
@@ -10,6 +12,9 @@ import {
 import React from 'react';
 import BoardSpacePlayers from './players';
 import styles from './spaces.module.css';
+
+// Board Space Aspect ratio as defined in the css file. Useful to use when we need our spaces to show larger or smaller
+export const BOARD_SPACE_ASPECT_RATIO = 11 / 7;
 
 // Has player can be used to show the player's token on the board
 type HasPlayerT = { hasPlayers?: TokenType[] };
@@ -22,13 +27,13 @@ export default function BoardSpace(props: BoardSpaceProps) {
   return (
     <Box pos={'relative'}>
       <BoardSpacePlayers players={props.hasPlayers ?? []} />
-      <BoardSpace.Inner {...props} />
+      <BoardSpaceInner {...props} />
     </Box>
   );
 }
 // Board Spaces on the board. There are different types of board spaces, so
 // so we need to determine which type of board space we are rendering.
-BoardSpace.Inner = (props: BoardSpaceProps) => {
+const BoardSpaceInner = (props: BoardSpaceProps) => {
   switch (props.space_type) {
     case 'PROPERTY':
       return (
@@ -52,6 +57,13 @@ BoardSpace.Inner = (props: BoardSpaceProps) => {
       return <BoardSpace.Jail />;
     case 'FREE_PARKING':
       return <BoardSpace.FreeParking />;
+    case 'TAX':
+      return (
+        <BoardSpace.Tax
+          taxCost={props.tax_cost ?? 0}
+          hasPlayers={props.hasPlayers}
+        />
+      );
     default:
       return <BoardSpace.Empty />;
   }
@@ -59,21 +71,35 @@ BoardSpace.Inner = (props: BoardSpaceProps) => {
 
 BoardSpace.Property = ({
   property,
-}: { property: GameProperty | null } & HasPlayerT) => (
-  <div
+  ...props
+}: { property: GameProperty | null } & HasPlayerT & ChakraProps) => (
+  <Box
     className={`${styles.boardSpace} ${styles.property}`}
     style={{
       background: propertyGroupToCSS[property?.property_group_color ?? 'NONE'],
     }}
+    {...props}
   >
     <div className={styles.boardBackground} />
     <div className={styles.propertyContent}>
+      <Flex w="100%" justify="center" align="center">
+        {property?.property_group_color === 'STATION' ? (
+          <FontAwesomeIcon icon={faTrain} size="2x" />
+        ) : property?.property_group_color === 'UTILITIES' ? (
+          <Flex w="100%" justify="center" align="center">
+            <FontAwesomeIcon icon={faFaucet} size="2x" />
+          </Flex>
+        ) : (
+          <></>
+        )}
+      </Flex>
+
       <div className={`${styles.propertyText}`}>{property?.name}</div>
       <div className={styles.propertyPrice}>
         {formatPrice(property?.price ?? 0)}
       </div>
     </div>
-  </div>
+  </Box>
 );
 
 BoardSpace.Empty = (props: HasPlayerT) => (
@@ -170,5 +196,16 @@ BoardSpace.TakeCard = ({
     imageComponent={() => (
       <Text fontSize={'6xl'}>{cardType === 'POT_LUCK' ? '🎲' : '🔥'}</Text>
     )}
+  />
+);
+
+BoardSpace.Tax = ({
+  taxCost,
+  hasPlayers = [],
+}: { taxCost: number } & HasPlayerT) => (
+  <BoardSpace.Special
+    title={`£${taxCost} Tax`}
+    hasPlayers={hasPlayers}
+    imageComponent={() => <Text fontSize={'6xl'}>💸</Text>}
   />
 );

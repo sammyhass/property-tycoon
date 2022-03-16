@@ -1,16 +1,38 @@
 import AdminLayout from '@/components/UI/admin/AdminLayout';
 import { enforceAuth } from '@/lib/checkAuth';
 import { prismaClient } from '@/lib/prisma';
-import { Box, Breadcrumb, BreadcrumbItem, Heading } from '@chakra-ui/react';
+import {
+  Box,
+  Breadcrumb,
+  BreadcrumbItem,
+  Button,
+  Heading,
+} from '@chakra-ui/react';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { GameProperty } from '@prisma/client';
+import axios from 'axios';
 import { GetServerSideProps } from 'next';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 interface PropertiesPageProps {
   property: GameProperty & { Game: { name: string; id: string } };
 }
 
 export default function PropertyPage({ property }: PropertiesPageProps) {
+  const router = useRouter();
+
+  const handleDeleteProperty = async () => {
+    const { status } = await axios.delete(
+      `/api/game/${property.Game.id}/game_properties/${property.id}`
+    );
+
+    if (status === 200) {
+      router.push(`/admin/games/${property.Game.id}/properties`);
+    }
+  };
+
   return (
     <AdminLayout>
       <Breadcrumb>
@@ -32,6 +54,14 @@ export default function PropertyPage({ property }: PropertiesPageProps) {
         </BreadcrumbItem>
       </Breadcrumb>
       <Heading>{property.name}</Heading>
+      <Button
+        mt="10px"
+        colorScheme={'red'}
+        leftIcon={<FontAwesomeIcon icon={faTrash} />}
+        onClick={() => handleDeleteProperty()}
+      >
+        Delete
+      </Button>
       <Box>
         <pre>{JSON.stringify(property, null, 2)}</pre>
       </Box>

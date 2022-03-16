@@ -5,16 +5,16 @@ import {
   ChakraProps,
   Flex,
   Heading,
-  Text,
 } from '@chakra-ui/react';
 import { faInfo } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { CardAction, CardActionType } from '@prisma/client';
 import React from 'react';
+import { BOARD_SPACE_ASPECT_RATIO } from '../spaces';
 
 type GameCardProps = Pick<
   CardAction,
-  'action_type' | 'cost' | 'description' | 'title' | 'type' | 'property_id'
+  'action_type' | 'cost' | 'description' | 'type' | 'property_id'
 > & {
   propertyName?: string;
   onClick?: () => void;
@@ -23,7 +23,8 @@ type GameCardProps = Pick<
 const isPayingAction = (actionType: CardActionType) =>
   actionType === CardActionType.PAY_ALL_PLAYERS ||
   actionType === CardActionType.PAY_BANK ||
-  actionType === CardActionType.PAY_PLAYER;
+  actionType === CardActionType.PAY_PLAYER ||
+  actionType === CardActionType.PAY_FREE_PARKING;
 
 const isEarningAction = (actionType: CardActionType) =>
   actionType === CardActionType.EARN_FROM_BANK ||
@@ -33,7 +34,6 @@ export default function GameCard({
   action_type,
   cost = 0,
   description,
-  title,
   property_id,
   propertyName,
   type,
@@ -44,8 +44,11 @@ export default function GameCard({
     <Box
       bg="#eee"
       borderRadius={'6px'}
+      minH={150}
+      w={150 * BOARD_SPACE_ASPECT_RATIO}
       overflow="hidden"
       {...chakraProps}
+      flexShrink={0}
       onClick={() => onClick && onClick()}
     >
       <Box
@@ -56,16 +59,24 @@ export default function GameCard({
         ${type === 'OPPORTUNITY_KNOCKS' ? '#f0f' : '#f00'}
       `}
       >
-        <Heading size="md" textAlign={'center'}>
+        <Heading
+          size="md"
+          textAlign={'center'}
+          noOfLines={2}
+          wordBreak={'break-word'}
+          mx="auto"
+        >
           {type === 'OPPORTUNITY_KNOCKS' ? 'Opportunity Knocks' : 'Pot Luck'}
         </Heading>
       </Box>
       <Flex flexDirection={'column'} p="20px">
-        <Box flex="1" flexGrow={1}>
-          <Heading size="lg">{title}</Heading>
-          <Text>{description}</Text>
+        <Box flex="1">
+          <Heading size="md" h={'7rem'}>
+            {description}
+          </Heading>
         </Box>
-        <Alert w={'100%'} status="info" borderRadius={'8px'}>
+
+        <Alert mt="2rem" w={'100%'} status="info" borderRadius={'8px'}>
           <AlertIcon>
             <FontAwesomeIcon icon={faInfo} />
           </AlertIcon>
@@ -84,6 +95,8 @@ export default function GameCard({
                   ? 'all players'
                   : action_type === CardActionType.PAY_BANK
                   ? 'the bank'
+                  : action_type === CardActionType.PAY_FREE_PARKING
+                  ? 'free parking'
                   : 'a player of your choice'
               }
             `

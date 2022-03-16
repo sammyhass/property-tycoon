@@ -15,6 +15,7 @@ model BoardSpace {
   take_card      CardType?
   space_type     SpaceType     @default(PROPERTY)
   game_id        String        @db.Uuid
+  tax_cost       Int?           @default(0)
   Game           Game          @relation(fields: [game_id], references: [id], onDelete: Cascade)
   property_id       String?       @unique @db.Uuid
   Property   GameProperty? @relation(fields: [property_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
@@ -55,7 +56,6 @@ model CardAction {
   description  String
   property_id     String?          @db.Uuid
   type         CardType
-  title        String
   Game         Game             @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   GameProperty GameProperty?    @relation(fields: [property_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
@@ -119,6 +119,9 @@ enum SpaceType {
   // JUST_VISIT represents Jail and the "Just Visiting" space.
   JUST_VISIT
   FREE_PARKING
+
+  
+  TAX
 }
 
 // Different types of card actions. Important for rendering the correct card action and executing moves in the game according the card action type.
@@ -126,6 +129,7 @@ enum CardActionType {
   PAY_PLAYER
   PAY_BANK
   PAY_ALL_PLAYERS
+  PAY_FREE_PARKING
   GO_TO_JAIL
   GO_TO_GO
   GO_TO_PROPERTY

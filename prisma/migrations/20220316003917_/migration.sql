@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "CardActionType" ADD VALUE 'PAY_FREE_PARKING';
