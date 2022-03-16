@@ -31,7 +31,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   }
 
   try {
-    const game = await prismaClient.game.findUnique({
+    const game = await prismaClient.game.findFirst({
       where: {
         share_code: shareCode as string,
       },

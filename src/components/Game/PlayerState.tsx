@@ -33,22 +33,28 @@ export default function PlayerState({
   return (
     <Box
       bg="white"
-      w="fit-content"
-      p="10px"
       borderRadius={'8px'}
-      transform={!isTurn ? 'scale(0.8)' : 'scale(1)'}
+      transform={!isTurn ? 'scale(0.96)' : 'scale(1)'}
+      flexShrink={0}
+      minW="300px"
+      my="5px"
       transition="transform 0.2s ease-in-out"
-      width={!isTurn ? '150px' : '100%'}
       overflow="hidden"
+      p="5px"
     >
       <Heading>
         {isTurn ? 'Now Playing: ' : ''}
         {TOKENS_MAP[token]}
       </Heading>
+      {player?.inJail && (
+        <Text color={'red'} fontSize="lg" fontWeight={'bold'}>
+          In Jail
+        </Text>
+      )}
       <Text fontSize={'lg'}>Money: {formatPrice(player?.money ?? 0)}</Text>
 
       {/* Properties List */}
-      <Flex>
+      <Flex gap="5px" wrap={'wrap'} w="100%" maxW="100%">
         {Object.entries(propertiesOwned ?? {}).map(([color, properties]) => (
           <PropertyGroupStack
             key={color}

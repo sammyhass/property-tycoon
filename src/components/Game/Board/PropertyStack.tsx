@@ -6,6 +6,7 @@ import {
   Heading,
   HStack,
   Modal,
+  ModalCloseButton,
   ModalContent,
   ModalHeader,
   ModalOverlay,
@@ -36,7 +37,11 @@ export default function PropertyGroupStack({
         <Heading size="sm">{group}</Heading>
         <HStack spacing="-50px">
           {properties.map((property, i) => (
-            <Box key={property.id} onClick={() => setSelected(property)}>
+            <Box
+              key={property.id}
+              cursor="pointer"
+              onClick={() => setSelected(property)}
+            >
               <BoardSpace.Property
                 key={property.id}
                 property={property}
@@ -57,12 +62,13 @@ export default function PropertyGroupStack({
         <ModalContent>
           <ModalHeader>
             <Heading>{selected?.name}</Heading>
+            <ModalCloseButton />
           </ModalHeader>
           <Flex justify="center" align="center">
             <BoardSpace.Property property={selected} />
           </Flex>
           <Box mx="auto" w="90%" py="10px">
-            {selected?.rent_unimproved && selected.rent_one_house && (
+            {selected?.rent_unimproved && selected?.rent_unimproved > 0 ? (
               <Text fontWeight={'600'} fontSize="lg" textAlign={'center'}>
                 Rent Unimproved: {formatPrice(selected?.rent_unimproved ?? 0)}
                 <br />
@@ -78,7 +84,7 @@ export default function PropertyGroupStack({
                 Rent Hotel: {formatPrice(selected?.rent_hotel ?? 0)}
                 <br />
               </Text>
-            )}
+            ) : null}
           </Box>
         </ModalContent>
       </Modal>

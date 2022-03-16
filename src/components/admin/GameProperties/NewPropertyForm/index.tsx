@@ -1,6 +1,6 @@
 import BoardSpace, {
   BOARD_SPACE_ASPECT_RATIO,
-} from '@/components/Board/spaces';
+} from '@/components/Game/Board/spaces';
 import { API_URL } from '@/env/env';
 import { propertyGroupToCSS } from '@/util/property-colors';
 import {

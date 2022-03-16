@@ -1,4 +1,4 @@
-import BoardSpace from '@/components/Board/spaces';
+import BoardSpace from '@/components/Game/Board/spaces';
 import { Box, Button, Flex, Heading } from '@chakra-ui/react';
 import { GameProperty } from '@prisma/client';
 import Link from 'next/link';

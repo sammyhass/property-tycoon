@@ -1,4 +1,4 @@
-import BoardSpace from '@/components/Board/spaces';
+import BoardSpace from '@/components/Game/Board/spaces';
 import AdminLayout from '@/components/UI/admin/AdminLayout';
 import GameNotFound from '@/components/UI/GameNotFound';
 import { prismaClient } from '@/lib/prisma';

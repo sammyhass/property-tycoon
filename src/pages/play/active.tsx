@@ -1,7 +1,7 @@
-import Board from '@/components/Board';
-import GameSetup from '@/components/GameSetup';
-import HUD from '@/components/HUD';
-import PlayerState from '@/components/PlayerState';
+import Board from '@/components/Game/Board';
+import GameSetup from '@/components/Game/GameSetup';
+import HUD from '@/components/Game/HUD';
+import PlayerState from '@/components/Game/PlayerState';
 import Navbar from '@/components/UI/admin/Navbar';
 import GameNotFound from '@/components/UI/GameNotFound';
 import PlayGameLayout from '@/components/UI/PlayLayout';
@@ -39,7 +39,7 @@ export function PlayPageInner() {
               )}
             />
           </Box>
-          <Flex mt="10px" gap="5px" maxW="95%" mx="auto">
+          <Flex mt="10px" gap="5px" maxW="95%" mx="auto" overflowX="auto">
             {players.map(player => (
               <PlayerState
                 key={player.token}
