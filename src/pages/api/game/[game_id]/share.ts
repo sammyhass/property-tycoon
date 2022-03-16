@@ -18,7 +18,7 @@ const handlePOST: NextApiHandler = async (req, res) => {
   let isValidShareCode = false;
   let shareCode = '';
   while (!isValidShareCode) {
-    shareCode = randomBytes(12).toString('base64url');
+    shareCode = randomBytes(12).toString('hex');
     const game = await prismaClient.game.findUnique({
       where: {
         share_code: shareCode,
