@@ -73,7 +73,7 @@ export default function PropertyGroupPage({
         </Heading>
         <Flex my="10px" gap="10px">
           {propertyGroup.Properties.map(property => (
-            <BoardSpace.Property property={property} />
+            <BoardSpace.Property property={property} key={property.id} />
           ))}
         </Flex>
         {propertyGroup.Properties.length === 0 && (

@@ -40,14 +40,14 @@ interface ActionModalProps {
 }
 
 const actionModalComponents: Record<ActionType, React.FC<ActionModalProps>> = {
-  BUY: () => <ActionModal.Buy />,
+  BUY: () => <ActionModalBuy />,
   MORTGAGE: () => <div>Mortgage</div>,
   PAY_RENT: () => <div>Pay Rent</div>,
-  ROLL: props => <ActionModal.Roll {...props} />,
+  ROLL: props => <ActionModalRoll {...props} />,
   GO_TO_JAIL: () => <div>Jail</div>,
-  TAKE_POT_LUCK: () => <ActionModal.TakeCard cardType={'POT_LUCK'} />,
+  TAKE_POT_LUCK: () => <ActionModalTakeCard cardType={'POT_LUCK'} />,
   TAKE_OPPORTUNITY_KNOCKS: () => (
-    <ActionModal.TakeCard cardType="OPPORTUNITY_KNOCKS" />
+    <ActionModalTakeCard cardType="OPPORTUNITY_KNOCKS" />
   ),
   FREE_PARKING: () => <div>Free Parking</div>,
   GO: () => <div>GO!</div>,
@@ -73,7 +73,7 @@ export default function ActionModal(props: ActionModalProps) {
 }
 
 // Content for our action modal when a player is rolling the dice.
-ActionModal.Roll = ({ onClose }: ActionModalProps) => {
+const ActionModalRoll = ({ onClose }: ActionModalProps) => {
   const { currentPlayer, move } = useGameContext();
 
   const [isRolling, setIsRolling] = useState(false);
@@ -108,7 +108,7 @@ ActionModal.Roll = ({ onClose }: ActionModalProps) => {
 };
 
 // Content of our action modal for taking a card (pot luck or opportunity knocks)
-ActionModal.TakeCard = ({ cardType }: { cardType: CardType }) => {
+const ActionModalTakeCard = ({ cardType }: { cardType: CardType }) => {
   const { takeCard } = useGameContext();
 
   const [cardAction, setCardAction] = useState<CardAction | null>(null);
@@ -132,7 +132,7 @@ ActionModal.TakeCard = ({ cardType }: { cardType: CardType }) => {
   );
 };
 
-ActionModal.Buy = () => {
+const ActionModalBuy = () => {
   const { gameSettings, currentPlayer, state, buy, hideActionModal } =
     useGameContext();
   const [buying, setBuying] = useState(false);
@@ -186,13 +186,21 @@ ActionModal.Buy = () => {
         </Stack>
       </Box>
       <Button
+        disabled={
+          !currentPlayer ||
+          !property ||
+          !state[currentPlayer?.token] ||
+          (state[currentPlayer?.token]?.money ?? 0) < (property?.price ?? 0) // Disable the button if you don't have enough money
+        }
         colorScheme="green"
         isLoading={buying}
         onClick={() => {
           handleBuy();
         }}
       >
-        Buy {property.name}
+        {(state[currentPlayer?.token]?.money ?? 0) < (property?.price ?? 0)
+          ? 'Not enough money'
+          : 'Buy'}
       </Button>
     </Box>
   );
