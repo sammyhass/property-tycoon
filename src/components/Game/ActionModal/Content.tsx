@@ -322,8 +322,8 @@ export const ActionModalFreeParking = () => {
       <Heading size="md">Free Parking</Heading>
 
       <Text>
-        The total amount on free parking is {formatPrice(collected)}, It's all
-        yours now
+        The total amount on free parking is {formatPrice(collected)}, It&apos;s
+        all yours now
       </Text>
       <Button
         w={'100%'}
