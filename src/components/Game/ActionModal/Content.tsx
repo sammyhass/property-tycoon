@@ -306,15 +306,16 @@ export const ActionModalPayRent = () => {
 };
 
 export const ActionModalFreeParking = () => {
-  const { landedOnFreeParking, currentPlayer, hideActionModal } =
-    useGameContext();
-
-  const [collected, setCollected] = useState(0);
+  const {
+    landedOnFreeParking,
+    currentPlayer,
+    hideActionModal,
+    totalOnFreeParking,
+  } = useGameContext();
 
   useEffect(() => {
     if (!currentPlayer) return;
     const v = landedOnFreeParking(currentPlayer.token);
-    setCollected(v);
   }, [currentPlayer]);
 
   return (
@@ -322,8 +323,8 @@ export const ActionModalFreeParking = () => {
       <Heading size="md">Free Parking</Heading>
 
       <Text>
-        The total amount on free parking is {formatPrice(collected)}, It&apos;s
-        all yours now
+        The total amount on free parking is {formatPrice(totalOnFreeParking)},
+        It&apos;s all yours now
       </Text>
       <Button
         w={'100%'}

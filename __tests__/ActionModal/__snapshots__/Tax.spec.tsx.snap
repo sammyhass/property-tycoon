@@ -1,0 +1,24 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Tax ActionModal matches snapshot 1`] = `
+<div
+  class="css-u6v8er"
+>
+  <h2
+    class="chakra-heading css-0"
+  >
+    Pay the Tax
+  </h2>
+  <p
+    class="chakra-text css-1gjuw9l"
+  >
+    £200
+  </p>
+  <button
+    class="chakra-button css-uxt1e8"
+    type="button"
+  >
+    Pay
+  </button>
+</div>
+`;

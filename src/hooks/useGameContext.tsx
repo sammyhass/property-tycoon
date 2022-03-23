@@ -34,7 +34,7 @@ export const TOKENS_MAP: { [key in TokenType]: string } = {
   iron: '🔨',
 };
 
-type PlayerState = Partial<{
+export type PlayerState = Partial<{
   [token in TokenType]: {
     pos: number;
 
@@ -103,6 +103,7 @@ export type GameContextT = {
   // Adding and removing from Free Parking
   addToFreeParking: (amount: number) => void;
   landedOnFreeParking: (player: TokenType) => number;
+  totalOnFreeParking: number;
 
   endTurn: () => void;
 
@@ -137,6 +138,7 @@ export const GameContext = createContext<GameContextT>({
   isPaused: false,
   takeCard: (type: CardType) => null,
   payBank: () => {},
+  totalOnFreeParking: 0,
   setIsPaused: () => {},
   isOwned: () => null,
   hasStarted: false,
@@ -579,6 +581,7 @@ export const GameContextProvider = ({
         addPlayer,
         removePlayer,
         payBank,
+        totalOnFreeParking,
         sendToJail,
         isOwned,
         payPlayer,

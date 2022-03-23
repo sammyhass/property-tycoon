@@ -1,0 +1,24 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Go to Jail ActionModal matches snapshot 1`] = `
+<div
+  class="css-u6v8er"
+>
+  <h2
+    class="chakra-heading css-0"
+  >
+    Go To Jail
+  </h2>
+  <p
+    class="chakra-text css-0"
+  >
+    You have been sent to jail
+  </p>
+  <button
+    class="chakra-button css-5c2176"
+    type="button"
+  >
+    Go To Jail
+  </button>
+</div>
+`;

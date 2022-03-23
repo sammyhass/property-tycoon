@@ -1,0 +1,18 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Tax Board Space matches snapshot 1`] = `
+<div
+  class="boardSpace special"
+>
+  <div
+    class="specialText"
+  >
+    £100 Tax
+  </div>
+  <p
+    class="chakra-text css-n2bes8"
+  >
+    💸
+  </p>
+</div>
+`;

@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Roll Action Modal matches snapshot 1`] = `
+<div
+  class="css-u6v8er"
+>
+  <h2
+    class="chakra-heading css-0"
+  >
+    🎲 🎲
+  </h2>
+  <button
+    class="chakra-button css-lb8ny5"
+    type="button"
+  >
+    Roll
+  </button>
+</div>
+`;

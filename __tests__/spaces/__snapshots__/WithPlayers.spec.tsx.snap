@@ -1,0 +1,36 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`BoardSpace with players matches snapshot 1`] = `
+<div
+  class="css-79elbk"
+>
+  <div
+    class="css-n6wztc"
+  >
+    <div
+      class="css-17mrto7"
+    >
+      🥾
+    </div>
+    <div
+      class="css-17mrto7"
+    >
+      🐱
+    </div>
+  </div>
+  <div
+    class="boardSpace"
+  >
+    <div
+      class="boardBackground"
+    />
+    <div>
+      <p
+        class="chakra-text css-bk7xci"
+      >
+        Empty
+      </p>
+    </div>
+  </div>
+</div>
+`;

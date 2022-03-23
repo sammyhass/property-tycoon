@@ -1,0 +1,35 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Just Visiting/Jail Board Space matches snapshot 1`] = `
+<div
+  class="boardSpace square inJail"
+>
+  <div
+    class="just"
+  >
+    Just
+  </div>
+  <div
+    class="visiting"
+  >
+    Visiting
+  </div>
+  <div
+    class="inner"
+  >
+    <div>
+      In
+      <div
+        class="css-0"
+      >
+        <p
+          class="chakra-text css-n2bes8"
+        >
+          ⛓️
+        </p>
+      </div>
+      Jail
+    </div>
+  </div>
+</div>
+`;

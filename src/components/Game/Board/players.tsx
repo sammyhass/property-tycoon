@@ -16,7 +16,6 @@ export default function PlayerToken({ token }: { token: TokenType }) {
       display={'flex'}
       alignItems={'center'}
       justifyContent={'center'}
-      aspectRatio={1}
     >
       {TOKENS_MAP[token]}
     </Box>

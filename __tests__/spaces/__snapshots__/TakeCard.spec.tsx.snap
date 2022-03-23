@@ -1,0 +1,35 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Take Card Board Space Opportunity Knocks matches snapshot 1`] = `
+<div
+  class="boardSpace special"
+>
+  <div
+    class="specialText"
+  >
+    Opportunity Knocks
+  </div>
+  <p
+    class="chakra-text css-n2bes8"
+  >
+    🔥
+  </p>
+</div>
+`;
+
+exports[`Take Card Board Space Pot Luck matches snapshot 1`] = `
+<div
+  class="boardSpace special"
+>
+  <div
+    class="specialText"
+  >
+    Pot Luck
+  </div>
+  <p
+    class="chakra-text css-n2bes8"
+  >
+    🎲
+  </p>
+</div>
+`;

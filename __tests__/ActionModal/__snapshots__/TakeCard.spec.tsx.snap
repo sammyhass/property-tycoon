@@ -1,0 +1,43 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Take Card Action Modal Opportunity Knocks matches snapshot 1`] = `
+<div
+  class="css-u6v8er"
+>
+  <h2
+    class="chakra-heading css-0"
+  >
+    Pick a 
+    Opportunity Knocks
+     
+    Card
+  </h2>
+  <button
+    class="chakra-button css-lb8ny5"
+    type="button"
+  >
+    Take
+  </button>
+</div>
+`;
+
+exports[`Take Card Action Modal Pot Luck matches snapshot 1`] = `
+<div
+  class="css-u6v8er"
+>
+  <h2
+    class="chakra-heading css-0"
+  >
+    Pick a 
+    Pot Luck
+     
+    Card
+  </h2>
+  <button
+    class="chakra-button css-lb8ny5"
+    type="button"
+  >
+    Take
+  </button>
+</div>
+`;

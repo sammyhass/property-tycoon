@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Free Parking Bord Space matches snapshot 1`] = `
+<div
+  class="boardSpace square freeParking"
+>
+  <div
+    class="rotate topRight"
+  >
+    Free
+    <div
+      class="css-0"
+    >
+      <p
+        class="chakra-text css-n2bes8"
+      >
+        🎁
+      </p>
+    </div>
+    Parking
+  </div>
+</div>
+`;

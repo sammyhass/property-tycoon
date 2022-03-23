@@ -1,0 +1,29 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Property Space matches snapshot 1`] = `
+<div
+  class="boardSpace property css-0"
+  style="background: rgb(0, 0, 139);"
+>
+  <div
+    class="boardBackground"
+  />
+  <div
+    class="propertyContent"
+  >
+    <div
+      class="css-1lads1q"
+    />
+    <div
+      class="propertyText"
+    >
+      Tia Square
+    </div>
+    <div
+      class="propertyPrice"
+    >
+      £400
+    </div>
+  </div>
+</div>
+`;

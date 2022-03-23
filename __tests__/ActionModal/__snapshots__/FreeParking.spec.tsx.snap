@@ -1,0 +1,26 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Free Parking Action Modal should match snapshot 1`] = `
+<div
+  class="css-u6v8er"
+>
+  <h2
+    class="chakra-heading css-0"
+  >
+    Free Parking
+  </h2>
+  <p
+    class="chakra-text css-0"
+  >
+    The total amount on free parking is 
+    £100
+    , It's all yours now
+  </p>
+  <button
+    class="chakra-button css-uxt1e8"
+    type="button"
+  >
+    Continue
+  </button>
+</div>
+`;

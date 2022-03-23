@@ -21,9 +21,9 @@ type HasPlayerT = { hasPlayers?: TokenType[] };
 
 type BoardSpaceProps = BoardSpaceT & {
   property: GameProperty | null;
-} & HasPlayerT;
+};
 
-export default function BoardSpace(props: BoardSpaceProps) {
+export default function BoardSpace(props: BoardSpaceProps & HasPlayerT) {
   return (
     <Box pos={'relative'}>
       <BoardSpacePlayers players={props.hasPlayers ?? []} />
@@ -36,34 +36,19 @@ export default function BoardSpace(props: BoardSpaceProps) {
 const BoardSpaceInner = (props: BoardSpaceProps) => {
   switch (props.space_type) {
     case 'PROPERTY':
-      return (
-        <BoardSpace.Property
-          property={props.property}
-          hasPlayers={props.hasPlayers}
-        />
-      );
+      return <BoardSpace.Property property={props.property} />;
     case 'GO':
-      return <BoardSpace.Go hasPlayers={props.hasPlayers} />;
+      return <BoardSpace.Go />;
     case 'TAKE_CARD':
-      return (
-        <BoardSpace.TakeCard
-          hasPlayers={props.hasPlayers}
-          cardType={props?.take_card ?? 'POT_LUCK'}
-        />
-      );
+      return <BoardSpace.TakeCard cardType={props?.take_card ?? 'POT_LUCK'} />;
     case 'GO_TO_JAIL':
-      return <BoardSpace.GoToJail hasPlayers={props.hasPlayers} />;
+      return <BoardSpace.GoToJail />;
     case 'JUST_VISIT':
       return <BoardSpace.Jail />;
     case 'FREE_PARKING':
       return <BoardSpace.FreeParking />;
     case 'TAX':
-      return (
-        <BoardSpace.Tax
-          taxCost={props.tax_cost ?? 0}
-          hasPlayers={props.hasPlayers}
-        />
-      );
+      return <BoardSpace.Tax taxCost={props.tax_cost ?? 0} />;
     default:
       return <BoardSpace.Empty />;
   }
@@ -119,7 +104,6 @@ BoardSpace.Empty = (props: HasPlayerT) => (
 BoardSpace.Special = ({
   title,
   imageComponent: ImageComponent,
-  hasPlayers,
 }: {
   title: string;
   imageComponent: React.FC;
@@ -172,7 +156,7 @@ BoardSpace.Go = (props: HasPlayerT) => {
   );
 };
 
-BoardSpace.FreeParking = (props: HasPlayerT) => (
+BoardSpace.FreeParking = () => (
   <div
     className={`${styles.boardSpace} ${styles.square} ${styles.freeParking}`}
   >
@@ -186,26 +170,18 @@ BoardSpace.FreeParking = (props: HasPlayerT) => (
   </div>
 );
 
-BoardSpace.TakeCard = ({
-  cardType,
-  hasPlayers = [],
-}: { cardType: CardType } & HasPlayerT) => (
+BoardSpace.TakeCard = ({ cardType }: { cardType: CardType }) => (
   <BoardSpace.Special
     title={cardType === 'POT_LUCK' ? 'Pot Luck' : 'Opportunity Knocks'}
-    hasPlayers={hasPlayers}
     imageComponent={() => (
       <Text fontSize={'6xl'}>{cardType === 'POT_LUCK' ? '🎲' : '🔥'}</Text>
     )}
   />
 );
 
-BoardSpace.Tax = ({
-  taxCost,
-  hasPlayers = [],
-}: { taxCost: number } & HasPlayerT) => (
+BoardSpace.Tax = ({ taxCost }: { taxCost: number }) => (
   <BoardSpace.Special
     title={`£${taxCost} Tax`}
-    hasPlayers={hasPlayers}
     imageComponent={() => <Text fontSize={'6xl'}>💸</Text>}
   />
 );
