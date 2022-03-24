@@ -23,7 +23,8 @@ export default function PlayGameOptionsPage() {
         )}
         <Divider my="10px" />
         <Heading>
-          Or, enter a sharecode to play a game made by another user.
+          {user ? 'Or, enter' : 'Enter'} a sharecode to play a game made by
+          another user.
         </Heading>
         <form
           onSubmit={e => {
