@@ -66,7 +66,7 @@ export default function ActionModal(props: ActionModalProps) {
       placement="right"
     >
       <DrawerOverlay />
-      <DrawerContent bg="whiteAlpha.600">
+      <DrawerContent bg="whiteAlpha.500" backdropFilter={'blur(5px)'}>
         <DrawerHeader>
           <Heading>
             {props.action

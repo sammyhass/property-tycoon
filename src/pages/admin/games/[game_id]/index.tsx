@@ -127,7 +127,19 @@ export default function AdminGamePage({ game }: AdminGamePageProps) {
             >
               <Heading size="md">Cards</Heading>
             </Link>
-            <CardList cards={game.CardActions} gameId={game.id} />
+            <CardList
+              cards={game.CardActions.map(c =>
+                c.property_id
+                  ? {
+                      ...c,
+                      GameProperty: game.Properties.find(
+                        p => p.id === c.property_id
+                      ),
+                    }
+                  : c
+              )}
+              gameId={game.id}
+            />
           </Box>
         </Box>
       ) : (

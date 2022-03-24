@@ -7,7 +7,14 @@ export default function HUD() {
   const { time, currentPlayer, state, endTurn } = useGameContext();
 
   return (
-    <Box zIndex={100} bg="whiteAlpha.500" p="10px">
+    <Box
+      zIndex={100}
+      bg="whiteAlpha.600"
+      backdropFilter={'blur(5px)'}
+      p="20px"
+      shadow="md"
+      borderRadius={'8px'}
+    >
       <Heading>
         Time Elapsed: <Code fontSize={'inherit'}>{time}s</Code>
       </Heading>

@@ -48,14 +48,10 @@ export function PlayPageInner() {
               />
             ))}
           </Flex>
-          <Box
-            pos="absolute"
-            bottom={'50px'}
-            w="100%"
-            display={'flex'}
-            justifyContent="center"
-          >
-            <HUD />
+          <Box>
+            <Box pos="fixed" bottom={'15px'} right="15px">
+              <HUD />
+            </Box>
           </Box>
         </Box>
       )}
