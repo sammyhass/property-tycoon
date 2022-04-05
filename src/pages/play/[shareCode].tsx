@@ -1,3 +1,4 @@
+import GameLayout from '@/components/Game/GameLayout';
 import Navbar from '@/components/UI/admin/Navbar';
 import GameNotFound from '@/components/UI/GameNotFound';
 import PlayGameLayout from '@/components/UI/PlayLayout';
@@ -6,15 +7,15 @@ import { prismaClient } from '@/lib/prisma';
 import { GetServerSideProps } from 'next';
 import React from 'react';
 import { GameT } from '../admin/games/[game_id]';
-import { PlayPageInner } from './active';
 
 export default function SharedGamePage({ game }: { game: GameT }) {
   return (
     <PlayGameLayout>
       <Navbar />
+
       {game ? (
         <GameContextProvider initialGameSettings={game}>
-          <PlayPageInner />
+          <GameLayout />
         </GameContextProvider>
       ) : (
         <GameNotFound />

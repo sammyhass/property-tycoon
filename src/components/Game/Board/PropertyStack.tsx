@@ -1,3 +1,7 @@
+import {
+  calculateStationRent,
+  calculateUtilityMulitplier,
+} from '@/util/calculate-rent';
 import { formatPrice } from '@/util/formatPrice';
 import { propertyGroupToCSS } from '@/util/property-colors';
 import {
@@ -84,7 +88,21 @@ export default function PropertyGroupStack({
                 Rent Hotel: {formatPrice(selected?.rent_hotel ?? 0)}
                 <br />
               </Text>
-            ) : null}
+            ) : selected?.property_group_color === 'STATION' ? (
+              new Array(4).fill(0).map((_, i) => (
+                <Box>
+                  With {i + 1} station{i + 1 > 1 ? 's' : ''}, rent is{' '}
+                  {formatPrice(calculateStationRent(i + 1))}
+                </Box>
+              ))
+            ) : (
+              new Array(2).fill(0).map((_, i) => (
+                <Box>
+                  When {i + 1} owned, rent is{' '}
+                  {calculateUtilityMulitplier(i + 1)}x Dice Roll.
+                </Box>
+              ))
+            )}
           </Box>
         </ModalContent>
       </Modal>

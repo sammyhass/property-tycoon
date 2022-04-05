@@ -1,61 +1,243 @@
 import { useGameContext } from '@/hooks/useGameContext';
+import {
+  calculateStationRent,
+  calculateUtilityMulitplier,
+} from '@/util/calculate-rent';
 import { formatPrice } from '@/util/formatPrice';
 import {
+  Alert,
+  AlertDescription,
   Box,
   Button,
   Divider,
   Flex,
+  FormControl,
+  FormLabel,
   Heading,
+  Radio,
+  RadioGroup,
   Stack,
   Text,
 } from '@chakra-ui/react';
 import { CardAction, CardType } from '@prisma/client';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActionModalProps } from '.';
 import GameCard from '../Board/cards/Card';
 import BoardSpace from '../Board/spaces';
 
 // Action Modal Content Components
 
+export const ActionModalGetOutJail = ({ action }: ActionModalProps) => {
+  const {
+    currentPlayer,
+    rollDice,
+    payBank,
+    state,
+    hideActionModal,
+    move,
+    freeFromJail,
+    failedToGetOutOfJail,
+  } = useGameContext();
+
+  if (!currentPlayer) return <></>;
+
+  const [choice, setChoice] = useState<'roll' | 'pay'>('roll');
+
+  const [roll, setRoll] = useState<[number, number] | null>(null);
+
+  const [didRoll, setDidRoll] = useState(false);
+  const [didPay, setDidPay] = useState(false);
+
+  const handleContinue = useCallback(() => {
+    if (didPay || (roll && roll[0] === roll[1])) {
+      freeFromJail(currentPlayer.token);
+      if (roll && roll[0] === roll[1]) {
+        move(currentPlayer.token, roll[0] + roll[1]);
+      }
+    } else {
+      failedToGetOutOfJail(currentPlayer.token);
+    }
+    hideActionModal();
+  }, [currentPlayer, hideActionModal, move, roll, didPay, freeFromJail]);
+
+  const handleDiceRoll = useCallback(() => {
+    const [roll1, roll2] = rollDice();
+    setRoll([roll1, roll2]);
+    setDidRoll(true);
+  }, [rollDice]);
+
+  const handlePayToGetOut = useCallback(() => {
+    payBank(currentPlayer?.token, 50);
+    setDidPay(true);
+  }, [currentPlayer, payBank]);
+
+  return (
+    <Flex direction={'column'} gap="5px">
+      <Heading size="md" py="10px">
+        You're in Jail!
+      </Heading>
+
+      {!(didRoll || didPay) && (
+        <FormControl mb="20px">
+          <FormLabel>
+            <Text fontSize="sm">
+              Try to get out of jail by rolling doubles (
+              {3 - (state[currentPlayer.token]?.turnsInJail ?? 0)} tries left)
+              or paying the fine of $50.
+            </Text>
+          </FormLabel>
+          <RadioGroup
+            value={choice}
+            onChange={v =>
+              v === 'roll' ? setChoice(v) : v === 'pay' ? setChoice(v) : null
+            }
+            defaultValue="roll"
+          >
+            <Stack direction="column" spacing="5px">
+              <Radio value="roll">
+                <Text>🎲 Roll Dice</Text>
+              </Radio>
+              <Radio value="pay">
+                <Text>💸 Pay $50 to get out</Text>
+              </Radio>
+            </Stack>
+          </RadioGroup>
+        </FormControl>
+      )}
+
+      {choice === 'roll' ? (
+        <Box>
+          <Heading size="sm">
+            Try to get out of jail by rolling doubles (
+            {3 - (state[currentPlayer.token]?.turnsInJail ?? 0)} tries left)
+          </Heading>
+          <Box p="10px" bg="#eee" borderRadius={'8px'}>
+            <Heading textAlign={'center'}>🎲 🎲</Heading>
+            {roll ? (
+              <Box>
+                <Text textAlign={'center'}>You Rolled</Text>
+                <Stack
+                  direction="row"
+                  spacing={'5px'}
+                  justify="center"
+                  fontSize={'lg'}
+                >
+                  <Text fontWeight={'bold'}>{roll[0]}</Text>
+                  <Text>and</Text>
+                  <Text fontWeight={'bold'}>{roll[1]}</Text>
+                </Stack>
+                {roll[0] === roll[1] && (
+                  <Alert status="success">
+                    <AlertDescription>
+                      You rolled doubles! You can get out of jail!
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </Box>
+            ) : (
+              <Button onClick={handleDiceRoll} w="100%" colorScheme={'red'}>
+                Roll Dice
+              </Button>
+            )}
+          </Box>
+        </Box>
+      ) : (
+        <Box>
+          <Heading size="sm">Pay £50 to get out of jail now?</Heading>
+          <Button
+            colorScheme={'purple'}
+            onClick={handlePayToGetOut}
+            w="100%"
+            isDisabled={
+              !currentPlayer || (state[currentPlayer.token]?.money ?? 0) < 50
+            }
+          >
+            Pay £50 to get out
+          </Button>
+        </Box>
+      )}
+      {(didRoll || didPay) && (
+        <Button onClick={handleContinue}>
+          {roll
+            ? roll[0] === roll[1] || didPay
+              ? 'Get out Now'
+              : 'Roll again next turn.'
+            : 'Ok'}
+        </Button>
+      )}
+    </Flex>
+  );
+};
+
 // Content for our action modal when a player is rolling the dice.
-export const ActionModalRoll = ({ onClose }: ActionModalProps) => {
-  const { currentPlayer, move } = useGameContext();
+export const ActionModalRoll = () => {
+  const { currentPlayer, move, rollDice } = useGameContext();
 
   const [isRolling, setIsRolling] = useState(false);
-  const [roll, setRoll] = useState(0);
+  const [isMoving, setIsMoving] = useState(false);
+
+  const [diceRoll, setDiceRoll] = useState<[number, number] | null>(null);
+
+  const handleMove = useCallback(() => {
+    if (!currentPlayer) return;
+    setIsMoving(true);
+    setTimeout(() => {
+      move(currentPlayer.token, diceRoll![0] + diceRoll![1]);
+      setIsMoving(false);
+    }, 500);
+  }, [currentPlayer, diceRoll, move]);
 
   // Roll the dice.
-  const handleRoll = () => {
+  const handleRoll = useCallback(() => {
     setIsRolling(true);
 
     if (!currentPlayer) return;
     // Choose a random number between 1 and 12
-    const roll = Math.floor(Math.random() * 12) + 1;
-
     setTimeout(() => {
-      move(currentPlayer?.token, roll);
-      setRoll(roll);
+      const [dice1, dice2] = rollDice();
+      setDiceRoll([dice1, dice2]);
       setIsRolling(false);
-    }, 1000);
+    }, 500);
+  }, [currentPlayer, rollDice]);
 
-    if (!currentPlayer) {
-      return <></>;
-    }
-  };
   return (
     <Flex direction={'column'} justify={'center'} align="center">
       <Heading size="4xl">🎲 🎲</Heading>
       {isRolling && <Heading size="md">Rolling...</Heading>}
-      {roll > 0 && <Heading size="sm">Dice landed on {roll}</Heading>}
+      {diceRoll && (
+        <Stack spacing={4} justify="center" align={'center'}>
+          <Text>You rolled:</Text>
+          <Flex justify={'center'} gap="10px" align="center">
+            <Heading size="md">{diceRoll[0]}</Heading>
+            <Text>{` and `}</Text>
+            <Heading size="md">{diceRoll[1]}</Heading>
+          </Flex>
+        </Stack>
+      )}
       <Button
         w="100%"
-        colorScheme="purple"
-        onClick={() => handleRoll()}
+        colorScheme={diceRoll ? 'green' : 'purple'}
+        onClick={diceRoll ? handleMove : handleRoll}
         mt="10px"
+        isLoading={isRolling || isMoving}
+        disabled={isRolling || isMoving}
       >
-        Roll
+        {diceRoll ? 'Move' : 'Roll'}
       </Button>
     </Flex>
+  );
+};
+
+export const ActionModalGo = ({}) => {
+  const { payBank, currentPlayer, state } = useGameContext();
+
+  if (!currentPlayer) return <></>;
+
+  return (
+    <Box>
+      <Heading size="md">You landed on Go!</Heading>
+      <Box>Collect £ from the bank!</Box>
+    </Box>
   );
 };
 
@@ -67,6 +249,7 @@ export const ActionModalTakeCard = ({ cardType }: { cardType: CardType }) => {
     currentPlayer,
     gameSettings,
     goto,
+    sendToJail,
     hideActionModal,
   } = useGameContext();
 
@@ -90,16 +273,11 @@ export const ActionModalTakeCard = ({ cardType }: { cardType: CardType }) => {
         payBank(currentPlayer?.token, cardAction?.cost ?? 0);
         break;
       case 'GO_TO_JAIL':
-        const jail = gameSettings?.BoardSpaces?.find(
-          space => space.space_type === 'JUST_VISIT'
-        );
-        if (jail) {
-          goto(currentPlayer?.token, jail.board_position);
-        }
+        sendToJail(currentPlayer?.token);
         break;
       case 'GO_TO_PROPERTY':
         const property = gameSettings?.BoardSpaces?.find(
-          space => space.space_type === 'PROPERTY'
+          space => space.property_id === cardAction?.property_id
         );
         if (property) {
           goto(currentPlayer?.token, property.board_position);
@@ -179,22 +357,42 @@ export const ActionModalBuy = () => {
         <Heading size="md">
           {property.name} - {formatPrice(property.price ?? 0)}
         </Heading>
-        {property.rent_unimproved ? (
-          <Stack>
-            <Text p="0" fontWeight={'600'}>
-              Rent Unimproved: {formatPrice(property.rent_unimproved ?? 0)}
-              <br />
-              Rent 1 House: {formatPrice(property.rent_one_house ?? 0)}
-              <br />
-              Rent 2 Houses: {formatPrice(property.rent_two_house ?? 0)}
-              <br />
-              Rent 3 Houses: {formatPrice(property.rent_three_house ?? 0)}
-              <br />
-              Rent 4 Houses: {formatPrice(property.rent_four_house ?? 0)}
-              <br />
-            </Text>
+        {property.property_group_color !== 'STATION' &&
+        property.property_group_color !== 'UTILITIES' ? (
+          <Text p="0" fontWeight={'600'}>
+            Rent Unimproved: {formatPrice(property.rent_unimproved ?? 0)}
+            <br />
+            Rent 1 House: {formatPrice(property.rent_one_house ?? 0)}
+            <br />
+            Rent 2 Houses: {formatPrice(property.rent_two_house ?? 0)}
+            <br />
+            Rent 3 Houses: {formatPrice(property.rent_three_house ?? 0)}
+            <br />
+            Rent 4 Houses: {formatPrice(property.rent_four_house ?? 0)}
+            <br />
+            Rent Hotel: {formatPrice(property.rent_hotel ?? 0)}
+          </Text>
+        ) : property.property_group_color === 'STATION' ? (
+          <Stack spacing={'4px'}>
+            {new Array(4).fill(0).map((_, i) => (
+              <Text m="0">
+                If player owns {i + 1} station{i + 1 > 1 ? 's' : ''} - Rent is{' '}
+                {formatPrice(calculateStationRent(i + 1))}
+              </Text>
+            ))}
           </Stack>
-        ) : null}
+        ) : property.property_group_color === 'UTILITIES' ? (
+          <Stack spacing={'4px'}>
+            {new Array(2).fill(0).map((_, i) => (
+              <Text m="0">
+                If player owns {i + 1} utilit{i + 1 > 1 ? 'ies' : 'y'} - Rent is{' '}
+                {calculateUtilityMulitplier(i + 1)}x dice roll
+              </Text>
+            ))}
+          </Stack>
+        ) : (
+          <></>
+        )}
       </Box>
       <Flex direction="column" gap="5px">
         <Button
@@ -262,6 +460,7 @@ export const ActionModalPayRent = () => {
     currentPlayer,
     state,
     isOwned,
+    calculateRent,
     hideActionModal,
   } = useGameContext();
 
@@ -281,7 +480,10 @@ export const ActionModalPayRent = () => {
 
   if (!owner) return <></>;
 
-  const rent = property?.rent_unimproved ?? 0;
+  const rent = useMemo(
+    () => calculateRent(property?.id),
+    [property?.id, calculateRent]
+  );
 
   return (
     <Flex direction={'column'} justify={'center'} align="center">

@@ -1,1 +1,0 @@
-sammy: please convert these to components and put assets in an appropriate path in public/

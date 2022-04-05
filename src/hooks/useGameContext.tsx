@@ -1,5 +1,12 @@
-import ActionModal, { ActionType } from '@/components/Game/ActionModal';
+import ActionSidebar, { ActionType } from '@/components/Game/ActionModal';
 import { GameT } from '@/pages/admin/games/[game_id]';
+import {
+  calculatePropertyRent,
+  calculateStationRent,
+  calculateUtilityRent,
+} from '@/util/calculate-rent';
+import { formatPrice } from '@/util/formatPrice';
+import { Flex, useToast } from '@chakra-ui/react';
 import { CardAction, CardType, SpaceType } from '@prisma/client';
 import {
   createContext,
@@ -46,6 +53,12 @@ export type PlayerState = Partial<{
 
     // Whether player is in jail
     inJail: boolean;
+
+    // How many turns player has been in jail
+    turnsInJail: number;
+
+    // last dice roll
+    lastRoll: number;
   };
 }>;
 
@@ -63,6 +76,9 @@ export type GameContextT = {
   state: PlayerState;
   currentPlayer: Player | null;
 
+  // Roll the dice and return the result, (don't move the player)
+  rollDice: () => [number, number];
+
   // Move function moves a player by a given number of tiles.
   move: (player: TokenType, position: number) => void;
 
@@ -75,11 +91,7 @@ export type GameContextT = {
 
   removePlayer: (playerToken: TokenType) => void;
 
-  setPlayerPosition: (player: TokenType, position: number) => void;
-
   resetGame: () => void;
-
-  setCurrentPlayer: (player: TokenType) => void;
 
   isPaused: boolean;
 
@@ -106,6 +118,7 @@ export type GameContextT = {
   totalOnFreeParking: number;
 
   endTurn: () => void;
+  canEndTurn: boolean;
 
   // Get the owner of a property
   isOwned: (propertyId: string) => {
@@ -117,8 +130,12 @@ export type GameContextT = {
     };
   } | null;
 
+  calculateRent: (propertyId: string) => number;
+
   // Send a player to jail
   sendToJail: (player: TokenType) => void;
+  freeFromJail: (player: TokenType) => void;
+  failedToGetOutOfJail: (player: TokenType) => void;
 };
 
 export const GameContext = createContext<GameContextT>({
@@ -127,14 +144,15 @@ export const GameContext = createContext<GameContextT>({
   state: {},
   currentPlayer: null,
   move: () => {},
+  rollDice: () => [0, 0],
   addPlayer: () => {},
   removePlayer: () => {},
-  setPlayerPosition: () => {},
+  calculateRent: () => 0,
   payPlayer: () => {},
   resetGame: () => {},
   addToFreeParking: () => {},
+  freeFromJail: () => {},
   landedOnFreeParking: () => 0,
-  setCurrentPlayer: () => {},
   isPaused: false,
   takeCard: (type: CardType) => null,
   payBank: () => {},
@@ -144,7 +162,9 @@ export const GameContext = createContext<GameContextT>({
   hasStarted: false,
   handleStartGame: () => {},
   endTurn: () => {},
+  canEndTurn: false,
   showActionModal: () => {},
+  failedToGetOutOfJail: () => {},
   sendToJail: () => {},
   hideActionModal: () => {},
   goto: () => {},
@@ -163,11 +183,11 @@ export const GameContextProvider = ({
   children: React.ReactNode;
   initialGameSettings: GameSettingsT;
 }) => {
+  const toast = useToast();
+
   const [gameSettings, setGameSettings] = useState<GameSettingsT | null>(
     initialGameSettings
   );
-
-  const [showModal, setShowActionModal] = useState(false);
 
   // Current action the current player is taking
   const [currentAction, setCurrentAction] = useState<ActionType | null>(null);
@@ -194,11 +214,63 @@ export const GameContextProvider = ({
     return players[idx];
   }, [currentPlayerToken]);
 
+  // Roll dice will roll the dice and set the player's last roll to the result.
+  // It does NOT move the player. That is the task of the move function or the goto function (which uses the move function).
+  const rollDice = useCallback<() => [number, number]>(() => {
+    if (!currentPlayerToken) return [0, 0];
+
+    const dice1 = Math.floor(Math.random() * 6) + 1;
+    const dice2 = Math.floor(Math.random() * 6) + 1;
+
+    toast({
+      title: `
+      🎲 ${TOKENS_MAP[currentPlayerToken]} rolled ${dice1} and ${dice2}`,
+    });
+
+    setState({
+      ...state,
+      [currentPlayerToken as TokenType]: {
+        ...state[currentPlayerToken as TokenType],
+        lastRoll: dice1 + dice2,
+      },
+    });
+
+    return [dice1, dice2];
+  }, [currentPlayerToken, setState, state]);
+
   const goto = useCallback(
     (player: TokenType, position: number, passGo: boolean = true) => {
       const current = state[player]?.pos ?? 0;
       const diff = position - current;
       move(player, diff, passGo);
+    },
+    [state]
+  );
+
+  const failedToGetOutOfJail = useCallback(
+    (player: TokenType) => {
+      setState(state => ({
+        ...state,
+        [player]: {
+          ...state[player],
+          inJail: false,
+          turnsInJail: (state[player]?.turnsInJail ?? 0) + 1,
+        },
+      }));
+    },
+    [setState]
+  );
+
+  const freeFromJail = useCallback(
+    (player: TokenType) => {
+      setState({
+        ...state,
+        [player]: {
+          ...state[player],
+          inJail: false,
+          turnsInJail: 0,
+        },
+      });
     },
     [state]
   );
@@ -224,6 +296,58 @@ export const GameContextProvider = ({
     [gameSettings, state]
   );
 
+  const calculateRent = useCallback(
+    (propertyId: string) => {
+      const owner = isOwned(propertyId);
+
+      if (!owner) return 0;
+
+      const { token, playerState } = owner;
+
+      const { propertiesOwned } = playerState;
+
+      const property = gameSettings?.Properties.find(p => p.id === propertyId);
+
+      const propertiesInGroup = gameSettings?.Properties.filter(
+        p => p.property_group_color === property?.property_group_color
+      );
+
+      const numPropertiesInGroup = propertiesInGroup?.length ?? 0;
+
+      const numOwnedInGroup = propertiesOwned.filter(p =>
+        propertiesInGroup?.find(p2 => p2.id === p)
+      ).length;
+
+      if (!property) return 0;
+
+      if (property.property_group_color === 'STATION') {
+        // Find out how many stations the owner has.
+        const stations = propertiesOwned.filter(
+          a =>
+            gameSettings?.Properties.find(p => p.id === a)
+              ?.property_group_color === 'STATION'
+        );
+
+        return calculateStationRent(stations.length);
+      } else if (property.property_group_color === 'UTILITIES') {
+        const diceRoll = state[token]?.lastRoll ?? 0;
+
+        const utilities = propertiesOwned.filter(
+          a =>
+            gameSettings?.Properties.find(p => p.id === a)
+              ?.property_group_color === 'UTILITIES'
+        );
+        return calculateUtilityRent(utilities.length, diceRoll);
+      }
+      return calculatePropertyRent(
+        property,
+        0,
+        numOwnedInGroup === numPropertiesInGroup
+      );
+    },
+    [gameSettings?.Properties, state]
+  );
+
   const move = useCallback(
     (player: TokenType, moveBy: number, passGo: boolean = true) => {
       if (!gameSettings) return;
@@ -247,7 +371,8 @@ export const GameContextProvider = ({
           newPostion +
           moveBy -
           lastSpace.board_position +
-          firstSpace.board_position;
+          firstSpace.board_position -
+          1;
         // Player has passed go
         setState({
           ...state,
@@ -270,6 +395,21 @@ export const GameContextProvider = ({
           pos: newPos,
         },
       });
+
+      if (nextBoardSpace?.space_type === 'PROPERTY') {
+        const property = gameSettings?.Properties.find(
+          p => p.id === nextBoardSpace?.property_id
+        );
+        toast({
+          title: `
+          💸 ${TOKENS_MAP[player]} landed on ${property?.name}`,
+        });
+      } else {
+        toast({
+          title: `
+           ${TOKENS_MAP[player]} landed on ${nextBoardSpace?.space_type}`,
+        });
+      }
 
       // Now we must choose which action modal to show based on the space
       switch (nextBoardSpace?.space_type) {
@@ -299,6 +439,7 @@ export const GameContextProvider = ({
             // If the property is owned, show the rent modal, otherwise show the buy modal
             showActionModal('PAY_RENT');
           } else if (!owner) {
+            // If the property is not owned, show the buy modal
             showActionModal('BUY');
           } else {
             hideActionModal();
@@ -315,6 +456,13 @@ export const GameContextProvider = ({
   const takeCard = useCallback(
     (type: CardType) => {
       const card = gameSettings?.CardActions?.find(c => c.type === type);
+      toast({
+        description: card?.description,
+        title: `
+        🎉 - ${
+          TOKENS_MAP[currentPlayerToken ?? 'smartphone']
+        } took a ${type} card`,
+      });
       if (!card) return null;
       setGameSettings(
         gameSettings
@@ -326,9 +474,11 @@ export const GameContextProvider = ({
       );
       return card;
     },
-    [gameSettings]
+    [gameSettings, currentPlayerToken]
   );
 
+  // Nothing stopping you from calling this function with a negative number in order
+  // to earn money instead of paying money to the bank.
   const payBank = useCallback(
     (playerToken: TokenType, amount: number) => {
       setState({
@@ -352,6 +502,14 @@ export const GameContextProvider = ({
 
       const newMoney = playerState.money - (property.price ?? 0);
       if (newMoney < 0) return;
+
+      toast({
+        title: `
+        💸 ${TOKENS_MAP[player]} bought ${property.name} for ${formatPrice(
+          property.price ?? 0
+        )}`,
+        status: 'success',
+      });
 
       setState({
         ...state,
@@ -407,6 +565,11 @@ export const GameContextProvider = ({
     (player: TokenType) => {
       const playerState = state[player];
       if (!playerState) return;
+      toast({
+        title: `
+        🚫 ${TOKENS_MAP[player]} was sent to jail`,
+        status: 'warning',
+      });
       setState({
         ...state,
         [player]: {
@@ -458,15 +621,29 @@ export const GameContextProvider = ({
     const nextPlayerIndex =
       players.findIndex(p => p.token === currentPlayerToken) + 1;
 
+    let _currentPlayer: Player;
+
     if (nextPlayerIndex >= players.length) {
-      _setCurrentPlayerToken(players[0].token);
+      _currentPlayer = players[0];
     } else {
-      _setCurrentPlayerToken(players[nextPlayerIndex].token);
+      _currentPlayer = players[nextPlayerIndex];
     }
 
-    setTimeout(() => {
-      showActionModal('ROLL');
-    }, 500);
+    setCurrentPlayer(_currentPlayer.token);
+
+    // Begin next players turn
+    // Check first if they are in jail.
+    if (state[_currentPlayer.token]?.inJail) {
+      showActionModal('GET_OUT_OF_JAIL');
+      return;
+    }
+
+    toast({
+      title: `
+      🎉 ${TOKENS_MAP[_currentPlayer.token]} ${_currentPlayer.name}'s turn`,
+    });
+
+    showActionModal('ROLL');
   }, [players, currentPlayerToken]);
 
   useEffect(() => {
@@ -492,25 +669,6 @@ export const GameContextProvider = ({
     [players]
   );
 
-  const setPlayerPosition = useCallback(
-    (token: TokenType, position: number) => {
-      if (
-        !players.find(p => p.token === token) ||
-        position < 0 ||
-        position > NUM_TILES
-      )
-        return;
-
-      setState({
-        ...state,
-        [token]: {
-          pos: position,
-        },
-      });
-    },
-    [state, players]
-  );
-
   const resetGame = useCallback(() => {
     setPlayers([]);
     setState({});
@@ -522,6 +680,12 @@ export const GameContextProvider = ({
   // it initializes the board state, gives starting money to players, and sets the current player
   const handleStartGame = useCallback(() => {
     setHasStarted(true);
+
+    toast({
+      title: `
+      🎉 Game has started!`,
+      status: 'success',
+    });
 
     // Initialize board state
     setState(
@@ -548,23 +712,24 @@ export const GameContextProvider = ({
     (action: ActionType) => {
       setTimeout(() => {
         setCurrentAction(action);
-        setShowActionModal(true);
       }, 200);
     },
     [setCurrentAction]
   );
 
   // Deals with hiding the action modal
-  const hideActionModal = useCallback(() => {
-    setShowActionModal(false);
+  const hideActionModal = () => {
     setCurrentAction(null);
-  }, [setShowActionModal]);
+  };
+
+  const canEndTurn = useMemo(() => currentAction === null, [currentAction]);
 
   return (
     <GameContext.Provider
       value={{
         gameSettings,
         showActionModal,
+        canEndTurn,
         landedOnFreeParking,
         addToFreeParking,
         buy,
@@ -572,12 +737,16 @@ export const GameContextProvider = ({
         state,
         goto,
         currentPlayer,
+        freeFromJail,
+        rollDice,
         hasStarted,
         handleStartGame,
         move,
+        failedToGetOutOfJail,
         time,
         hideActionModal,
         endTurn,
+        calculateRent,
         addPlayer,
         removePlayer,
         payBank,
@@ -585,20 +754,22 @@ export const GameContextProvider = ({
         sendToJail,
         isOwned,
         payPlayer,
-        setPlayerPosition,
         resetGame,
-        setCurrentPlayer,
         isPaused,
         setIsPaused,
         takeCard,
       }}
     >
-      {children}
-      <ActionModal
-        action={currentAction}
-        onClose={hideActionModal}
-        isOpen={!!currentAction && showModal}
-      />
+      {/* <Flex> */}
+      {hasStarted ? (
+        <Flex>
+          {children}
+          <ActionSidebar action={currentAction} />
+        </Flex>
+      ) : (
+        children
+      )}
+      {/* </Flex> */}
     </GameContext.Provider>
   );
 };

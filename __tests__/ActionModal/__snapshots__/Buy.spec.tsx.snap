@@ -47,6 +47,27 @@ exports[`Buy ActionModal matches snapshot 1`] = `
        - 
       £100
     </h2>
+    <p
+      class="chakra-text css-1w7ybou"
+    >
+      Rent Unimproved: 
+      £0
+      <br />
+      Rent 1 House: 
+      £100
+      <br />
+      Rent 2 Houses: 
+      £200
+      <br />
+      Rent 3 Houses: 
+      £300
+      <br />
+      Rent 4 Houses: 
+      £400
+      <br />
+      Rent Hotel: 
+      £500
+    </p>
   </div>
   <div
     class="css-1gnc3qn"

@@ -2,7 +2,7 @@ import { TOKENS_MAP, TokenType, useGameContext } from '@/hooks/useGameContext';
 import { formatPrice } from '@/util/formatPrice';
 import { Box, Flex, Heading, Text } from '@chakra-ui/react';
 import { GameProperty, PropertyGroupColor } from '@prisma/client';
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import PropertyGroupStack from './Board/PropertyStack';
 
 // Renders relevent information for a particular player (e.g, properties owned, money, etc)
@@ -30,8 +30,21 @@ export default function PlayerState({
     }, {} as { [key in PropertyGroupColor]: GameProperty[] });
   }, [gameSettings, player]);
 
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isTurn) {
+      if (!ref.current) return;
+      ref.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }
+  }, [isTurn]);
+
   return (
     <Box
+      ref={ref}
       bg="white"
       borderRadius={'8px'}
       transform={!isTurn ? 'scale(0.96)' : 'scale(1)'}

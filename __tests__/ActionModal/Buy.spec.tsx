@@ -19,10 +19,14 @@ describe('Buy ActionModal', () => {
             money: 400,
             pos: 1,
             propertiesOwned: [],
+            lastRoll: 4,
+            turnsInJail: 0,
           },
           cat: {
             inJail: false,
             money: 1200,
+            lastRoll: 6,
+            turnsInJail: 0,
             pos: 1,
             propertiesOwned: [],
           },
@@ -41,11 +45,15 @@ describe('Buy ActionModal', () => {
         boot: {
           inJail: false,
           money: 400,
+          lastRoll: 5,
+          turnsInJail: 0,
           pos: 1,
           propertiesOwned: [],
         },
         cat: {
           inJail: false,
+          lastRoll: 11,
+          turnsInJail: 0,
           money: 1200,
           pos: 1,
           propertiesOwned: [],
@@ -69,6 +77,8 @@ describe('Buy ActionModal', () => {
     const state: PlayerState = {
       boot: {
         inJail: false,
+        lastRoll: 5,
+        turnsInJail: 0,
         money: 400,
         pos: 1,
         propertiesOwned: [],
@@ -78,6 +88,8 @@ describe('Buy ActionModal', () => {
         money: 1200,
         pos: 1,
         propertiesOwned: [],
+        lastRoll: 11,
+        turnsInJail: 0,
       },
     };
 

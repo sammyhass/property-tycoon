@@ -80,21 +80,24 @@ export const MockGameContextProvider = ({
           name: 'Player 1',
           token: 'cat',
         },
+        calculateRent: jest.fn(),
+        canEndTurn: true,
+        failedToGetOutOfJail: jest.fn(),
+        freeFromJail: jest.fn(),
+        rollDice: jest.fn().mockImplementation(() => [1, 5]),
         endTurn: jest.fn(),
         goto: jest.fn(),
         gameSettings: {
           BoardSpaces: new Array(40)
             .fill(0)
             .map((_, i) => fakeBoardSpace({ board_position: i })),
-          CardActions: new Array(100)
-            .fill(0)
-            .map((_, i) =>
-              fakeCard({
-                id: i.toString(),
-                type: Math.random() < 1 ? 'OPPORTUNITY_KNOCKS' : 'POT_LUCK',
-                description: 'Earn $200 from the bank',
-              })
-            ),
+          CardActions: new Array(100).fill(0).map((_, i) =>
+            fakeCard({
+              id: i.toString(),
+              type: Math.random() < 1 ? 'OPPORTUNITY_KNOCKS' : 'POT_LUCK',
+              description: 'Earn $200 from the bank',
+            })
+          ),
           Properties: new Array(10)
             .fill(0)
             .map((_, i) => fakeProperty({ id: `${i}` })),
@@ -121,9 +124,8 @@ export const MockGameContextProvider = ({
         removePlayer: jest.fn(),
         resetGame: jest.fn(),
         sendToJail: jest.fn(),
-        setCurrentPlayer: jest.fn(),
+
         setIsPaused: jest.fn(),
-        setPlayerPosition: jest.fn(),
         showActionModal: jest.fn(),
         state: {
           cat: {
@@ -131,10 +133,14 @@ export const MockGameContextProvider = ({
             money: 5000,
             propertiesOwned: [],
             pos: 0,
+            turnsInJail: 0,
+            lastRoll: 6,
           },
           boot: {
             inJail: false,
             money: 5000,
+            lastRoll: 4,
+            turnsInJail: 0,
             propertiesOwned: [],
             pos: 0,
           },
@@ -200,6 +206,7 @@ export const fakeGameSettings = (
   name: 'Game 1',
   share_code: '0',
   user_id: '0',
+  ...params,
 });
 
 export const renderWithGameContext = (

@@ -4,7 +4,7 @@ import React from 'react';
 
 // Heads-up-display to show in game, displays current player and time
 export default function HUD() {
-  const { time, currentPlayer, state, endTurn } = useGameContext();
+  const { time, currentPlayer, state, endTurn, canEndTurn } = useGameContext();
 
   return (
     <Box
@@ -18,9 +18,11 @@ export default function HUD() {
       <Heading>
         Time Elapsed: <Code fontSize={'inherit'}>{time}s</Code>
       </Heading>
-      <Button onClick={endTurn} w="100%" colorScheme={'red'} mt="10px">
-        End Turn
-      </Button>
+      {canEndTurn && (
+        <Button onClick={endTurn} w="100%" colorScheme={'red'} mt="10px">
+          End Turn
+        </Button>
+      )}
     </Box>
   );
 }

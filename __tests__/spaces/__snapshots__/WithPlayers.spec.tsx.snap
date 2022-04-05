@@ -8,14 +8,24 @@ exports[`BoardSpace with players matches snapshot 1`] = `
     class="css-n6wztc"
   >
     <div
-      class="css-17mrto7"
+      class="css-15wiabq"
+      style="opacity: 1;"
     >
-      🥾
+      <p
+        class="chakra-text css-0"
+      >
+        🥾
+      </p>
     </div>
     <div
-      class="css-17mrto7"
+      class="css-15wiabq"
+      style="opacity: 1;"
     >
-      🐱
+      <p
+        class="chakra-text css-0"
+      >
+        🐱
+      </p>
     </div>
   </div>
   <div

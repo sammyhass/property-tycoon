@@ -1,15 +1,11 @@
-import {
-  Drawer,
-  DrawerBody,
-  DrawerContent,
-  DrawerHeader,
-  DrawerOverlay,
-  Heading,
-} from '@chakra-ui/react';
+import { Box, Heading } from '@chakra-ui/react';
 import React from 'react';
+import HUD from '../HUD';
 import {
   ActionModalBuy,
   ActionModalFreeParking,
+  ActionModalGetOutJail,
+  ActionModalGo,
   ActionModalGoToJail,
   ActionModalPayRent,
   ActionModalRoll,
@@ -20,7 +16,6 @@ import {
 // Different types of action modal we can use for our modal.
 export type ActionType =
   | 'BUY' // Buying a property
-  | 'MORTGAGE'
   | 'PAY_RENT' // Pay rent
   | 'ROLL' // Roll dice
   // Taking Cards
@@ -28,20 +23,22 @@ export type ActionType =
   | 'TAKE_OPPORTUNITY_KNOCKS'
   // ---
   | 'GO_TO_JAIL' // Player is sent to jail
+  | 'GET_OUT_OF_JAIL' // Player attempts to get out of jail (shows instead)
   | 'FREE_PARKING' // Land on a Free Parking space
-  | 'GO' // Land on a Go space
-  | 'TAX'; // Pay tax
+  | 'TAX' // Pay tax
+  // TODO:
+  | 'MORTGAGE'
+  | 'GO'; // Land on a Go space
 
 export interface ActionModalProps {
   action: ActionType | null;
-  onClose: () => void;
-  isOpen: boolean;
 }
 
 const actionModalComponents: Record<ActionType, React.FC<ActionModalProps>> = {
   BUY: ActionModalBuy,
   MORTGAGE: () => <div>Mortgage</div>,
   PAY_RENT: ActionModalPayRent,
+  GET_OUT_OF_JAIL: ActionModalGetOutJail,
   ROLL: ActionModalRoll,
   GO_TO_JAIL: ActionModalGoToJail,
   TAKE_POT_LUCK: () => <ActionModalTakeCard cardType={'POT_LUCK'} />,
@@ -49,36 +46,25 @@ const actionModalComponents: Record<ActionType, React.FC<ActionModalProps>> = {
     <ActionModalTakeCard cardType="OPPORTUNITY_KNOCKS" />
   ),
   FREE_PARKING: ActionModalFreeParking,
-  GO: () => <div>GO!</div>,
+  GO: ActionModalGo,
   TAX: ActionModalTax,
 };
 
-export default function ActionModal(props: ActionModalProps) {
+export default function ActionSidebar(props: ActionModalProps) {
   const ActionComponent = props.action
     ? (actionModalComponents[props.action] as React.FC<ActionModalProps>)
     : null;
 
   return (
-    <Drawer
-      onClose={() => {}}
-      isOpen={props.isOpen}
-      size="md"
-      placement="right"
-    >
-      <DrawerOverlay />
-      <DrawerContent bg="whiteAlpha.500" backdropFilter={'blur(5px)'}>
-        <DrawerHeader>
-          <Heading>
-            {props.action
-              ?.split('_')
-              .map(w => w[0].toUpperCase() + w.slice(1).toLowerCase())
-              .join(' ')}
-          </Heading>
-        </DrawerHeader>
-        <DrawerBody>
-          {ActionComponent && <ActionComponent {...props} />}
-        </DrawerBody>
-      </DrawerContent>
-    </Drawer>
+    <Box minW={'400px'} bg="white" px="20px" h="100vh">
+      <Heading>
+        {props.action
+          ?.split('_')
+          .map(w => w[0].toUpperCase() + w.slice(1).toLowerCase())
+          .join(' ')}
+      </Heading>
+      <Box minH="70%">{ActionComponent && <ActionComponent {...props} />}</Box>
+      <HUD />
+    </Box>
   );
 }
