@@ -17,12 +17,7 @@ import {
 } from '@chakra-ui/react';
 import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import dynamic from 'next/dynamic';
 import React, { useCallback, useState } from 'react';
-
-const EmojiPicker = dynamic(() => import('emoji-picker-react'), {
-  ssr: false,
-});
 
 // The GameSetup component is responsible for rendering the game setup screen where players initially choose their tokens.
 export default function GameSetup() {
