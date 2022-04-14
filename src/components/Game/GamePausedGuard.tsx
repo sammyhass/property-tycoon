@@ -18,7 +18,7 @@ import { GameTimeDisplay } from './HUD';
 import PlayerState from './PlayerState';
 
 export default function GamePausedGuard() {
-  const { isPaused, pause, resume, players } = useGameContext();
+  const { isPaused, pause, resume, players, currentPlayer } = useGameContext();
 
   return (
     <Modal

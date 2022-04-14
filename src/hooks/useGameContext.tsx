@@ -8,7 +8,12 @@ import {
 } from '@/util/calculate-rent';
 import { formatPrice } from '@/util/formatPrice';
 import { Flex, useToast } from '@chakra-ui/react';
-import { CardAction, CardType, SpaceType } from '@prisma/client';
+import {
+  CardAction,
+  CardType,
+  PropertyGroupColor,
+  SpaceType,
+} from '@prisma/client';
 import {
   createContext,
   useCallback,
@@ -46,7 +51,14 @@ export type PlayerState = Partial<{
     pos: number;
 
     // Ids of properties owned
-    propertiesOwned: string[];
+    propertiesOwned: Partial<{
+      [key in PropertyGroupColor]: {
+        [propertyId: string]: {
+          houses: number;
+          mortgaged: boolean;
+        };
+      };
+    }>;
 
     // Current money belonging to player.
     money: number;
@@ -108,6 +120,17 @@ export type GameContextT = {
   // Buy a property
   buy: (player: TokenType, property_id: string) => void;
 
+  // Buy a house
+  buyHouse: (player: TokenType, property_id: string, nHouse: number) => void;
+
+  // Mortgage a property
+  mortgage: (player: TokenType, property_id: string) => void;
+
+  // Unmortgage a property
+  unmortgage: (player: TokenType, property_id: string) => void;
+
+  isMortgaged: (property_id: string) => boolean;
+
   // Pay money to the bank
   payBank: (player: TokenType, amount: number) => void;
   payPlayer: (sender: TokenType, payee: TokenType, amount: number) => void;
@@ -123,11 +146,7 @@ export type GameContextT = {
   // Get the owner of a property
   isOwned: (propertyId: string) => {
     token: TokenType;
-    playerState: {
-      pos: number;
-      propertiesOwned: string[];
-      money: number;
-    };
+    ownerState: PlayerState[TokenType];
   } | null;
 
   calculateRent: (propertyId: string) => number;
@@ -144,6 +163,9 @@ export const GameContext = createContext<GameContextT>({
   state: {},
   currentPlayer: null,
   move: () => {},
+  mortgage: () => {},
+  buyHouse: () => {},
+  unmortgage: () => {},
   rollDice: () => [0, 0],
   addPlayer: () => {},
   pause: () => {},
@@ -152,6 +174,7 @@ export const GameContext = createContext<GameContextT>({
   calculateRent: () => 0,
   payPlayer: () => {},
   resetGame: () => {},
+  isMortgaged: () => false,
   addToFreeParking: () => {},
   freeFromJail: () => {},
   landedOnFreeParking: () => 0,
@@ -250,11 +273,14 @@ export const GameContextProvider = ({
 
   const failedToGetOutOfJail = useCallback(
     (player: TokenType) => {
+      toast({
+        title: `
+        🎲 ${TOKENS_MAP[player]} failed to get out of jail`,
+      });
       setState(state => ({
         ...state,
         [player]: {
           ...state[player],
-          inJail: false,
           turnsInJail: (state[player]?.turnsInJail ?? 0) + 1,
         },
       }));
@@ -264,16 +290,20 @@ export const GameContextProvider = ({
 
   const freeFromJail = useCallback(
     (player: TokenType) => {
-      setState({
+      toast({
+        title: `
+        🎲 ${TOKENS_MAP[player]} is free from jail`,
+      });
+      setState(state => ({
         ...state,
         [player]: {
           ...state[player],
           inJail: false,
           turnsInJail: 0,
         },
-      });
+      }));
     },
-    [state]
+    [setState]
   );
 
   // Work out if a property is owned and by which player
@@ -281,18 +311,121 @@ export const GameContextProvider = ({
     (propertyId: string) => {
       const property = gameSettings?.Properties.find(p => p.id === propertyId);
 
-      if (!property) return null;
+      if (!property || !property) return null;
 
-      const [token, playerState] = (Object.entries(state).find(([, v]) =>
-        v?.propertiesOwned.includes(propertyId)
-      ) as [TokenType, PlayerState[TokenType]]) ?? [null, null];
+      const ownerState = Object.entries(state).find(
+        ([k, v]) =>
+          v.propertiesOwned[property.property_group_color]?.[property.id]
+      );
 
-      if (!token || !playerState) return null;
+      if (!ownerState) return null;
 
       return {
-        token,
-        playerState,
+        token: ownerState[0] as TokenType,
+        ownerState: ownerState[1] as PlayerState[TokenType],
       };
+    },
+    [gameSettings, state]
+  );
+
+  const isMortgaged = useCallback(
+    (propertyId: string) => {
+      const property = gameSettings?.Properties?.find(p => p.id === propertyId);
+
+      if (!property) return false;
+
+      const playerState = isOwned(propertyId);
+
+      if (!playerState) return false;
+
+      return (
+        playerState?.ownerState?.propertiesOwned?.[
+          property?.property_group_color
+        ]?.[propertyId]?.mortgaged ?? false
+      );
+    },
+    [gameSettings, isOwned]
+  );
+
+  const buyHouse = useCallback(
+    (player: TokenType, property_id: string, nHouse: number) => {
+      const property = gameSettings?.Properties.find(p => p.id === property_id);
+
+      if (
+        !property ||
+        !state[player] ||
+        !state[player]?.propertiesOwned[property?.property_group_color]?.[
+          property_id
+        ]
+      ) {
+        return;
+      }
+
+      const propertyCurrentHouses =
+        state[player]?.propertiesOwned[property.property_group_color]?.[
+          property_id
+        ]?.houses ?? 0;
+
+      if (propertyCurrentHouses + nHouse > 5) {
+        return;
+      }
+
+      const propertyGroup = gameSettings?.PropertyGroups.find(
+        p => p.color === property.property_group_color
+      );
+
+      if (!propertyGroup) {
+        return;
+      }
+
+      const isBuyingHotel = nHouse + propertyCurrentHouses === 5;
+
+      const price = isBuyingHotel
+        ? propertyGroup.hotel_cost ?? 0
+        : propertyGroup.house_cost ?? 0;
+
+      if ((state[player]?.money ?? 0) < price) {
+        toast({
+          status: 'error',
+          title: `
+          💸 ${TOKENS_MAP[player]} does not have enough money to buy a ${
+            isBuyingHotel ? 'hotel' : `${nHouse} house${nHouse > 1 ? 's' : ''}`
+          }`,
+        });
+        return;
+      }
+
+      const newState: PlayerState = {
+        ...state,
+        [player]: {
+          ...state[player],
+          money: (state[player]?.money ?? 0) - price,
+          propertiesOwned: {
+            ...state[player]?.propertiesOwned,
+            [property.property_group_color]: {
+              ...state[player]?.propertiesOwned[property.property_group_color],
+              [property_id]: {
+                ...state[player]?.propertiesOwned[
+                  property.property_group_color
+                ]?.[property_id],
+                houses:
+                  (state[player]?.propertiesOwned[
+                    property?.property_group_color
+                  ]?.[property_id]?.houses ?? 0) + nHouse,
+              },
+            },
+          },
+        },
+      };
+
+      setState(newState);
+
+      toast({
+        title: `
+        💸 ${TOKENS_MAP[player]} bought ${
+          isBuyingHotel ? 'a hotel' : `${nHouse} house${nHouse > 1 ? 's' : ''}`
+        } for ${formatPrice(price)}`,
+      });
     },
     [gameSettings, state]
   );
@@ -303,11 +436,17 @@ export const GameContextProvider = ({
 
       if (!owner) return 0;
 
-      const { token, playerState } = owner;
+      const { token, ownerState } = owner;
 
-      const { propertiesOwned } = playerState;
+      const propertiesOwned = ownerState?.propertiesOwned;
 
       const property = gameSettings?.Properties.find(p => p.id === propertyId);
+
+      if (!property) return 0;
+
+      const mortgaged = isMortgaged(propertyId);
+
+      if (mortgaged) return 0;
 
       const propertiesInGroup = gameSettings?.Properties.filter(
         p => p.property_group_color === property?.property_group_color
@@ -315,44 +454,38 @@ export const GameContextProvider = ({
 
       const numPropertiesInGroup = propertiesInGroup?.length ?? 0;
 
-      const numOwnedInGroup = propertiesOwned.filter(p =>
-        propertiesInGroup?.find(p2 => p2.id === p)
+      const numOwnedInGroup = Object.keys(
+        propertiesOwned?.[property?.property_group_color] ?? {}
       ).length;
+
+      const propertyState =
+        propertiesOwned?.[property?.property_group_color]?.[propertyId];
 
       if (!property) return 0;
 
       if (property.property_group_color === 'STATION') {
-        // Find out how many stations the owner has.
-        const stations = propertiesOwned.filter(
-          a =>
-            gameSettings?.Properties.find(p => p.id === a)
-              ?.property_group_color === 'STATION'
-        );
-
-        return calculateStationRent(stations.length);
+        return calculateStationRent(numOwnedInGroup);
       } else if (property.property_group_color === 'UTILITIES') {
         const diceRoll = state[token]?.lastRoll ?? 0;
 
-        const utilities = propertiesOwned.filter(
-          a =>
-            gameSettings?.Properties.find(p => p.id === a)
-              ?.property_group_color === 'UTILITIES'
-        );
-        return calculateUtilityRent(utilities.length, diceRoll);
+        return calculateUtilityRent(numOwnedInGroup, diceRoll);
       }
+
+      const numHouses = propertyState?.houses ?? 0;
       return calculatePropertyRent(
         property,
-        0,
+        numHouses,
         numOwnedInGroup === numPropertiesInGroup
       );
     },
-    [gameSettings?.Properties, state]
+    [gameSettings?.Properties, state, isOwned, isMortgaged]
   );
 
   const move = useCallback(
     (player: TokenType, moveBy: number, passGo: boolean = true) => {
       if (!gameSettings) return;
 
+      if (state[player]?.inJail) return;
       // Based on what the player lands on, we want to open an action modal
       const newPostion = state[player]?.pos ?? 0;
 
@@ -521,10 +654,16 @@ export const GameContextProvider = ({
         [player]: {
           ...playerState,
           money: newMoney,
-          propertiesOwned: [
-            ...(playerState.propertiesOwned ?? []),
-            property_id,
-          ],
+          propertiesOwned: {
+            ...playerState.propertiesOwned,
+            [property.property_group_color]: {
+              ...playerState.propertiesOwned[property.property_group_color],
+              [property.id]: {
+                houses: 0,
+                mortgaged: false,
+              },
+            },
+          },
         },
       });
     },
@@ -715,6 +854,97 @@ export const GameContextProvider = ({
     showActionModal('ROLL');
   }, [players, setHasStarted]);
 
+  // Mortgage a property
+  // Morgage value is the property's price divided by 2
+  const mortgage = useCallback(
+    (player: TokenType, property_id: string) => {
+      const property = gameSettings?.Properties.find(p => p.id === property_id);
+      if (!property) return;
+
+      const playerState = state[player];
+      if (!playerState) return;
+
+      if (!property) return;
+
+      const newMoney = playerState.money + (property.price ?? 0) / 2;
+
+      if (newMoney < 0) return;
+
+      setState({
+        ...state,
+        [player]: {
+          ...playerState,
+          money: newMoney,
+          propertiesOwned: {
+            ...playerState.propertiesOwned,
+            [property.property_group_color]: {
+              ...playerState.propertiesOwned[property.property_group_color],
+              [property_id]: {
+                ...property,
+                mortgaged: true,
+              },
+            },
+          },
+        },
+      });
+
+      toast({
+        title: `
+        🏠 ${TOKENS_MAP[player]} mortgaged ${property.name} for £${
+          (property?.price ?? 0) / 2
+        }`,
+        status: 'success',
+      });
+    },
+    [state, gameSettings?.Properties]
+  );
+
+  // Unmortgage a property
+  // Unmortgage value is the property's price divided by 2
+  const unmortgage = useCallback(
+    (player: TokenType, property_id: string) => {
+      const property = gameSettings?.Properties.find(p => p.id === property_id);
+      if (!property) return;
+
+      const playerState = state[player];
+
+      if (!playerState) return;
+
+      if (!property) return;
+
+      const newMoney = playerState.money - (property.price ?? 0) / 2;
+
+      if (newMoney < 0) return;
+
+      setState({
+        ...state,
+        [player]: {
+          ...playerState,
+          money: newMoney,
+          propertiesOwned: {
+            ...playerState.propertiesOwned,
+            [property.property_group_color]: {
+              ...playerState.propertiesOwned[property.property_group_color],
+              [property_id]: {
+                ...property,
+                mortgaged: false,
+              },
+            },
+          },
+        },
+      });
+
+      toast({
+        title: `
+        🏠 ${TOKENS_MAP[player]} unmortgaged ${property.name} for £${
+          (property?.price ?? 0) / 2
+        }`,
+        status: 'info',
+      });
+    },
+    [gameSettings, state, setState]
+  );
+
   // Deals with showing the action modal
   const showActionModal = useCallback(
     (action: ActionType) => {
@@ -743,6 +973,9 @@ export const GameContextProvider = ({
         buy,
         players,
         state,
+        buyHouse,
+        mortgage,
+        unmortgage,
         goto,
         currentPlayer,
         freeFromJail,
@@ -754,6 +987,7 @@ export const GameContextProvider = ({
         time,
         hideActionModal,
         endTurn,
+        isMortgaged,
         calculateRent,
         addPlayer,
         removePlayer,

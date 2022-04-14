@@ -16,9 +16,12 @@ export default function PlayerState({
   const { isTurn, ...player } = usePlayer(token);
 
   const propertiesOwned = useMemo(() => {
-    return gameSettings?.Properties.filter(property =>
-      player?.propertiesOwned?.includes(property.id)
-    ).reduce((acc, property) => {
+    return gameSettings?.Properties.filter(property => {
+      return (
+        player.propertiesOwned?.[property.property_group_color] &&
+        player.propertiesOwned?.[property.property_group_color]?.[property.id]
+      );
+    }).reduce((acc, property) => {
       const color = property.property_group_color;
       if (!acc[color]) {
         acc[color] = [];

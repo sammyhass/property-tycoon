@@ -1,5 +1,5 @@
 import { Box, Heading } from '@chakra-ui/react';
-import React from 'react';
+import React, { useMemo } from 'react';
 import HUD from '../HUD';
 import {
   ActionModalBuy,
@@ -51,9 +51,13 @@ const actionModalComponents: Record<ActionType, React.FC<ActionModalProps>> = {
 };
 
 export default function ActionSidebar(props: ActionModalProps) {
-  const ActionComponent = props.action
-    ? (actionModalComponents[props.action] as React.FC<ActionModalProps>)
-    : null;
+  const ActionComponent = useMemo(
+    () =>
+      props.action
+        ? (actionModalComponents[props.action] as React.FC<ActionModalProps>)
+        : null,
+    [props.action]
+  );
 
   return (
     <Box minW={'400px'} bg="white" px="20px" h="100vh">

@@ -36,7 +36,7 @@ export const ActionModalGetOutJail = ({ action }: ActionModalProps) => {
     failedToGetOutOfJail,
   } = useGameContext();
 
-  const [choice, setChoice] = useState<'roll' | 'pay'>('roll');
+  const [choice, setChoice] = useState<'roll' | 'pay'>('pay');
 
   const [roll, setRoll] = useState<[number, number] | null>(null);
 
@@ -45,7 +45,7 @@ export const ActionModalGetOutJail = ({ action }: ActionModalProps) => {
 
   const handleContinue = useCallback(() => {
     if (!currentPlayer) return;
-    if (didPay || (roll && roll[0] === roll[1])) {
+    if (didPay || (didRoll && roll && roll[0] === roll[1])) {
       freeFromJail(currentPlayer.token);
       if (roll && roll[0] === roll[1]) {
         move(currentPlayer.token, roll[0] + roll[1]);
@@ -60,6 +60,7 @@ export const ActionModalGetOutJail = ({ action }: ActionModalProps) => {
     hideActionModal,
     move,
     roll,
+    didRoll,
     didPay,
     freeFromJail,
   ]);
@@ -81,7 +82,7 @@ export const ActionModalGetOutJail = ({ action }: ActionModalProps) => {
   return (
     <Flex direction={'column'} gap="5px">
       <Heading size="md" py="10px">
-        You&apos;sre in Jail!
+        You&apos;re in Jail!
       </Heading>
 
       {!(didRoll || didPay) && (
@@ -98,12 +99,14 @@ export const ActionModalGetOutJail = ({ action }: ActionModalProps) => {
             onChange={v =>
               v === 'roll' ? setChoice(v) : v === 'pay' ? setChoice(v) : null
             }
-            defaultValue="roll"
+            defaultValue="pay"
           >
             <Stack direction="column" spacing="5px">
-              <Radio value="roll">
-                <Text>🎲 Roll Dice</Text>
-              </Radio>
+              {(state[currentPlayer.token]?.turnsInJail ?? 0) < 3 && (
+                <Radio value="roll">
+                  <Text>🎲 Roll Dice</Text>
+                </Radio>
+              )}
               <Radio value="pay">
                 <Text>💸 Pay $50 to get out</Text>
               </Radio>
@@ -156,7 +159,9 @@ export const ActionModalGetOutJail = ({ action }: ActionModalProps) => {
             onClick={handlePayToGetOut}
             w="100%"
             isDisabled={
-              !currentPlayer || (state[currentPlayer.token]?.money ?? 0) < 50
+              !currentPlayer ||
+              (state[currentPlayer.token]?.money ?? 0) < 50 ||
+              didPay
             }
           >
             Pay £50 to get out
@@ -164,12 +169,12 @@ export const ActionModalGetOutJail = ({ action }: ActionModalProps) => {
         </Box>
       )}
       {(didRoll || didPay) && (
-        <Button onClick={handleContinue}>
+        <Button onClick={handleContinue} mt="20px">
           {roll
             ? roll[0] === roll[1] || didPay
               ? 'Get out Now'
               : 'Roll again next turn.'
-            : 'Ok'}
+            : 'Continue'}
         </Button>
       )}
     </Flex>
@@ -462,6 +467,7 @@ export const ActionModalPayRent = () => {
     state,
     isOwned,
     calculateRent,
+    isMortgaged,
     hideActionModal,
   } = useGameContext();
 
@@ -480,8 +486,8 @@ export const ActionModalPayRent = () => {
 
   const rent = useMemo(() => {
     if (!property) return 0;
-    return calculateRent(property?.id);
-  }, [calculateRent, property]);
+    return !isMortgaged(property.id) ? calculateRent(property?.id) : 0;
+  }, [calculateRent, property, isMortgaged]);
 
   if (!owner || !property) return <></>;
 
