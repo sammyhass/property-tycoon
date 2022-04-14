@@ -1,28 +1,61 @@
 import { useGameContext } from '@/hooks/useGameContext';
-import { Box, Button, Code, Heading } from '@chakra-ui/react';
-import React from 'react';
+import { Box, Button, Code, Flex, IconButton } from '@chakra-ui/react';
+import {
+  faArrowRight,
+  faPause,
+  faPlay,
+} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, { useEffect } from 'react';
 
 // Heads-up-display to show in game, displays current player and time
 export default function HUD() {
-  const { time, currentPlayer, state, endTurn, canEndTurn } = useGameContext();
+  const { time, endTurn, canEndTurn, isPaused, pause, resume } =
+    useGameContext();
+
+  const mins = Math.floor(time / 60);
+  const secs = time % 60;
+
+  useEffect(() => {}, []);
 
   return (
-    <Box
-      zIndex={100}
-      bg="whiteAlpha.600"
-      backdropFilter={'blur(5px)'}
-      p="20px"
-      shadow="md"
-      borderRadius={'8px'}
-    >
-      <Heading>
-        Time Elapsed: <Code fontSize={'inherit'}>{time}s</Code>
-      </Heading>
-      {canEndTurn && (
-        <Button onClick={endTurn} w="100%" colorScheme={'red'} mt="10px">
-          End Turn
-        </Button>
-      )}
-    </Box>
+    <>
+      <Box zIndex={'modal'} p="10px">
+        <Flex py="10px" w="100%" justifyContent={'space-between'}>
+          <IconButton
+            aria-label={isPaused ? 'Resume' : 'Pause'}
+            colorScheme={isPaused ? 'blue' : 'red'}
+            onClick={!isPaused ? pause : resume}
+            icon={<FontAwesomeIcon icon={!isPaused ? faPause : faPlay} />}
+          />
+          <GameTimeDisplay />
+        </Flex>
+        {canEndTurn && (
+          <Button
+            onClick={endTurn}
+            w="100%"
+            colorScheme={'green'}
+            mt="10px"
+            rightIcon={<FontAwesomeIcon icon={faArrowRight} />}
+          >
+            End Turn
+          </Button>
+        )}
+      </Box>
+    </>
   );
 }
+
+export const GameTimeDisplay = () => {
+  const { time } = useGameContext();
+
+  const mins = Math.floor(time / 60);
+  const secs = time % 60;
+  return (
+    <Box flexShrink={0}>
+      <Code fontSize={'2xl'} bg="transparent">
+        {mins}:{secs < 10 ? `0${secs}` : secs}
+      </Code>
+    </Box>
+  );
+};

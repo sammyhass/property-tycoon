@@ -48,7 +48,7 @@ export default function CardList({ cards, gameId, onClick }: CardListProps) {
 
       router.reload();
     }
-  }, [gameId, selectedCard]);
+  }, [gameId, selectedCard, router]);
 
   return (
     <>
@@ -57,10 +57,10 @@ export default function CardList({ cards, gameId, onClick }: CardListProps) {
         <Box>
           <Heading size="md">Opportunity Knocks</Heading>
           <Flex overflowX="auto" my="5px" gap="5px" py="10px">
-            {opportunityKnocksCards.map(card => (
+            {opportunityKnocksCards.map(({ GameProperty, ...card }) => (
               <Card
                 key={card.id}
-                propertyName={card.GameProperty?.name}
+                propertyName={GameProperty?.name}
                 {...card}
                 onClick={() => setSelected(card.id)}
               />

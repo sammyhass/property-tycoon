@@ -8,9 +8,9 @@ export interface GameBoardProps {
   positions: { [key in keyof GameContextT['state']]: number };
 }
 
-export default function GameBoard({ settings, positions }: GameBoardProps) {
+export default function GameBoard({ positions, settings }: GameBoardProps) {
   return (
-    <Flex wrap="wrap">
+    <Flex wrap="wrap" transformOrigin="0 0">
       {(settings?.BoardSpaces ?? [])
         .sort((a, b) => a.board_position - b.board_position)
         .map(space => (

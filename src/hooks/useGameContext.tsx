@@ -1,4 +1,5 @@
 import ActionSidebar, { ActionType } from '@/components/Game/ActionModal';
+import GamePausedGuard from '@/components/Game/GamePausedGuard';
 import { GameT } from '@/pages/admin/games/[game_id]';
 import {
   calculatePropertyRent,
@@ -20,7 +21,6 @@ import {
 // Constants
 const NUM_TILES = 40;
 const STARTING_MONEY = 50000;
-// ---
 
 // Tokens a player can use in the game (gonna be emoji)
 export type TokenType =
@@ -94,8 +94,8 @@ export type GameContextT = {
   resetGame: () => void;
 
   isPaused: boolean;
-
-  setIsPaused: (isPaused: boolean) => void;
+  pause: () => void;
+  resume: () => void;
 
   takeCard: (type: CardType) => CardAction | null;
 
@@ -146,6 +146,8 @@ export const GameContext = createContext<GameContextT>({
   move: () => {},
   rollDice: () => [0, 0],
   addPlayer: () => {},
+  pause: () => {},
+  resume: () => {},
   removePlayer: () => {},
   calculateRent: () => 0,
   payPlayer: () => {},
@@ -157,7 +159,6 @@ export const GameContext = createContext<GameContextT>({
   takeCard: (type: CardType) => null,
   payBank: () => {},
   totalOnFreeParking: 0,
-  setIsPaused: () => {},
   isOwned: () => null,
   hasStarted: false,
   handleStartGame: () => {},
@@ -189,6 +190,8 @@ export const GameContextProvider = ({
     initialGameSettings
   );
 
+  const [time, setTime] = useState(0);
+
   // Current action the current player is taking
   const [currentAction, setCurrentAction] = useState<ActionType | null>(null);
 
@@ -205,8 +208,6 @@ export const GameContextProvider = ({
 
   const [currentPlayerToken, _setCurrentPlayerToken] =
     useState<TokenType | null>(null);
-
-  const [time, setTime] = useState<number>(0);
 
   const currentPlayer = useMemo((): Player | null => {
     const idx = players.findIndex(p => p.token === currentPlayerToken);
@@ -352,9 +353,7 @@ export const GameContextProvider = ({
     (player: TokenType, moveBy: number, passGo: boolean = true) => {
       if (!gameSettings) return;
 
-      console.log('move', player, moveBy);
       // Based on what the player lands on, we want to open an action modal
-
       const newPostion = state[player]?.pos ?? 0;
 
       const sortedSpaces = gameSettings.BoardSpaces.sort(
@@ -366,7 +365,7 @@ export const GameContextProvider = ({
       const firstSpace = sortedSpaces[sortedSpaces.length - 1];
 
       let newPos = newPostion + moveBy;
-      if (newPos > lastSpace.board_position) {
+      if (newPos > lastSpace.board_position + 1) {
         newPos =
           newPostion +
           moveBy -
@@ -382,6 +381,12 @@ export const GameContextProvider = ({
             money: (state[player]?.money ?? 0) + (passGo ? 200 : 0),
           },
         });
+
+        if (passGo) {
+          toast({
+            title: `${TOKENS_MAP[player]} passed Go and collected £200`,
+          });
+        }
       }
 
       const nextBoardSpace = gameSettings?.BoardSpaces.find(
@@ -647,16 +652,18 @@ export const GameContextProvider = ({
   }, [players, currentPlayerToken]);
 
   useEffect(() => {
-    setIsPaused(false);
     const timer = setInterval(() => {
       if (!isPaused && hasStarted) {
-        setTime(time + 1);
+        setTime(time => time + 1);
       }
     }, 1000);
     return () => {
       clearInterval(timer);
     };
-  }, [hasStarted, isPaused, time]);
+  }, [hasStarted, isPaused]);
+
+  const pause = () => setIsPaused(true);
+  const resume = () => setIsPaused(false);
 
   const addPlayer = (player: Player) => {
     setPlayers([...players, player]);
@@ -680,6 +687,7 @@ export const GameContextProvider = ({
   // it initializes the board state, gives starting money to players, and sets the current player
   const handleStartGame = useCallback(() => {
     setHasStarted(true);
+    setIsPaused(false);
 
     toast({
       title: `
@@ -756,7 +764,8 @@ export const GameContextProvider = ({
         payPlayer,
         resetGame,
         isPaused,
-        setIsPaused,
+        pause,
+        resume,
         takeCard,
       }}
     >
@@ -765,6 +774,7 @@ export const GameContextProvider = ({
         <Flex>
           {children}
           <ActionSidebar action={currentAction} />
+          <GamePausedGuard />
         </Flex>
       ) : (
         children

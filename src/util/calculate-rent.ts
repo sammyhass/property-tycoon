@@ -12,7 +12,7 @@ export const calculatePropertyRent = <
   >
 >(
   property: T,
-  houses: 0 | 1 | 2 | 3 | 4 | 5, // 5 houses is the hotel
+  houses: number, // max houses is 5, which is equivalent to a hotel
   ownsWholeSet: boolean = false
 ): number => {
   switch (houses) {

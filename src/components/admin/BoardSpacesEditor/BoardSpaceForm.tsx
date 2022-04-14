@@ -64,7 +64,7 @@ export default function BoardSpaceForm({
       setCardType(null);
       setPropertyId(null);
     }
-  }, [spaceType, properties]);
+  }, [spaceType, properties, boardSpace.property_id]);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -93,6 +93,7 @@ export default function BoardSpaceForm({
     propertyId,
     boardSpace.board_position,
     taxAmount,
+
     onComplete,
     gameId,
   ]);

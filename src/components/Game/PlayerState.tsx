@@ -1,25 +1,23 @@
 import { TOKENS_MAP, TokenType, useGameContext } from '@/hooks/useGameContext';
+import { usePlayer } from '@/hooks/usePlayer';
 import { formatPrice } from '@/util/formatPrice';
-import { Box, Flex, Heading, Text } from '@chakra-ui/react';
+import { Badge, Box, ChakraProps, Flex, Heading } from '@chakra-ui/react';
 import { GameProperty, PropertyGroupColor } from '@prisma/client';
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 import PropertyGroupStack from './Board/PropertyStack';
 
 // Renders relevent information for a particular player (e.g, properties owned, money, etc)
 export default function PlayerState({
   token,
-  isTurn,
-}: {
-  token: TokenType;
-  isTurn: boolean;
-}) {
-  const { state, gameSettings } = useGameContext();
+  ...props
+}: { token: TokenType } & ChakraProps) {
+  const { gameSettings } = useGameContext();
 
-  const player = state[token];
+  const { isTurn, ...player } = usePlayer(token);
 
   const propertiesOwned = useMemo(() => {
     return gameSettings?.Properties.filter(property =>
-      player?.propertiesOwned.includes(property.id)
+      player?.propertiesOwned?.includes(property.id)
     ).reduce((acc, property) => {
       const color = property.property_group_color;
       if (!acc[color]) {
@@ -32,42 +30,40 @@ export default function PlayerState({
 
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (isTurn) {
-      if (!ref.current) return;
-      ref.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-      });
-    }
-  }, [isTurn]);
-
   return (
     <Box
       ref={ref}
-      bg="white"
+      bg="whiteAlpha.900"
+      backdropFilter={'blur(4px)'}
+      h="100%"
+      boxShadow="xl"
       borderRadius={'8px'}
-      transform={!isTurn ? 'scale(0.96)' : 'scale(1)'}
-      flexShrink={0}
-      minW="300px"
-      my="5px"
-      transition="transform 0.2s ease-in-out"
-      overflow="hidden"
-      p="5px"
+      p="10px"
+      {...props}
     >
-      <Heading>
-        {isTurn ? 'Now Playing: ' : ''}
-        {TOKENS_MAP[token]}
-      </Heading>
-      {player?.inJail && (
-        <Text color={'red'} fontSize="lg" fontWeight={'bold'}>
-          In Jail
-        </Text>
-      )}
-      <Text fontSize={'lg'}>Money: {formatPrice(player?.money ?? 0)}</Text>
-
+      <Flex minW="400px" align={'center'}>
+        <Flex align={'center'} flex="1">
+          <Heading size={'xl'}>{TOKENS_MAP[token]}</Heading>
+          <Heading size="md">{player.name}</Heading>
+        </Flex>
+        <Flex w="fit-content" gap="5px" h="fit-content">
+          <Badge colorScheme={'green'} fontSize="md" ml="5px">
+            💰 {formatPrice(player.money ?? 0)}
+          </Badge>
+          {player.inJail && (
+            <Badge colorScheme={'red'} fontSize="md">
+              In Jail
+            </Badge>
+          )}
+          {isTurn && (
+            <Badge colorScheme={'blue'} fontSize="md">
+              Your Turn
+            </Badge>
+          )}
+        </Flex>
+      </Flex>
       {/* Properties List */}
-      <Flex gap="5px" wrap={'wrap'} w="100%" maxW="100%">
+      <Flex overflowX={'auto'} w="500px" maxW="100%" mt="10px">
         {Object.entries(propertiesOwned ?? {}).map(([color, properties]) => (
           <PropertyGroupStack
             key={color}

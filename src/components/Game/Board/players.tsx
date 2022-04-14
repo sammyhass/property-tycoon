@@ -3,11 +3,17 @@ import { Box, Text } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import React from 'react';
 
-export default function PlayerToken({ token }: { token: TokenType }) {
+export default function PlayerToken({
+  token,
+  layoutId,
+}: {
+  token: TokenType;
+  layoutId: string;
+}) {
   return (
     <Box
       as={motion.div}
-      layoutId={`player-${token}`}
+      layoutId={`player-${token}-${layoutId}`}
       fontSize={'1.5rem'}
       bg="white"
       mx="5px"
@@ -18,8 +24,9 @@ export default function PlayerToken({ token }: { token: TokenType }) {
       minHeight={'40px'}
       display={'flex'}
       alignItems={'center'}
-      children={<Text>{TOKENS_MAP[token]}</Text>}
       justifyContent={'center'}
-    />
+    >
+      <Text>{TOKENS_MAP[token]}</Text>
+    </Box>
   );
 }

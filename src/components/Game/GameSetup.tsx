@@ -1,5 +1,8 @@
 import { TOKENS_MAP, TokenType, useGameContext } from '@/hooks/useGameContext';
 import {
+  Alert,
+  AlertDescription,
+  AlertIcon,
   Box,
   Button,
   Divider,
@@ -14,8 +17,14 @@ import {
 } from '@chakra-ui/react';
 import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import dynamic from 'next/dynamic';
 import React, { useCallback, useState } from 'react';
 
+const EmojiPicker = dynamic(() => import('emoji-picker-react'), {
+  ssr: false,
+});
+
+// The GameSetup component is responsible for rendering the game setup screen where players initially choose their tokens.
 export default function GameSetup() {
   const { handleStartGame, gameSettings, addPlayer, players, removePlayer } =
     useGameContext();
@@ -149,11 +158,19 @@ export default function GameSetup() {
         colorScheme="green"
         onClick={handleStartGame}
         size={'lg'}
-        disabled={players.length === 0}
+        disabled={players.length <= 1}
         mt="10px"
       >
         Start Game
       </Button>
+      {players.length <= 1 && (
+        <Alert borderRadius={'8px'} mt="20px">
+          <AlertIcon />
+          <AlertDescription>
+            You need at least 2 players to start the game.
+          </AlertDescription>
+        </Alert>
+      )}
     </Box>
   );
 }

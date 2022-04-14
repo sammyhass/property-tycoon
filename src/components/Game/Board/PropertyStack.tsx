@@ -1,4 +1,5 @@
 import {
+  calculatePropertyRent,
   calculateStationRent,
   calculateUtilityMulitplier,
 } from '@/util/calculate-rent';
@@ -9,13 +10,18 @@ import {
   Flex,
   Heading,
   HStack,
+  List,
+  ListIcon,
+  ListItem,
   Modal,
+  ModalBody,
   ModalCloseButton,
   ModalContent,
   ModalHeader,
   ModalOverlay,
-  Text,
 } from '@chakra-ui/react';
+import { faMoneyBill } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { GameProperty, PropertyGroupColor } from '@prisma/client';
 import React, { useState } from 'react';
 import BoardSpace from './spaces';
@@ -32,13 +38,12 @@ export default function PropertyGroupStack({
 
   return (
     <>
-      <Box
-        border={'5px solid'}
-        borderColor={propertyGroupToCSS[group]}
-        borderRadius="8px"
-        p="5px"
-      >
-        <Heading size="sm">{group}</Heading>
+      <Box borderRadius="8px" p="5px">
+        <Box bg="" p="10px" m="0">
+          <Heading size="sm" color={propertyGroupToCSS[group]}>
+            {group}
+          </Heading>
+        </Box>
         <HStack spacing="-50px">
           {properties.map((property, i) => (
             <Box
@@ -64,48 +69,73 @@ export default function PropertyGroupStack({
       <Modal isOpen={!!selected} onClose={() => setSelected(null)}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>
-            <Heading>{selected?.name}</Heading>
+          <ModalHeader bg={propertyGroupToCSS[group]} borderTopRadius="6px">
+            <Heading color="white">{selected?.name}</Heading>
             <ModalCloseButton />
           </ModalHeader>
-          <Flex justify="center" align="center">
-            <BoardSpace.Property property={selected} />
-          </Flex>
-          <Box mx="auto" w="90%" py="10px">
-            {selected?.rent_unimproved && selected?.rent_unimproved > 0 ? (
-              <Text fontWeight={'600'} fontSize="lg" textAlign={'center'}>
-                Rent Unimproved: {formatPrice(selected?.rent_unimproved ?? 0)}
-                <br />
-                Rent One House: {formatPrice(selected?.rent_one_house ?? 0)}
-                <br />
-                Rent Two Houses: {formatPrice(selected?.rent_two_house ?? 0)}
-                <br />
-                Rent Three Houses:{' '}
-                {formatPrice(selected?.rent_three_house ?? 0)}
-                <br />
-                Rent Four Houses: {formatPrice(selected?.rent_four_house ?? 0)}
-                <br />
-                Rent Hotel: {formatPrice(selected?.rent_hotel ?? 0)}
-                <br />
-              </Text>
-            ) : selected?.property_group_color === 'STATION' ? (
-              new Array(4).fill(0).map((_, i) => (
-                <Box>
-                  With {i + 1} station{i + 1 > 1 ? 's' : ''}, rent is{' '}
-                  {formatPrice(calculateStationRent(i + 1))}
-                </Box>
-              ))
-            ) : (
-              new Array(2).fill(0).map((_, i) => (
-                <Box>
-                  When {i + 1} owned, rent is{' '}
-                  {calculateUtilityMulitplier(i + 1)}x Dice Roll.
-                </Box>
-              ))
-            )}
-          </Box>
+          <ModalBody>
+            <Flex justify="center" align="center">
+              <BoardSpace.Property property={selected} />
+            </Flex>
+            <Box mx="auto">
+              {selected && <PropertyRentInfo property={selected} />}
+            </Box>
+          </ModalBody>
         </ModalContent>
       </Modal>
     </>
+  );
+}
+
+export function PropertyRentInfo({ property }: { property: GameProperty }) {
+  return (
+    <Box mx="auto" my="20px">
+      <Heading size="md">Rent</Heading>
+
+      <List>
+        {property?.rent_unimproved && property?.rent_unimproved > 0
+          ? new Array(6).fill(0).map((_, i) => (
+              <ListItem key={i}>
+                <ListIcon>
+                  <FontAwesomeIcon
+                    icon={faMoneyBill}
+                    color={propertyGroupToCSS[property.property_group_color]}
+                  />
+                </ListIcon>
+                {i > 0
+                  ? `with ${i < 5 ? `${i} House` : 'a Hotel'}${
+                      i > 2 && i < 5 ? 's' : ''
+                    }: `
+                  : 'Unimproved: '}
+                {formatPrice(calculatePropertyRent(property, i))}
+              </ListItem>
+            ))
+          : property?.property_group_color === 'STATION'
+          ? new Array(4).fill(0).map((_, i) => (
+              <ListItem key={i}>
+                <ListIcon>
+                  <FontAwesomeIcon
+                    icon={faMoneyBill}
+                    color={propertyGroupToCSS[property.property_group_color]}
+                  />
+                </ListIcon>
+                With {i + 1} station{i + 1 > 1 ? 's' : ''}, rent is{' '}
+                {formatPrice(calculateStationRent(i + 1))}
+              </ListItem>
+            ))
+          : new Array(2).fill(0).map((_, i) => (
+              <ListItem key={i}>
+                <ListIcon>
+                  <FontAwesomeIcon
+                    icon={faMoneyBill}
+                    color={propertyGroupToCSS[property.property_group_color]}
+                  />
+                </ListIcon>
+                When {i + 1} owned, rent is {calculateUtilityMulitplier(i + 1)}x
+                Dice Roll.
+              </ListItem>
+            ))}
+      </List>
+    </Box>
   );
 }

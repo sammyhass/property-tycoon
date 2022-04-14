@@ -22,7 +22,11 @@ export default function BoardSpacePlayers({
       zIndex={100}
     >
       {players.map(player => (
-        <PlayerToken token={player} key={player} />
+        <PlayerToken
+          token={player}
+          key={player}
+          layoutId="board-space-player"
+        />
       ))}
     </Flex>
   );

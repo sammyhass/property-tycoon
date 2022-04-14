@@ -1,8 +1,4 @@
 import { useGameContext } from '@/hooks/useGameContext';
-import {
-  calculateStationRent,
-  calculateUtilityMulitplier,
-} from '@/util/calculate-rent';
 import { formatPrice } from '@/util/formatPrice';
 import {
   Alert,
@@ -23,6 +19,7 @@ import { CardAction, CardType } from '@prisma/client';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActionModalProps } from '.';
 import GameCard from '../Board/cards/Card';
+import { PropertyRentInfo } from '../Board/PropertyStack';
 import BoardSpace from '../Board/spaces';
 
 // Action Modal Content Components
@@ -39,8 +36,6 @@ export const ActionModalGetOutJail = ({ action }: ActionModalProps) => {
     failedToGetOutOfJail,
   } = useGameContext();
 
-  if (!currentPlayer) return <></>;
-
   const [choice, setChoice] = useState<'roll' | 'pay'>('roll');
 
   const [roll, setRoll] = useState<[number, number] | null>(null);
@@ -49,6 +44,7 @@ export const ActionModalGetOutJail = ({ action }: ActionModalProps) => {
   const [didPay, setDidPay] = useState(false);
 
   const handleContinue = useCallback(() => {
+    if (!currentPlayer) return;
     if (didPay || (roll && roll[0] === roll[1])) {
       freeFromJail(currentPlayer.token);
       if (roll && roll[0] === roll[1]) {
@@ -58,23 +54,34 @@ export const ActionModalGetOutJail = ({ action }: ActionModalProps) => {
       failedToGetOutOfJail(currentPlayer.token);
     }
     hideActionModal();
-  }, [currentPlayer, hideActionModal, move, roll, didPay, freeFromJail]);
+  }, [
+    failedToGetOutOfJail,
+    currentPlayer,
+    hideActionModal,
+    move,
+    roll,
+    didPay,
+    freeFromJail,
+  ]);
 
   const handleDiceRoll = useCallback(() => {
+    if (!currentPlayer) return;
     const [roll1, roll2] = rollDice();
     setRoll([roll1, roll2]);
     setDidRoll(true);
-  }, [rollDice]);
+  }, [rollDice, currentPlayer]);
 
   const handlePayToGetOut = useCallback(() => {
+    if (!currentPlayer) return;
     payBank(currentPlayer?.token, 50);
     setDidPay(true);
   }, [currentPlayer, payBank]);
 
+  if (!currentPlayer) return <></>;
   return (
     <Flex direction={'column'} gap="5px">
       <Heading size="md" py="10px">
-        You're in Jail!
+        You&apos;sre in Jail!
       </Heading>
 
       {!(didRoll || didPay) && (
@@ -229,15 +236,38 @@ export const ActionModalRoll = () => {
 };
 
 export const ActionModalGo = ({}) => {
-  const { payBank, currentPlayer, state } = useGameContext();
+  const { payBank, currentPlayer, hideActionModal } = useGameContext();
+
+  const [loading, setLoading] = useState(false);
+
+  const collect = useCallback(() => {
+    setLoading(true);
+    if (!currentPlayer) return;
+    payBank(currentPlayer.token, -200);
+
+    setTimeout(() => {
+      setLoading(false);
+
+      hideActionModal();
+    }, 500);
+  }, [currentPlayer, payBank, hideActionModal]);
 
   if (!currentPlayer) return <></>;
 
   return (
-    <Box>
+    <Flex direction={'column'} gap="5px" align={'center'}>
+      <Heading size="4xl">🎉</Heading>
       <Heading size="md">You landed on Go!</Heading>
-      <Box>Collect £ from the bank!</Box>
-    </Box>
+      <Box>Collect {formatPrice(200)} from the bank!</Box>
+      <Button
+        w="100%"
+        colorScheme={'green'}
+        isLoading={loading}
+        onClick={collect}
+      >
+        Collect £200
+      </Button>
+    </Flex>
   );
 };
 
@@ -265,6 +295,8 @@ export const ActionModalTakeCard = ({ cardType }: { cardType: CardType }) => {
   const performAction = useCallback(() => {
     if (!cardAction || !currentPlayer?.token) return;
 
+    hideActionModal();
+
     switch (cardAction.action_type) {
       case 'EARN_FROM_BANK':
         payBank(currentPlayer?.token, -(cardAction?.cost ?? 0));
@@ -285,11 +317,15 @@ export const ActionModalTakeCard = ({ cardType }: { cardType: CardType }) => {
       default:
         break;
     }
-
-    setTimeout(() => {
-      hideActionModal();
-    }, 1000);
-  }, [cardAction]);
+  }, [
+    cardAction,
+    currentPlayer,
+    gameSettings,
+    hideActionModal,
+    payBank,
+    sendToJail,
+    goto,
+  ]);
 
   return (
     <Flex direction={'column'} justify={'center'} align="center">
@@ -357,42 +393,7 @@ export const ActionModalBuy = () => {
         <Heading size="md">
           {property.name} - {formatPrice(property.price ?? 0)}
         </Heading>
-        {property.property_group_color !== 'STATION' &&
-        property.property_group_color !== 'UTILITIES' ? (
-          <Text p="0" fontWeight={'600'}>
-            Rent Unimproved: {formatPrice(property.rent_unimproved ?? 0)}
-            <br />
-            Rent 1 House: {formatPrice(property.rent_one_house ?? 0)}
-            <br />
-            Rent 2 Houses: {formatPrice(property.rent_two_house ?? 0)}
-            <br />
-            Rent 3 Houses: {formatPrice(property.rent_three_house ?? 0)}
-            <br />
-            Rent 4 Houses: {formatPrice(property.rent_four_house ?? 0)}
-            <br />
-            Rent Hotel: {formatPrice(property.rent_hotel ?? 0)}
-          </Text>
-        ) : property.property_group_color === 'STATION' ? (
-          <Stack spacing={'4px'}>
-            {new Array(4).fill(0).map((_, i) => (
-              <Text m="0">
-                If player owns {i + 1} station{i + 1 > 1 ? 's' : ''} - Rent is{' '}
-                {formatPrice(calculateStationRent(i + 1))}
-              </Text>
-            ))}
-          </Stack>
-        ) : property.property_group_color === 'UTILITIES' ? (
-          <Stack spacing={'4px'}>
-            {new Array(2).fill(0).map((_, i) => (
-              <Text m="0">
-                If player owns {i + 1} utilit{i + 1 > 1 ? 'ies' : 'y'} - Rent is{' '}
-                {calculateUtilityMulitplier(i + 1)}x dice roll
-              </Text>
-            ))}
-          </Stack>
-        ) : (
-          <></>
-        )}
+        <PropertyRentInfo property={property} />
       </Box>
       <Flex direction="column" gap="5px">
         <Button
@@ -464,26 +465,25 @@ export const ActionModalPayRent = () => {
     hideActionModal,
   } = useGameContext();
 
-  if (!gameSettings || !currentPlayer) return <></>;
-
-  const space = gameSettings?.BoardSpaces.find(
-    space => space.board_position === (state[currentPlayer?.token]?.pos ?? 0)
-  );
+  const space = currentPlayer?.token
+    ? gameSettings?.BoardSpaces.find(
+        space =>
+          space.board_position === (state[currentPlayer?.token]?.pos ?? 0)
+      )
+    : null;
 
   const property = gameSettings?.Properties.find(
     property => property.id === space?.property_id
   );
 
-  if (!property) return <></>;
+  const owner = isOwned(property?.id ?? '');
 
-  const owner = isOwned(property?.id);
+  const rent = useMemo(() => {
+    if (!property) return 0;
+    return calculateRent(property?.id);
+  }, [calculateRent, property]);
 
-  if (!owner) return <></>;
-
-  const rent = useMemo(
-    () => calculateRent(property?.id),
-    [property?.id, calculateRent]
-  );
+  if (!owner || !property) return <></>;
 
   return (
     <Flex direction={'column'} justify={'center'} align="center">
@@ -494,6 +494,7 @@ export const ActionModalPayRent = () => {
         w={'100%'}
         colorScheme={'red'}
         onClick={() => {
+          if (!currentPlayer) return;
           payPlayer(currentPlayer?.token, owner?.token, rent);
 
           setTimeout(() => {
@@ -518,7 +519,7 @@ export const ActionModalFreeParking = () => {
   useEffect(() => {
     if (!currentPlayer) return;
     const v = landedOnFreeParking(currentPlayer.token);
-  }, [currentPlayer]);
+  }, [currentPlayer, landedOnFreeParking]);
 
   return (
     <Flex direction={'column'} justify={'center'} align="center">

@@ -11,7 +11,7 @@ import {
 } from '@prisma/client';
 import React from 'react';
 import BoardSpacePlayers from './players';
-import styles from './spaces.module.css';
+import styles from './spaces.module.scss';
 
 // Board Space Aspect ratio as defined in the css file. Useful to use when we need our spaces to show larger or smaller
 export const BOARD_SPACE_ASPECT_RATIO = 11 / 7;
@@ -21,6 +21,8 @@ type HasPlayerT = { hasPlayers?: TokenType[] };
 
 type BoardSpaceProps = BoardSpaceT & {
   property: GameProperty | null;
+
+  // Whether or not to rotate this board space 90 degrees
 };
 
 export default function BoardSpace(props: BoardSpaceProps & HasPlayerT) {
