@@ -341,10 +341,7 @@ export const GameContextProvider = ({
         } as PlayerState[TokenType],
       }));
 
-      // count the number of bankrupt players
-      const numBankrupt = Object.values(state).filter(
-        p => p.isBankrupt === true
-      ).length;
+      endTurn();
 
       // find the player who is not bankrupt
       const winner = Object.entries(state)

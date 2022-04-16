@@ -560,7 +560,6 @@ export const ActionModalTax = () => {
           }
           setTimeout(() => {
             hideActionModal();
-            endTurn();
           }, 1000);
         }}
       >
