@@ -47,7 +47,7 @@ export default function GameLayout() {
 }
 
 const GamePlayersDisplay = () => {
-  const { players, currentPlayer } = useGameContext();
+  const { players, currentPlayer, state } = useGameContext();
 
   const [selectedPlayer, setSelectedPlayer] = useState<TokenType | undefined>();
 
@@ -72,6 +72,7 @@ const GamePlayersDisplay = () => {
     >
       {players.map(player => (
         <Flex
+          opacity={state[player.token]?.isBankrupt ? 0.5 : 1}
           key={player.token}
           onClick={() =>
             setSelectedPlayer(

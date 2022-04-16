@@ -25,7 +25,6 @@ import {
 } from 'react';
 
 // Constants
-const NUM_TILES = 40;
 const STARTING_MONEY = 50000;
 
 // Tokens a player can use in the game (gonna be emoji)
@@ -61,6 +60,8 @@ export type PlayerState = Partial<{
       };
     }>;
 
+    isBankrupt: boolean;
+
     // Current money belonging to player.
     money: number;
 
@@ -93,10 +94,10 @@ export type GameContextT = {
   rollDice: () => [number, number];
 
   // Move function moves a player by a given number of tiles.
-  move: (player: TokenType, position: number) => void;
+  move: (player: TokenType, position: number, passGo?: boolean) => void;
 
   // goto function moves a player to a given tile.
-  goto: (player: TokenType, position: number) => void;
+  goto: (player: TokenType, position: number, passGo?: boolean) => void;
 
   time: number;
 
@@ -160,6 +161,12 @@ export type GameContextT = {
   sendToJail: (player: TokenType) => void;
   freeFromJail: (player: TokenType) => void;
   failedToGetOutOfJail: (player: TokenType) => void;
+
+  // Bankrupt a player
+  bankrupt: (player: TokenType) => void;
+
+  // Whether or not a player could pay an amount of money after mortgaging all their properties
+  couldPay: (player: TokenType, amount: number) => boolean;
 };
 
 export const GameContext = createContext<GameContextT>({
@@ -180,6 +187,8 @@ export const GameContext = createContext<GameContextT>({
   resume: () => {},
   removePlayer: () => {},
   calculateRent: () => 0,
+  bankrupt: () => {},
+  couldPay: () => false,
   payPlayer: () => {},
   resetGame: () => {},
   isMortgaged: () => false,
@@ -316,6 +325,76 @@ export const GameContextProvider = ({
       }));
     },
     [setState]
+  );
+
+  const bankrupt = useCallback(
+    (player: TokenType) => {
+      toast({
+        title: `
+        🎲 ${TOKENS_MAP[player]} is bankrupt`,
+      });
+      setState(state => ({
+        ...state,
+        [player]: {
+          ...state[player],
+          isBankrupt: true,
+        } as PlayerState[TokenType],
+      }));
+
+      // count the number of bankrupt players
+      const numBankrupt = Object.values(state).filter(
+        p => p.isBankrupt === true
+      ).length;
+
+      // find the player who is not bankrupt
+      const winner = Object.entries(state)
+        .filter(([k, v]) => v.isBankrupt === false)
+        .map(([k, v]) => k as TokenType);
+
+      if (winner.length === 1) {
+        toast({
+          title: `
+          🎉
+          ${TOKENS_MAP[winner[0]]} is the winner!`,
+        });
+
+        setTimeout(() => {
+          resetGame();
+        }, 1000);
+      }
+    },
+    [setState]
+  );
+
+  // Works out if a player could pay an amount of money after mortgaging all their properties
+  const couldPay = useCallback(
+    (player: TokenType, amount: number) => {
+      const playerState = state[player];
+
+      if (!playerState) return false;
+
+      const { propertiesOwned } = playerState;
+
+      let total = 0;
+
+      total += playerState.money;
+
+      // This is super inefficient, but the player generally wont own enough properties to make this super slow.
+      for (const propertyGroup of Object.values(propertiesOwned)) {
+        for (const [id, property] of Object.entries(propertyGroup)) {
+          if (property.mortgaged) continue;
+
+          const p = gameSettings?.Properties.find(p => p.id === id);
+
+          if (!p) continue;
+
+          total += (p.price ?? 0) / 2;
+        }
+      }
+
+      return total >= amount;
+    },
+    [state, gameSettings]
   );
 
   // Work out if a property is owned and by which player
@@ -522,7 +601,6 @@ export const GameContextProvider = ({
           ...state,
           [player]: {
             ...state[player],
-            pos: newPos,
             money: (state[player]?.money ?? 0) + (passGo ? 200 : 0),
           },
         });
@@ -585,7 +663,13 @@ export const GameContextProvider = ({
         case SpaceType.PROPERTY:
           if (!nextBoardSpace.property_id) break; // We know that if the board space is property, it must have a property id
           const owner = isOwned(nextBoardSpace.property_id);
-          if (owner && owner.token !== player) {
+          if (
+            owner &&
+            owner.token !== player &&
+            state[owner.token] &&
+            !state[owner.token]?.inJail &&
+            !state[owner.token]?.isBankrupt
+          ) {
             // If the property is owned, show the rent modal, otherwise show the buy modal
             showActionModal('PAY_RENT');
           } else if (!owner) {
@@ -788,33 +872,42 @@ export const GameContextProvider = ({
   const endTurn = useCallback(() => {
     hideActionModal();
 
-    // Find the next player
-    const nextPlayerIndex =
-      players.findIndex(p => p.token === currentPlayerToken) + 1;
+    let nextIsBankrupt = true;
 
-    let _currentPlayer: Player;
+    let _currentPlayer: Player | undefined;
+    let checker = 0;
 
-    if (nextPlayerIndex >= players.length) {
-      _currentPlayer = players[0];
-    } else {
-      _currentPlayer = players[nextPlayerIndex];
+    while (nextIsBankrupt && checker < players.length) {
+      const nextPlayerIndex =
+        players.findIndex(p => p.token === currentPlayerToken) + 1;
+
+      if (nextPlayerIndex >= players.length) {
+        _currentPlayer = players[0];
+      } else {
+        _currentPlayer = players[nextPlayerIndex];
+      }
+
+      checker++;
+      nextIsBankrupt = state[_currentPlayer.token]?.isBankrupt ?? false;
     }
 
-    setCurrentPlayer(_currentPlayer.token);
+    if (_currentPlayer) {
+      setCurrentPlayer(_currentPlayer.token);
 
-    // Begin next players turn
-    // Check first if they are in jail.
-    if (state[_currentPlayer.token]?.inJail) {
-      showActionModal('GET_OUT_OF_JAIL');
-      return;
-    }
+      // Begin next players turn
+      // Check first if they are in jail.
+      if (state[_currentPlayer.token]?.inJail) {
+        showActionModal('GET_OUT_OF_JAIL');
+        return;
+      }
 
-    toast({
-      title: `
+      toast({
+        title: `
       🎉 ${TOKENS_MAP[_currentPlayer.token]} ${_currentPlayer.name}'s turn`,
-    });
+      });
 
-    showActionModal('ROLL');
+      showActionModal('ROLL');
+    }
   }, [players, currentPlayerToken]);
 
   useEffect(() => {
@@ -868,8 +961,9 @@ export const GameContextProvider = ({
           ...acc,
           [player.token]: {
             pos: 0,
-            propertiesOwned: [],
+            propertiesOwned: {},
             money: STARTING_MONEY,
+            isBankrupt: false,
           },
         }),
         {}
@@ -1014,6 +1108,8 @@ export const GameContextProvider = ({
         time,
         hideActionModal,
         endTurn,
+        bankrupt,
+        couldPay,
         isMortgaged,
         showBuyHouseAction,
         hideBuyHouseAction,

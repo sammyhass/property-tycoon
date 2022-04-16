@@ -53,6 +53,11 @@ export default function PlayerState({
           <Badge colorScheme={'green'} fontSize="md" ml="5px">
             💰 {formatPrice(player.money ?? 0)}
           </Badge>
+          {player.isBankrupt && (
+            <Badge colorScheme={'red'} fontSize="md" ml="5px">
+              💀 BANKRUPT
+            </Badge>
+          )}
           {player.inJail && (
             <Badge colorScheme={'red'} fontSize="md">
               In Jail

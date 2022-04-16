@@ -158,6 +158,7 @@ export const ActionModalGetOutJail = ({ action }: ActionModalProps) => {
 
   const handlePayToGetOut = useCallback(() => {
     if (!currentPlayer) return;
+
     payBank(currentPlayer?.token, 50);
     setDidPay(true);
   }, [currentPlayer, payBank]);
@@ -367,7 +368,9 @@ export const ActionModalTakeCard = ({ cardType }: { cardType: CardType }) => {
     payBank,
     currentPlayer,
     gameSettings,
+    bankrupt,
     goto,
+    couldPay,
     sendToJail,
     hideActionModal,
   } = useGameContext();
@@ -391,7 +394,11 @@ export const ActionModalTakeCard = ({ cardType }: { cardType: CardType }) => {
         payBank(currentPlayer?.token, -(cardAction?.cost ?? 0));
         break;
       case 'PAY_BANK':
-        payBank(currentPlayer?.token, cardAction?.cost ?? 0);
+        if (couldPay(currentPlayer?.token, cardAction?.cost ?? 0)) {
+          payBank(currentPlayer?.token, cardAction?.cost ?? 0);
+        } else {
+          bankrupt(currentPlayer?.token);
+        }
         break;
       case 'GO_TO_JAIL':
         sendToJail(currentPlayer?.token);
@@ -516,8 +523,17 @@ export const ActionModalBuy = () => {
 };
 
 export const ActionModalTax = () => {
-  const { gameSettings, state, currentPlayer, payBank, hideActionModal } =
-    useGameContext();
+  const {
+    gameSettings,
+    state,
+    bankrupt,
+    currentPlayer,
+    couldPay,
+    payBank,
+    endTurn,
+
+    hideActionModal,
+  } = useGameContext();
 
   if (!gameSettings || !currentPlayer) return <></>;
 
@@ -527,6 +543,8 @@ export const ActionModalTax = () => {
 
   const taxAmount = space?.tax_cost ?? 0;
 
+  const couldPayTax = couldPay(currentPlayer?.token, taxAmount);
+
   return (
     <Flex direction={'column'} justify={'center'} align="center">
       <Heading size="md">Pay the Tax</Heading>
@@ -535,13 +553,18 @@ export const ActionModalTax = () => {
         w={'100%'}
         colorScheme={'red'}
         onClick={() => {
-          payBank(currentPlayer?.token, taxAmount);
+          if (couldPayTax) {
+            payBank(currentPlayer?.token, taxAmount);
+          } else {
+            bankrupt(currentPlayer?.token);
+          }
           setTimeout(() => {
             hideActionModal();
+            endTurn();
           }, 1000);
         }}
       >
-        Pay
+        {couldPayTax ? 'Pay' : "You're Bankrupt!"}
       </Button>
     </Flex>
   );
@@ -552,6 +575,8 @@ export const ActionModalPayRent = () => {
     payPlayer,
     gameSettings,
     currentPlayer,
+    bankrupt,
+    couldPay,
     state,
     isOwned,
     calculateRent,
@@ -577,7 +602,7 @@ export const ActionModalPayRent = () => {
     return !isMortgaged(property.id) ? calculateRent(property?.id) : 0;
   }, [calculateRent, property, isMortgaged]);
 
-  if (!owner || !property) return <></>;
+  if (!owner || !property || !currentPlayer?.token) return <></>;
 
   return (
     <Flex direction={'column'} justify={'center'} align="center">
@@ -589,14 +614,17 @@ export const ActionModalPayRent = () => {
         colorScheme={'red'}
         onClick={() => {
           if (!currentPlayer) return;
-          payPlayer(currentPlayer?.token, owner?.token, rent);
-
+          if (couldPay(currentPlayer?.token, rent ?? 0)) {
+            payPlayer(currentPlayer?.token, owner?.token, rent);
+          } else {
+            bankrupt(currentPlayer?.token);
+          }
           setTimeout(() => {
             hideActionModal();
           }, 1000);
         }}
       >
-        Pay
+        {couldPay(currentPlayer?.token, rent ?? 0) ? 'Pay' : "You're Bankrupt!"}
       </Button>
     </Flex>
   );
