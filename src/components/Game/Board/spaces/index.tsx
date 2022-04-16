@@ -1,4 +1,4 @@
-import { TokenType } from '@/hooks/useGameContext';
+import { TokenType, useGameContext } from '@/hooks/useGameContext';
 import { formatPrice } from '@/util/formatPrice';
 import { propertyGroupToCSS } from '@/util/property-colors';
 import { Box, ChakraProps, Flex, Text } from '@chakra-ui/react';
@@ -9,7 +9,8 @@ import {
   CardType,
   GameProperty,
 } from '@prisma/client';
-import React from 'react';
+import React, { useMemo } from 'react';
+import BoardSpaceHouses from './BoardSpaceHouses';
 import BoardSpacePlayers from './players';
 import styles from './spaces.module.scss';
 
@@ -59,35 +60,61 @@ const BoardSpaceInner = (props: BoardSpaceProps) => {
 BoardSpace.Property = ({
   property,
   ...props
-}: { property: GameProperty | null } & HasPlayerT & ChakraProps) => (
-  <Box
-    className={`${styles.boardSpace} ${styles.property}`}
-    style={{
-      background: propertyGroupToCSS[property?.property_group_color ?? 'NONE'],
-    }}
-    {...props}
-  >
-    <div className={styles.boardBackground} />
-    <div className={styles.propertyContent}>
-      <Flex w="100%" justify="center" align="center">
-        {property?.property_group_color === 'STATION' ? (
-          <FontAwesomeIcon icon={faTrain} size="2x" />
-        ) : property?.property_group_color === 'UTILITIES' ? (
-          <Flex w="100%" justify="center" align="center">
-            <FontAwesomeIcon icon={faFaucet} size="2x" />
-          </Flex>
-        ) : (
-          <></>
-        )}
-      </Flex>
+}: { property: GameProperty | null; nHouses?: number } & HasPlayerT &
+  ChakraProps) => {
+  const { isOwned, state } = useGameContext();
 
-      <div className={`${styles.propertyText}`}>{property?.name}</div>
-      <div className={styles.propertyPrice}>
-        {formatPrice(property?.price ?? 0)}
+  const owner = useMemo(() => {
+    if (!property) return null;
+    return isOwned(property?.id);
+  }, [isOwned, property, state]);
+
+  if (!property) return <BoardSpace.Empty />;
+
+  const nHouses = useMemo(
+    () =>
+      owner?.ownerState?.propertiesOwned[property.property_group_color]?.[
+        property.id
+      ]?.houses ?? 0,
+    [owner, property]
+  );
+
+  return (
+    <Box
+      className={`${styles.boardSpace} ${styles.property}`}
+      style={{
+        background:
+          propertyGroupToCSS[property?.property_group_color ?? 'NONE'],
+      }}
+      {...props}
+    >
+      {nHouses > 0 && (
+        <Box top="5px" pos="absolute">
+          <BoardSpaceHouses nHouses={nHouses} />
+        </Box>
+      )}
+      <div className={styles.boardBackground} />
+      <div className={styles.propertyContent}>
+        <Flex w="100%" justify="center" align="center">
+          {property?.property_group_color === 'STATION' ? (
+            <FontAwesomeIcon icon={faTrain} size="2x" />
+          ) : property?.property_group_color === 'UTILITIES' ? (
+            <Flex w="100%" justify="center" align="center">
+              <FontAwesomeIcon icon={faFaucet} size="2x" />
+            </Flex>
+          ) : (
+            <></>
+          )}
+        </Flex>
+
+        <div className={`${styles.propertyText}`}>{property?.name}</div>
+        <div className={styles.propertyPrice}>
+          {formatPrice(property?.price ?? 0)}
+        </div>
       </div>
-    </div>
-  </Box>
-);
+    </Box>
+  );
+};
 
 BoardSpace.Empty = (props: HasPlayerT) => (
   <div className={styles.boardSpace}>

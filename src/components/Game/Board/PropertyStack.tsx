@@ -10,6 +10,7 @@ import {
   Badge,
   Box,
   Button,
+  Divider,
   Flex,
   Heading,
   HStack,
@@ -23,10 +24,15 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Text,
 } from '@chakra-ui/react';
 import { faMoneyBill } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { GameProperty, PropertyGroupColor } from '@prisma/client';
+import {
+  GameProperty,
+  PropertyGroup,
+  PropertyGroupColor,
+} from '@prisma/client';
 import React, { useEffect, useMemo, useState } from 'react';
 import BoardSpace from './spaces';
 
@@ -41,9 +47,9 @@ export default function PropertyGroupStack({
   const {
     unmortgage,
     mortgage,
-    buyHouse,
-    state,
+    showBuyHouseAction,
     gameSettings,
+    canEndTurn,
     currentPlayer,
     isMortgaged,
     isOwned,
@@ -162,6 +168,7 @@ export default function PropertyGroupStack({
               {selected && (
                 <PropertyRentInfo
                   nHouses={housesOnSelected}
+                  group={propertyGroup}
                   property={selected}
                 />
               )}
@@ -197,12 +204,15 @@ export default function PropertyGroupStack({
                   propertyGroup.color === 'STATION' ||
                   propertyGroup.color === 'UTILITIES'
                 ) &&
+                canEndTurn &&
                 selected?.id &&
                 selectedPropertyOwner?.token && (
                   <Button
-                    onClick={() =>
-                      buyHouse(selectedPropertyOwner?.token, selected?.id, 1)
-                    }
+                    onClick={() => {
+                      if (!selected) return;
+                      showBuyHouseAction(selected.id);
+                      setSelected(null);
+                    }}
                     leftIcon={<FontAwesomeIcon icon={faMoneyBill} />}
                     disabled={
                       selectedPropertyOwner?.ownerState?.propertiesOwned?.[
@@ -230,9 +240,11 @@ export default function PropertyGroupStack({
 export function PropertyRentInfo({
   property,
   nHouses = undefined,
+  group = undefined,
 }: {
   property: GameProperty;
   nHouses?: number;
+  group?: PropertyGroup;
 }) {
   const renderedList = useMemo(() => {
     return (
@@ -242,7 +254,7 @@ export function PropertyRentInfo({
               <ListItem
                 key={i}
                 fontWeight={i === nHouses ? 'bold' : 'normal'}
-                color={i === nHouses ? 'green' : 'gray'}
+                color={i === nHouses ? 'green' : ''}
               >
                 <ListIcon>
                   <FontAwesomeIcon
@@ -291,6 +303,15 @@ export function PropertyRentInfo({
     <Box mx="auto" my="20px">
       <Heading size="md">Rent</Heading>
       {renderedList}
+      <Divider my="20px" />
+      {property.property_group_color !== 'STATION' &&
+        property.property_group_color !== 'UTILITIES' && (
+          <Box>
+            <Heading size="md">Houses and Hotels</Heading>
+            <Text>🏠 House Cost: {formatPrice(group?.house_cost ?? 0)}</Text>
+            <Text>🏨 Hotel Cost: {formatPrice(group?.hotel_cost ?? 0)}</Text>
+          </Box>
+        )}
     </Box>
   );
 }

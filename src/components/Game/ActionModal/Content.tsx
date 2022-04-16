@@ -3,6 +3,7 @@ import { formatPrice } from '@/util/formatPrice';
 import {
   Alert,
   AlertDescription,
+  AlertIcon,
   Box,
   Button,
   Divider,
@@ -23,6 +24,89 @@ import { PropertyRentInfo } from '../Board/PropertyStack';
 import BoardSpace from '../Board/spaces';
 
 // Action Modal Content Components
+
+export const ActionModalBuyHouse = () => {
+  const {
+    buyHouse,
+    hideBuyHouseAction,
+    propertyToBuyHouseOn,
+    state,
+    gameSettings,
+    currentPlayer,
+  } = useGameContext();
+
+  const currentHouses = useMemo(() => {
+    if (!propertyToBuyHouseOn || !currentPlayer) return 0;
+    return state?.[currentPlayer?.token]?.propertiesOwned?.[
+      propertyToBuyHouseOn?.property_group_color
+    ]?.[propertyToBuyHouseOn?.id]?.houses;
+  }, [
+    state,
+    currentPlayer,
+    propertyToBuyHouseOn,
+    state[currentPlayer?.token ?? 'boot']?.propertiesOwned,
+  ]);
+
+  const houseCost = useMemo(() => {
+    if (!propertyToBuyHouseOn) return 0;
+    return gameSettings?.PropertyGroups.find(
+      group => group.color === propertyToBuyHouseOn.property_group_color
+    )?.house_cost;
+  }, [propertyToBuyHouseOn, gameSettings?.PropertyGroups]);
+
+  const hotelCost = useMemo(() => {
+    if (!propertyToBuyHouseOn) return 0;
+    return gameSettings?.PropertyGroups.find(
+      group => group.color === propertyToBuyHouseOn.property_group_color
+    )?.hotel_cost;
+  }, [propertyToBuyHouseOn, gameSettings?.PropertyGroups]);
+
+  return (
+    <Box>
+      <Heading size="sm">Buy a house on {propertyToBuyHouseOn?.name}?</Heading>
+      <Flex w="100%" align={'center'} justify="center" my="10px">
+        <BoardSpace.Property
+          property={propertyToBuyHouseOn}
+          nHouses={currentHouses}
+        />
+      </Flex>
+      {(currentHouses ?? 0) < 5 && (
+        <Button
+          w="100%"
+          colorScheme="green"
+          onClick={() => {
+            if (!currentPlayer || !propertyToBuyHouseOn) return;
+            buyHouse(currentPlayer?.token, propertyToBuyHouseOn.id, 1);
+          }}
+        >
+          {`Buy a ${
+            (currentHouses ?? 0) < 4 ? 'House' : 'Hotel'
+          } for ${formatPrice(
+            (currentHouses ?? 0) < 4 ? houseCost ?? 0 : hotelCost ?? 0
+          )}`}
+        </Button>
+      )}
+
+      {(currentHouses ?? 0) === 5 && (
+        <Alert mt="10px">
+          <AlertIcon />
+          <AlertDescription>
+            You have already bought a hotel on this property.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <Button
+        onClick={hideBuyHouseAction}
+        w="100%"
+        colorScheme={'purple'}
+        mt="10px"
+      >
+        All Done!
+      </Button>
+    </Box>
+  );
+};
 
 export const ActionModalGetOutJail = ({ action }: ActionModalProps) => {
   const {
@@ -194,7 +278,8 @@ export const ActionModalRoll = () => {
     if (!currentPlayer) return;
     setIsMoving(true);
     setTimeout(() => {
-      move(currentPlayer.token, diceRoll![0] + diceRoll![1]);
+      // move(currentPlayer.token, diceRoll![0] + diceRoll![1]);
+      move(currentPlayer.token, 1);
       setIsMoving(false);
     }, 500);
   }, [currentPlayer, diceRoll, move]);
@@ -377,6 +462,10 @@ export const ActionModalBuy = () => {
     property => property.id === space?.property_id
   );
 
+  const group = gameSettings?.PropertyGroups.find(
+    group => group.color === property?.property_group_color
+  );
+
   if (!property) return <></>;
 
   const handleBuy = () => {
@@ -398,7 +487,7 @@ export const ActionModalBuy = () => {
         <Heading size="md">
           {property.name} - {formatPrice(property.price ?? 0)}
         </Heading>
-        <PropertyRentInfo property={property} />
+        <PropertyRentInfo property={property} group={group} />
       </Box>
       <Flex direction="column" gap="5px">
         <Button

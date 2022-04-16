@@ -3,6 +3,7 @@ import React, { useMemo } from 'react';
 import HUD from '../HUD';
 import {
   ActionModalBuy,
+  ActionModalBuyHouse,
   ActionModalFreeParking,
   ActionModalGetOutJail,
   ActionModalGo,
@@ -26,8 +27,7 @@ export type ActionType =
   | 'GET_OUT_OF_JAIL' // Player attempts to get out of jail (shows instead)
   | 'FREE_PARKING' // Land on a Free Parking space
   | 'TAX' // Pay tax
-  // TODO:
-  | 'MORTGAGE'
+  | 'BUY_HOUSE' // Buy a house
   | 'GO'; // Land on a Go space
 
 export interface ActionModalProps {
@@ -36,7 +36,6 @@ export interface ActionModalProps {
 
 const actionModalComponents: Record<ActionType, React.FC<ActionModalProps>> = {
   BUY: ActionModalBuy,
-  MORTGAGE: () => <div>Mortgage</div>,
   PAY_RENT: ActionModalPayRent,
   GET_OUT_OF_JAIL: ActionModalGetOutJail,
   ROLL: ActionModalRoll,
@@ -48,6 +47,7 @@ const actionModalComponents: Record<ActionType, React.FC<ActionModalProps>> = {
   FREE_PARKING: ActionModalFreeParking,
   GO: ActionModalGo,
   TAX: ActionModalTax,
+  BUY_HOUSE: ActionModalBuyHouse,
 };
 
 export default function ActionSidebar(props: ActionModalProps) {

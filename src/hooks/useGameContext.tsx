@@ -11,6 +11,7 @@ import { Flex, useToast } from '@chakra-ui/react';
 import {
   CardAction,
   CardType,
+  GameProperty,
   PropertyGroupColor,
   SpaceType,
 } from '@prisma/client';
@@ -117,6 +118,10 @@ export type GameContextT = {
   showActionModal: (action: ActionType) => void;
   hideActionModal: () => void;
 
+  showBuyHouseAction: (propertyId: string) => void;
+  hideBuyHouseAction: () => void;
+  propertyToBuyHouseOn: GameProperty | null;
+
   // Buy a property
   buy: (player: TokenType, property_id: string) => void;
 
@@ -169,6 +174,9 @@ export const GameContext = createContext<GameContextT>({
   rollDice: () => [0, 0],
   addPlayer: () => {},
   pause: () => {},
+  hideBuyHouseAction: () => {},
+  showBuyHouseAction: () => {},
+  propertyToBuyHouseOn: null,
   resume: () => {},
   removePlayer: () => {},
   calculateRent: () => 0,
@@ -217,6 +225,10 @@ export const GameContextProvider = ({
 
   // Current action the current player is taking
   const [currentAction, setCurrentAction] = useState<ActionType | null>(null);
+
+  // The property the player wishes to buy a house on
+  const [propertyToBuyHouseOn, setPropertyToBuyHouseOn] =
+    useState<GameProperty | null>(null);
 
   const [hasStarted, setHasStarted] = useState(false);
 
@@ -498,7 +510,7 @@ export const GameContextProvider = ({
       const firstSpace = sortedSpaces[sortedSpaces.length - 1];
 
       let newPos = newPostion + moveBy;
-      if (newPos > lastSpace.board_position + 1) {
+      if (newPos >= lastSpace.board_position + 1) {
         newPos =
           newPostion +
           moveBy -
@@ -669,6 +681,21 @@ export const GameContextProvider = ({
     },
     [state, gameSettings]
   );
+
+  const showBuyHouseAction = useCallback(
+    (property_id: string) => {
+      const property = gameSettings?.Properties.find(p => p.id === property_id);
+      if (!property) return;
+      setPropertyToBuyHouseOn(property);
+      showActionModal('BUY_HOUSE');
+    },
+    [gameSettings]
+  );
+
+  const hideBuyHouseAction = useCallback(() => {
+    setPropertyToBuyHouseOn(null);
+    hideActionModal();
+  }, []);
 
   const setCurrentPlayer = useCallback(
     (player: TokenType) => {
@@ -988,11 +1015,14 @@ export const GameContextProvider = ({
         hideActionModal,
         endTurn,
         isMortgaged,
+        showBuyHouseAction,
+        hideBuyHouseAction,
         calculateRent,
         addPlayer,
         removePlayer,
         payBank,
         totalOnFreeParking,
+        propertyToBuyHouseOn,
         sendToJail,
         isOwned,
         payPlayer,
