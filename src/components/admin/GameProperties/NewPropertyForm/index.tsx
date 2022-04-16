@@ -1,4 +1,5 @@
-import BoardSpace, {
+import {
+  BoardSpaceProperty,
   BOARD_SPACE_ASPECT_RATIO,
 } from '@/components/Game/Board/spaces';
 import { API_URL } from '@/env/env';
@@ -226,7 +227,7 @@ export default function NewPropertyForm({
         <Heading fontSize="lg" mb="10px">
           Preview
         </Heading>
-        <BoardSpace.Property
+        <BoardSpaceProperty
           w={175}
           h={155 * BOARD_SPACE_ASPECT_RATIO}
           fontSize={'lg'}

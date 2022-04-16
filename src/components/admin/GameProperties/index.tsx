@@ -1,4 +1,4 @@
-import BoardSpace from '@/components/Game/Board/spaces';
+import { BoardSpaceProperty } from '@/components/Game/Board/spaces';
 import { Box, Button, Flex, Heading } from '@chakra-ui/react';
 import { GameProperty } from '@prisma/client';
 import Link from 'next/link';
@@ -46,7 +46,7 @@ GameProperties.PropertyItem = function PropertyItem(props: GameProperty) {
       href={`/admin/games/${props.game_id}/properties/${props.id}`}
       passHref
     >
-      <BoardSpace.Property property={props} cursor="pointer" />
+      <BoardSpaceProperty property={props} cursor="pointer" />
     </Link>
   );
 };

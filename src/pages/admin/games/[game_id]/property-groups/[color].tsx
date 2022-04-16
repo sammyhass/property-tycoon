@@ -1,4 +1,4 @@
-import BoardSpace from '@/components/Game/Board/spaces';
+import { BoardSpaceProperty } from '@/components/Game/Board/spaces';
 import AdminLayout from '@/components/UI/admin/AdminLayout';
 import GameNotFound from '@/components/UI/GameNotFound';
 import { prismaClient } from '@/lib/prisma';
@@ -73,7 +73,7 @@ export default function PropertyGroupPage({
         </Heading>
         <Flex my="10px" gap="10px">
           {propertyGroup.Properties.map(property => (
-            <BoardSpace.Property property={property} key={property.id} />
+            <BoardSpaceProperty property={property} key={property.id} />
           ))}
         </Flex>
         {propertyGroup.Properties.length === 0 && (

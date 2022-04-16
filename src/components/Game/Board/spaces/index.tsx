@@ -39,25 +39,25 @@ export default function BoardSpace(props: BoardSpaceProps & HasPlayerT) {
 const BoardSpaceInner = (props: BoardSpaceProps) => {
   switch (props.space_type) {
     case 'PROPERTY':
-      return <BoardSpace.Property property={props.property} />;
+      return <BoardSpaceProperty property={props.property} />;
     case 'GO':
-      return <BoardSpace.Go />;
+      return <BoardSpaceGo />;
     case 'TAKE_CARD':
-      return <BoardSpace.TakeCard cardType={props?.take_card ?? 'POT_LUCK'} />;
+      return <BoardSpaceTakeCard cardType={props?.take_card ?? 'POT_LUCK'} />;
     case 'GO_TO_JAIL':
-      return <BoardSpace.GoToJail />;
+      return <BoardSpaceGoToJail />;
     case 'JUST_VISIT':
-      return <BoardSpace.Jail />;
+      return <BoardSpaceJail />;
     case 'FREE_PARKING':
-      return <BoardSpace.FreeParking />;
+      return <BoardSpaceFreeParking />;
     case 'TAX':
-      return <BoardSpace.Tax taxCost={props.tax_cost ?? 0} />;
+      return <BoardSpaceTax taxCost={props.tax_cost ?? 0} />;
     default:
-      return <BoardSpace.Empty />;
+      return <BoardSpaceEmpty />;
   }
 };
 
-BoardSpace.Property = ({
+export const BoardSpaceProperty = ({
   property,
   ...props
 }: { property: GameProperty | null; nHouses?: number } & HasPlayerT &
@@ -69,13 +69,13 @@ BoardSpace.Property = ({
     return isOwned(property?.id);
   }, [isOwned, property, state]);
 
-  if (!property) return <BoardSpace.Empty />;
-
   const nHouses = useMemo(
     () =>
-      owner?.ownerState?.propertiesOwned[property.property_group_color]?.[
-        property.id
-      ]?.houses ?? 0,
+      property
+        ? owner?.ownerState?.propertiesOwned[property.property_group_color]?.[
+            property.id
+          ]?.houses ?? 0
+        : 0,
     [owner, property]
   );
 
@@ -116,7 +116,7 @@ BoardSpace.Property = ({
   );
 };
 
-BoardSpace.Empty = (props: HasPlayerT) => (
+export const BoardSpaceEmpty = (props: HasPlayerT) => (
   <div className={styles.boardSpace}>
     <div className={styles.boardBackground} />
     <div>
@@ -130,7 +130,7 @@ BoardSpace.Empty = (props: HasPlayerT) => (
 /**
  * 'Special' board spaces such as tax/card pickup/properties whose group isn't a color (e.g. Stations/Utilities)
  */
-BoardSpace.Special = ({
+export const BoardSpaceSpecial = ({
   title,
   imageComponent: ImageComponent,
 }: {
@@ -143,7 +143,10 @@ BoardSpace.Special = ({
   </div>
 );
 
-BoardSpace.Jail = (props: { jail?: HasPlayerT; visit?: HasPlayerT }) => (
+export const BoardSpaceJail = (props: {
+  jail?: HasPlayerT;
+  visit?: HasPlayerT;
+}) => (
   <div className={`${styles.boardSpace} ${styles.square} ${styles.inJail}`}>
     <div className={styles.just}>Just</div>
     <div className={styles.visiting}>Visiting</div>
@@ -159,7 +162,7 @@ BoardSpace.Jail = (props: { jail?: HasPlayerT; visit?: HasPlayerT }) => (
   </div>
 );
 
-BoardSpace.GoToJail = (props: HasPlayerT) => (
+export const BoardSpaceGoToJail = (props: HasPlayerT) => (
   <div className={`${styles.boardSpace} ${styles.square} ${styles.goToJail}`}>
     <div className={`${styles.rotate} ${styles.bottomRight}`}>
       Go to
@@ -171,7 +174,7 @@ BoardSpace.GoToJail = (props: HasPlayerT) => (
   </div>
 );
 
-BoardSpace.Go = (props: HasPlayerT) => {
+export const BoardSpaceGo = (props: HasPlayerT) => {
   return (
     <div className={`${styles.boardSpace} ${styles.square} ${styles.go}`}>
       <svg className="arrow" viewBox="0 0 14 70" fill="#AB3126" stroke="#000">
@@ -185,7 +188,7 @@ BoardSpace.Go = (props: HasPlayerT) => {
   );
 };
 
-BoardSpace.FreeParking = () => (
+export const BoardSpaceFreeParking = () => (
   <div
     className={`${styles.boardSpace} ${styles.square} ${styles.freeParking}`}
   >
@@ -199,8 +202,8 @@ BoardSpace.FreeParking = () => (
   </div>
 );
 
-BoardSpace.TakeCard = ({ cardType }: { cardType: CardType }) => (
-  <BoardSpace.Special
+export const BoardSpaceTakeCard = ({ cardType }: { cardType: CardType }) => (
+  <BoardSpaceSpecial
     title={cardType === 'POT_LUCK' ? 'Pot Luck' : 'Opportunity Knocks'}
     imageComponent={() => (
       <Text fontSize={'6xl'}>{cardType === 'POT_LUCK' ? '🎲' : '🔥'}</Text>
@@ -208,8 +211,8 @@ BoardSpace.TakeCard = ({ cardType }: { cardType: CardType }) => (
   />
 );
 
-BoardSpace.Tax = ({ taxCost }: { taxCost: number }) => (
-  <BoardSpace.Special
+export const BoardSpaceTax = ({ taxCost }: { taxCost: number }) => (
+  <BoardSpaceSpecial
     title={`£${taxCost} Tax`}
     imageComponent={() => <Text fontSize={'6xl'}>💸</Text>}
   />

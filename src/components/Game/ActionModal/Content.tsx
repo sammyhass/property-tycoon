@@ -21,7 +21,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActionModalProps } from '.';
 import GameCard from '../Board/cards/Card';
 import { PropertyRentInfo } from '../Board/PropertyStack';
-import BoardSpace from '../Board/spaces';
+import { BoardSpaceProperty } from '../Board/spaces';
 
 // Action Modal Content Components
 
@@ -65,7 +65,7 @@ export const ActionModalBuyHouse = () => {
     <Box>
       <Heading size="sm">Buy a house on {propertyToBuyHouseOn?.name}?</Heading>
       <Flex w="100%" align={'center'} justify="center" my="10px">
-        <BoardSpace.Property
+        <BoardSpaceProperty
           property={propertyToBuyHouseOn}
           nHouses={currentHouses}
         />
@@ -278,11 +278,10 @@ export const ActionModalRoll = () => {
     if (!currentPlayer) return;
     setIsMoving(true);
     setTimeout(() => {
-      // move(currentPlayer.token, diceRoll![0] + diceRoll![1]);
-      move(currentPlayer.token, 1);
+      move(currentPlayer.token, diceRoll![0] + diceRoll![1]);
       setIsMoving(false);
     }, 500);
-  }, [currentPlayer, diceRoll, move]);
+  }, [currentPlayer, move, diceRoll]);
 
   // Roll the dice.
   const handleRoll = useCallback(() => {
@@ -480,7 +479,7 @@ export const ActionModalBuy = () => {
   return (
     <Box>
       <Flex direction={'column'} justify={'center'} align="center">
-        <BoardSpace.Property property={property} />
+        <BoardSpaceProperty property={property} />
       </Flex>
       <Divider my="15px" />
       <Box my="10px" p="10px" bg="#eee" borderRadius={'8px'}>
@@ -583,7 +582,7 @@ export const ActionModalPayRent = () => {
   return (
     <Flex direction={'column'} justify={'center'} align="center">
       <Heading size="md">Pay the Rent</Heading>
-      {property && <BoardSpace.Property property={property} />}
+      {property && <BoardSpaceProperty property={property} />}
       <Text fontSize={'4xl'}>{formatPrice(rent ?? 0)}</Text>
       <Button
         w={'100%'}

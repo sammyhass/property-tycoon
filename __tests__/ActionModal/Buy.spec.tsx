@@ -1,5 +1,5 @@
 import { ActionModalBuy } from '@/components/Game/ActionModal/Content';
-import { PlayerState, TokenType } from '@/hooks/useGameContext';
+import { PlayerState } from '@/hooks/useGameContext';
 import { formatPrice } from '@/util/formatPrice';
 import { act } from '@testing-library/react';
 import React from 'react';
@@ -18,7 +18,7 @@ describe('Buy ActionModal', () => {
             inJail: false,
             money: 400,
             pos: 1,
-            propertiesOwned: [],
+            propertiesOwned: {},
             lastRoll: 4,
             turnsInJail: 0,
           },
@@ -28,7 +28,7 @@ describe('Buy ActionModal', () => {
             lastRoll: 6,
             turnsInJail: 0,
             pos: 1,
-            propertiesOwned: [],
+            propertiesOwned: {},
           },
         },
       }
@@ -48,7 +48,7 @@ describe('Buy ActionModal', () => {
           lastRoll: 5,
           turnsInJail: 0,
           pos: 1,
-          propertiesOwned: [],
+          propertiesOwned: {},
         },
         cat: {
           inJail: false,
@@ -56,7 +56,7 @@ describe('Buy ActionModal', () => {
           turnsInJail: 0,
           money: 1200,
           pos: 1,
-          propertiesOwned: [],
+          propertiesOwned: {},
         },
       },
     });
@@ -81,24 +81,19 @@ describe('Buy ActionModal', () => {
         turnsInJail: 0,
         money: 400,
         pos: 1,
-        propertiesOwned: [],
+        propertiesOwned: {},
       },
       cat: {
         inJail: false,
         money: 1200,
         pos: 1,
-        propertiesOwned: [],
+        propertiesOwned: {},
         lastRoll: 11,
         turnsInJail: 0,
       },
     };
 
-    const buy = jest
-      .fn()
-      .mockImplementation(async (player: TokenType, propertyId) => {
-        state[player]?.propertiesOwned.push(propertyId);
-      });
-
+    const buy = jest.fn();
     const { container } = renderWithGameContext(<ActionModalBuy />, {
       currentPlayer: fakePlayer('cat'),
       gameSettings,
@@ -113,8 +108,5 @@ describe('Buy ActionModal', () => {
     });
 
     expect(buy).toHaveBeenCalledWith('cat', gameSettings?.Properties?.[0].id);
-    expect(state.cat?.propertiesOwned).toContain(
-      gameSettings?.Properties?.[0].id
-    );
   });
 });

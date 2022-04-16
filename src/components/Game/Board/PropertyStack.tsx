@@ -34,7 +34,7 @@ import {
   PropertyGroupColor,
 } from '@prisma/client';
 import React, { useEffect, useMemo, useState } from 'react';
-import BoardSpace from './spaces';
+import { BoardSpaceProperty } from './spaces';
 
 // Stack of Properties (use when displaying property groups owned by a player)
 export default function PropertyGroupStack({
@@ -139,7 +139,7 @@ export default function PropertyGroupStack({
                   Mortgaged
                 </Badge>
               )}
-              <BoardSpace.Property
+              <BoardSpaceProperty
                 key={property.id}
                 property={property}
                 zIndex={i}
@@ -162,7 +162,7 @@ export default function PropertyGroupStack({
           </ModalHeader>
           <ModalBody>
             <Flex justify="center" align="center">
-              <BoardSpace.Property property={selected} />
+              <BoardSpaceProperty property={selected} />
             </Flex>
             <Box mx="auto">
               {selected && (

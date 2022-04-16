@@ -1,4 +1,4 @@
-import BoardSpace from '@/components/Game/Board/spaces';
+import { BoardSpaceProperty } from '@/components/Game/Board/spaces';
 import { formatPrice } from '@/util/formatPrice';
 import { propertyGroupToCSS } from '@/util/property-colors';
 import { render } from '@testing-library/react';
@@ -8,14 +8,14 @@ import { fakeProperty } from '../fakers';
 describe('Property Space', () => {
   it('matches snapshot', () => {
     const { container } = render(
-      <BoardSpace.Property property={fakeProperty()} />
+      <BoardSpaceProperty property={fakeProperty()} />
     );
     expect(container.firstChild).toMatchSnapshot();
   });
 
   it('renders the correct text', () => {
     const property = fakeProperty();
-    const { container } = render(<BoardSpace.Property property={property} />);
+    const { container } = render(<BoardSpaceProperty property={property} />);
     expect(container.textContent).toContain(property.name);
     expect(container.textContent).toContain(formatPrice(property.price ?? 0));
   });
@@ -30,7 +30,7 @@ describe('Property Space', () => {
     };
     const rgb = convertHexToRgb(bg);
 
-    const { container } = render(<BoardSpace.Property property={property} />);
+    const { container } = render(<BoardSpaceProperty property={property} />);
 
     expect(
       container.firstElementChild?.attributes.getNamedItem('style')?.value
