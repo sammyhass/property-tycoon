@@ -699,7 +699,10 @@ export const GameContextProvider = ({
         gameSettings
           ? {
               ...gameSettings,
-              CardActions: [...gameSettings.CardActions.slice(1), card],
+              CardActions: [
+                ...gameSettings.CardActions.filter(c => c.id !== card.id),
+                card,
+              ],
             }
           : null
       );
