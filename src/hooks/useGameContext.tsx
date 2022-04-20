@@ -222,7 +222,7 @@ export const GameContextProvider = ({
   children: React.ReactNode;
   initialGameSettings: GameSettingsT;
 }) => {
-  const toast = useToast();
+  const toast = useToast({ position: 'top' });
 
   const [gameSettings, setGameSettings] = useState<GameSettingsT | null>(
     initialGameSettings
@@ -1002,9 +1002,7 @@ export const GameContextProvider = ({
 
       if (!property) return;
 
-      const newMoney = playerState.money - value;
-
-      if (newMoney < 0) return;
+      const newMoney = playerState.money + value;
 
       setState({
         ...state,
@@ -1058,7 +1056,11 @@ export const GameContextProvider = ({
 
       if (!property) return;
 
-      const newMoney = playerState.money - (property.price ?? 0) / 2;
+      const value =
+        calculateMortgageValue(property?.price ?? 0, 0, undefined, undefined)
+          .value ?? 0;
+
+      const newMoney = playerState.money - value;
 
       if (newMoney < 0) return;
 
@@ -1083,9 +1085,9 @@ export const GameContextProvider = ({
 
       toast({
         title: `
-        🏠 ${TOKENS_MAP[player]} unmortgaged ${property.name} for £${
-          (property?.price ?? 0) / 2
-        }`,
+        🏠 ${TOKENS_MAP[player]} unmortgaged ${property.name} for ${formatPrice(
+          value
+        )}`,
         status: 'info',
       });
     },
