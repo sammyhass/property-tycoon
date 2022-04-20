@@ -1,4 +1,5 @@
 import { useGameContext } from '@/hooks/useGameContext';
+import { calculateMortgageValue } from '@/util/calculate-mortgage-value';
 import {
   calculatePropertyRent,
   calculateStationRent,
@@ -53,6 +54,7 @@ export default function PropertyGroupStack({
     currentPlayer,
     isMortgaged,
     isOwned,
+    state,
   } = useGameContext();
 
   const [selected, setSelected] = useState<GameProperty | null>(null);
@@ -64,7 +66,7 @@ export default function PropertyGroupStack({
 
   const selectedPropertyOwner = useMemo(
     () => (selected ? isOwned(selected.id) : null),
-    [selected]
+    [selected, isOwned]
   );
 
   const currentPlayerIsOwner = useMemo(
@@ -91,6 +93,19 @@ export default function PropertyGroupStack({
   );
 
   const [housesOnSelected, setHousesOnSelected] = useState<number>(0);
+
+  const selectedMortgageValue = useMemo(
+    () =>
+      selected
+        ? calculateMortgageValue(
+            selected.price ?? 0,
+            housesOnSelected,
+            propertyGroup?.hotel_cost ?? undefined,
+            propertyGroup?.house_cost ?? undefined
+          )
+        : undefined,
+    [selected, housesOnSelected, propertyGroup]
+  );
 
   useEffect(() => {
     if (selected) {
@@ -195,8 +210,14 @@ export default function PropertyGroupStack({
                 }
                 leftIcon={<FontAwesomeIcon icon={faMoneyBill} />}
               >
-                {selectedIsMortgaged ? 'Unmortgage' : 'Mortgage'} for{' '}
-                {formatPrice((selected?.price ?? 0) / 2)}
+                {selectedIsMortgaged
+                  ? 'Unmortgage'
+                  : selectedMortgageValue?.type === 'mortgage'
+                  ? 'Mortgage'
+                  : selectedMortgageValue?.type === 'sell_house'
+                  ? 'Sell House'
+                  : 'Sell Hotel'}{' '}
+                for {formatPrice(selectedMortgageValue?.value ?? 0)}
               </Button>
               {ownsAllInGroup &&
                 propertyGroup?.color &&

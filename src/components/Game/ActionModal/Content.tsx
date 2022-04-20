@@ -410,7 +410,16 @@ export const ActionModalTakeCard = ({ cardType }: { cardType: CardType }) => {
         if (property) {
           goto(currentPlayer?.token, property.board_position);
         }
+      case 'GO_TO_GO':
+        const goSpace = gameSettings?.BoardSpaces?.find(
+          space => space.space_type === 'GO'
+        );
+        if (goSpace) {
+          goto(currentPlayer?.token, goSpace.board_position);
+        }
+        break;
       default:
+        alert('Unknown card action');
         break;
     }
   }, [

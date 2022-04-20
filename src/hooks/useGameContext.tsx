@@ -1,6 +1,7 @@
 import ActionSidebar, { ActionType } from '@/components/Game/ActionModal';
 import GamePausedGuard from '@/components/Game/GamePausedGuard';
 import { GameT } from '@/pages/admin/games/[game_id]';
+import { calculateMortgageValue } from '@/util/calculate-mortgage-value';
 import {
   calculatePropertyRent,
   calculateStationRent,
@@ -23,9 +24,6 @@ import {
   useMemo,
   useState,
 } from 'react';
-
-// Constants
-const STARTING_MONEY = 50000;
 
 // Tokens a player can use in the game (gonna be emoji)
 export type TokenType =
@@ -962,7 +960,7 @@ export const GameContextProvider = ({
           [player.token]: {
             pos: 0,
             propertiesOwned: {},
-            money: STARTING_MONEY,
+            money: gameSettings?.starting_money ?? 0,
             isBankrupt: false,
           },
         }),
@@ -973,7 +971,7 @@ export const GameContextProvider = ({
     // Begin the first turn
     setCurrentPlayer(players[0].token);
     showActionModal('ROLL');
-  }, [players, setHasStarted]);
+  }, [players, setHasStarted, gameSettings?.starting_money]);
 
   // Mortgage a property
   // Morgage value is the property's price divided by 2
@@ -985,9 +983,26 @@ export const GameContextProvider = ({
       const playerState = state[player];
       if (!playerState) return;
 
+      const propertyState =
+        playerState.propertiesOwned[property.property_group_color]?.[
+          property.id
+        ];
+
+      const nHouses = propertyState?.houses ?? 0;
+      const group = gameSettings?.PropertyGroups.find(
+        pg => pg.color === property.property_group_color
+      );
+
+      const { value, type } = calculateMortgageValue(
+        property.price ?? 0,
+        nHouses,
+        group?.hotel_cost ?? undefined,
+        group?.house_cost ?? undefined
+      );
+
       if (!property) return;
 
-      const newMoney = playerState.money + (property.price ?? 0) / 2;
+      const newMoney = playerState.money - value;
 
       if (newMoney < 0) return;
 
@@ -1001,8 +1016,9 @@ export const GameContextProvider = ({
             [property.property_group_color]: {
               ...playerState.propertiesOwned[property.property_group_color],
               [property_id]: {
-                ...property,
-                mortgaged: true,
+                ...propertyState,
+                houses: nHouses > 0 ? nHouses - 1 : 0,
+                mortgaged: nHouses >= 1 ? false : true,
               },
             },
           },
@@ -1011,9 +1027,13 @@ export const GameContextProvider = ({
 
       toast({
         title: `
-        🏠 ${TOKENS_MAP[player]} mortgaged ${property.name} for £${
-          (property?.price ?? 0) / 2
-        }`,
+        🏠 ${TOKENS_MAP[player]} ${
+          type === 'mortgage'
+            ? 'mortgaged'
+            : type === 'sell_house'
+            ? 'sold a house'
+            : 'sold a hotel'
+        } ${property.name} for ${formatPrice(value)}`,
         status: 'success',
       });
     },
@@ -1028,6 +1048,11 @@ export const GameContextProvider = ({
       if (!property) return;
 
       const playerState = state[player];
+
+      const propertyState =
+        playerState?.propertiesOwned[property.property_group_color]?.[
+          property.id
+        ];
 
       if (!playerState) return;
 
@@ -1047,7 +1072,8 @@ export const GameContextProvider = ({
             [property.property_group_color]: {
               ...playerState.propertiesOwned[property.property_group_color],
               [property_id]: {
-                ...property,
+                ...propertyState,
+                houses: 0,
                 mortgaged: false,
               },
             },

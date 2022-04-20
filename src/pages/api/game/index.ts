@@ -37,6 +37,7 @@ const handleGET: NextApiHandler = async (_req, res) => {
 
 const postSchema = Joi.object().keys({
   name: Joi.string().required(),
+  starting_money: Joi.number().required(),
 });
 
 const handlePOST: NextApiHandler = async (req, res) => {
@@ -89,6 +90,7 @@ const handlePOST: NextApiHandler = async (req, res) => {
     data: {
       user_id: user.id,
       name: req.body.name,
+      starting_money: req.body.starting_money,
       BoardSpaces: {
         createMany: {
           skipDuplicates: true,
