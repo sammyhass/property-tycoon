@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import {
   Player,
   PlayerState,
@@ -8,11 +8,17 @@ import {
 
 type UsePlayerT = (token: TokenType) => {
   isTurn?: boolean;
+  sendToJail: () => void;
 } & Partial<Player> &
   Partial<PlayerState[TokenType]>;
 
 export const usePlayer: UsePlayerT = token => {
-  const { currentPlayer, players, state } = useGameContext();
+  const {
+    currentPlayer,
+    players,
+    state,
+    sendToJail: sendToJailCtx,
+  } = useGameContext();
 
   const player = useMemo(
     () => players.find(p => p.token === token),
@@ -24,9 +30,15 @@ export const usePlayer: UsePlayerT = token => {
     [currentPlayer, token]
   );
 
+  const sendToJail = useCallback(
+    () => sendToJailCtx(token),
+    [sendToJailCtx, token]
+  );
+
   return {
     ...player,
     isTurn,
+    sendToJail,
     ...state[token],
   };
 };

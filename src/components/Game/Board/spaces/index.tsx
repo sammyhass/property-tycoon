@@ -29,7 +29,10 @@ type BoardSpaceProps = BoardSpaceT & {
 export default function BoardSpace(props: BoardSpaceProps & HasPlayerT) {
   return (
     <Box pos={'relative'}>
-      <BoardSpacePlayers players={props.hasPlayers ?? []} />
+      <BoardSpacePlayers
+        players={props.hasPlayers ?? []}
+        space_type={props.space_type}
+      />
       <BoardSpaceInner {...props} />
     </Box>
   );
@@ -143,10 +146,7 @@ export const BoardSpaceSpecial = ({
   </div>
 );
 
-export const BoardSpaceJail = (props: {
-  jail?: HasPlayerT;
-  visit?: HasPlayerT;
-}) => (
+export const BoardSpaceJail = () => (
   <div className={`${styles.boardSpace} ${styles.square} ${styles.inJail}`}>
     <div className={styles.just}>Just</div>
     <div className={styles.visiting}>Visiting</div>

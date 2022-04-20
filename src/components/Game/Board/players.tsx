@@ -1,5 +1,5 @@
 import { TOKENS_MAP, TokenType } from '@/hooks/useGameContext';
-import { Box, Text } from '@chakra-ui/react';
+import { Circle, Text } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import React from 'react';
 
@@ -10,8 +10,10 @@ export default function PlayerToken({
   token: TokenType;
   layoutId: string;
 }) {
+  // const { inJail, sendToJail } = usePlayer(token);
+
   return (
-    <Box
+    <Circle
       as={motion.div}
       layoutId={`player-${token}-${layoutId}`}
       fontSize={'1.5rem'}
@@ -27,6 +29,6 @@ export default function PlayerToken({
       justifyContent={'center'}
     >
       <Text>{TOKENS_MAP[token]}</Text>
-    </Box>
+    </Circle>
   );
 }
