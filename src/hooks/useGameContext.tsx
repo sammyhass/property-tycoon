@@ -66,6 +66,9 @@ export type PlayerState = Partial<{
     // Whether player is in jail
     inJail: boolean;
 
+    // Whether or not the player has a get out of jail free card
+    hasGetOutOfJailFreeCard: boolean;
+
     // How many turns player has been in jail
     turnsInJail: number;
 
@@ -140,7 +143,7 @@ export type GameContextT = {
   payPlayer: (sender: TokenType, payee: TokenType, amount: number) => void;
 
   // Adding and removing from Free Parking
-  addToFreeParking: (amount: number) => void;
+  payToFreeParking: (player: TokenType, amount: number) => void;
   landedOnFreeParking: (player: TokenType) => number;
   totalOnFreeParking: number;
 
@@ -159,6 +162,10 @@ export type GameContextT = {
   sendToJail: (player: TokenType) => void;
   freeFromJail: (player: TokenType) => void;
   failedToGetOutOfJail: (player: TokenType) => void;
+
+  // Get out of jail free card
+  useGetOutOfJailFreeCard: (player: TokenType) => void;
+  pickUpGetOutOfJailFreeCard: (player: TokenType) => void;
 
   // Bankrupt a player
   bankrupt: (player: TokenType) => void;
@@ -179,6 +186,8 @@ export const GameContext = createContext<GameContextT>({
   rollDice: () => [0, 0],
   addPlayer: () => {},
   pause: () => {},
+  pickUpGetOutOfJailFreeCard: () => {},
+  useGetOutOfJailFreeCard: () => {},
   hideBuyHouseAction: () => {},
   showBuyHouseAction: () => {},
   propertyToBuyHouseOn: null,
@@ -190,7 +199,7 @@ export const GameContext = createContext<GameContextT>({
   payPlayer: () => {},
   resetGame: () => {},
   isMortgaged: () => false,
-  addToFreeParking: () => {},
+  payToFreeParking: () => {},
   freeFromJail: () => {},
   landedOnFreeParking: () => 0,
   isPaused: false,
@@ -222,7 +231,10 @@ export const GameContextProvider = ({
   children: React.ReactNode;
   initialGameSettings: GameSettingsT;
 }) => {
-  const toast = useToast({ position: 'top' });
+  const toast = useToast({
+    position: 'bottom-right',
+    duration: 2500,
+  });
 
   const [gameSettings, setGameSettings] = useState<GameSettingsT | null>(
     initialGameSettings
@@ -788,11 +800,19 @@ export const GameContextProvider = ({
     [players]
   );
 
-  const addToFreeParking = useCallback(
-    (amount: number) => {
-      setTotalOnFreeParking(totalOnFreeParking + amount);
+  const payToFreeParking = useCallback(
+    (player: TokenType, amount: number) => {
+      if (amount > (state[player]?.money ?? 0)) return;
+      setState({
+        ...state,
+        [player]: {
+          ...state[player],
+          money: (state[player]?.money ?? 0) - amount,
+        },
+      });
+      setTotalOnFreeParking((totalOnFreeParking ?? 0) + amount);
     },
-    [totalOnFreeParking]
+    [totalOnFreeParking, state]
   );
 
   const landedOnFreeParking = useCallback(
@@ -962,7 +982,10 @@ export const GameContextProvider = ({
             propertiesOwned: {},
             money: gameSettings?.starting_money ?? 0,
             isBankrupt: false,
-          },
+            inJail: false,
+            turnsInJail: 0,
+            hasGetOutOfJailFreeCard: false,
+          } as PlayerState[TokenType],
         }),
         {}
       )
@@ -972,6 +995,43 @@ export const GameContextProvider = ({
     setCurrentPlayer(players[0].token);
     showActionModal('ROLL');
   }, [players, setHasStarted, gameSettings?.starting_money]);
+
+  // Attempt to use a get out of jail free card
+  const useGetOutOfJailFreeCard = useCallback(
+    (player: TokenType) => {
+      const playerState = state[player];
+      if (!playerState || !playerState.inJail) return;
+      const newPlayerState = {
+        ...playerState,
+        turnsInJail: 0,
+        hasGetOutOfJailFreeCard: false,
+        inJail: false,
+      };
+      freeFromJail(player);
+      setState({
+        ...state,
+        [player]: newPlayerState,
+      });
+    },
+    [state, freeFromJail]
+  );
+
+  // Pick up a get out of jail free card
+  const pickUpGetOutOfJailFreeCard = useCallback(
+    (player: TokenType) => {
+      const playerState = state[player];
+      if (!playerState) return;
+      const newPlayerState = {
+        ...playerState,
+        hasGetOutOfJailFreeCard: true,
+      };
+      setState({
+        ...state,
+        [player]: newPlayerState,
+      });
+    },
+    [state]
+  );
 
   // Mortgage a property
   // Morgage value is the property's price divided by 2
@@ -1118,7 +1178,7 @@ export const GameContextProvider = ({
         showActionModal,
         canEndTurn,
         landedOnFreeParking,
-        addToFreeParking,
+        payToFreeParking,
         buy,
         players,
         state,
@@ -1133,6 +1193,8 @@ export const GameContextProvider = ({
         handleStartGame,
         move,
         failedToGetOutOfJail,
+        pickUpGetOutOfJailFreeCard,
+        useGetOutOfJailFreeCard,
         time,
         hideActionModal,
         endTurn,

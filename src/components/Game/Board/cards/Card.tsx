@@ -106,7 +106,9 @@ export default function GameCard({
             ? `Go Straight to ${propertyName}, if you pass Go, collect £200`
             : action_type === CardActionType.GO_TO_JAIL
             ? `Go Straight to Jail, do not pass Go, do not collect £200`
-            : null}
+            : action_type === CardActionType.GET_OUT_OF_JAIL_FREE
+            ? 'Use this card to get out of jail without penalty'
+            : ''}
         </Alert>
       </Flex>
     </Box>

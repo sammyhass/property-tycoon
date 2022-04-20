@@ -117,10 +117,11 @@ export const ActionModalGetOutJail = ({ action }: ActionModalProps) => {
     hideActionModal,
     move,
     freeFromJail,
+    useGetOutOfJailFreeCard,
     failedToGetOutOfJail,
   } = useGameContext();
 
-  const [choice, setChoice] = useState<'roll' | 'pay'>('pay');
+  const [choice, setChoice] = useState<'roll' | 'pay' | 'use_card'>('pay');
 
   const [roll, setRoll] = useState<[number, number] | null>(null);
 
@@ -163,6 +164,11 @@ export const ActionModalGetOutJail = ({ action }: ActionModalProps) => {
     setDidPay(true);
   }, [currentPlayer, payBank]);
 
+  const hasGetOutOfJailFreeCard = useMemo(() => {
+    if (!currentPlayer) return false;
+    return state?.[currentPlayer?.token]?.hasGetOutOfJailFreeCard;
+  }, [state, currentPlayer]);
+
   if (!currentPlayer) return <></>;
   return (
     <Flex direction={'column'} gap="5px">
@@ -181,9 +187,7 @@ export const ActionModalGetOutJail = ({ action }: ActionModalProps) => {
           </FormLabel>
           <RadioGroup
             value={choice}
-            onChange={v =>
-              v === 'roll' ? setChoice(v) : v === 'pay' ? setChoice(v) : null
-            }
+            onChange={v => setChoice(v as 'roll' | 'pay' | 'use_card')}
             defaultValue="pay"
           >
             <Stack direction="column" spacing="5px">
@@ -195,6 +199,11 @@ export const ActionModalGetOutJail = ({ action }: ActionModalProps) => {
               <Radio value="pay">
                 <Text>💸 Pay $50 to get out</Text>
               </Radio>
+              {hasGetOutOfJailFreeCard && (
+                <Radio value="use_card">
+                  <Text>🎁 Use Get Out of Jail Free Card</Text>
+                </Radio>
+              )}
             </Stack>
           </RadioGroup>
         </FormControl>
@@ -236,7 +245,7 @@ export const ActionModalGetOutJail = ({ action }: ActionModalProps) => {
             )}
           </Box>
         </Box>
-      ) : (
+      ) : choice === 'pay' ? (
         <Box>
           <Heading size="sm">Pay £50 to get out of jail now?</Heading>
           <Button
@@ -252,7 +261,22 @@ export const ActionModalGetOutJail = ({ action }: ActionModalProps) => {
             Pay £50 to get out
           </Button>
         </Box>
-      )}
+      ) : choice === 'use_card' && hasGetOutOfJailFreeCard ? (
+        <Box>
+          <Heading size="sm">Use Get Out of Jail Free Card?</Heading>
+          <Button
+            colorScheme={'purple'}
+            onClick={() => {
+              useGetOutOfJailFreeCard(currentPlayer.token);
+              hideActionModal();
+            }}
+            w="100%"
+            isDisabled={!currentPlayer || didPay}
+          >
+            Use Get Out of Jail Free Card
+          </Button>
+        </Box>
+      ) : null}
       {(didRoll || didPay) && (
         <Button onClick={handleContinue} mt="20px">
           {roll
@@ -369,6 +393,7 @@ export const ActionModalTakeCard = ({ cardType }: { cardType: CardType }) => {
     currentPlayer,
     gameSettings,
     bankrupt,
+    pickUpGetOutOfJailFreeCard,
     goto,
     couldPay,
     sendToJail,
@@ -417,6 +442,9 @@ export const ActionModalTakeCard = ({ cardType }: { cardType: CardType }) => {
         if (goSpace) {
           goto(currentPlayer?.token, goSpace.board_position);
         }
+        break;
+      case 'GET_OUT_OF_JAIL_FREE':
+        pickUpGetOutOfJailFreeCard(currentPlayer?.token);
         break;
       default:
         alert('Unknown card action');
@@ -539,8 +567,7 @@ export const ActionModalTax = () => {
     currentPlayer,
     couldPay,
     payBank,
-    endTurn,
-
+    payToFreeParking,
     hideActionModal,
   } = useGameContext();
 
@@ -557,13 +584,16 @@ export const ActionModalTax = () => {
   return (
     <Flex direction={'column'} justify={'center'} align="center">
       <Heading size="md">Pay the Tax</Heading>
+      <Text size="sm">
+        You are paying {formatPrice(taxAmount)} in taxes to free parking.
+      </Text>
       <Text fontSize={'4xl'}>{formatPrice(taxAmount)}</Text>
       <Button
         w={'100%'}
         colorScheme={'red'}
         onClick={() => {
           if (couldPayTax) {
-            payBank(currentPlayer?.token, taxAmount);
+            payToFreeParking(currentPlayer?.token, taxAmount);
           } else {
             bankrupt(currentPlayer?.token);
           }

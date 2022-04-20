@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "CardActionType" ADD VALUE 'GET_OUT_OF_JAIL_FREE';

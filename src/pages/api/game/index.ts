@@ -37,7 +37,7 @@ const handleGET: NextApiHandler = async (_req, res) => {
 
 const postSchema = Joi.object().keys({
   name: Joi.string().required(),
-  starting_money: Joi.number().required(),
+  starting_money: Joi.number().optional(),
 });
 
 const handlePOST: NextApiHandler = async (req, res) => {
@@ -49,8 +49,6 @@ const handlePOST: NextApiHandler = async (req, res) => {
     });
     return;
   }
-
-  console.log(data);
 
   const { error } = postSchema.validate(req.body);
   if (error) throw error;

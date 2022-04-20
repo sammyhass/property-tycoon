@@ -137,6 +137,7 @@ enum CardActionType {
   GO_TO_PROPERTY
   EARN_FROM_BANK
   EARN_FROM_PLAYER
+  GET_OUT_OF_JAIL_FREE
 }
 
 // Property group colors / types.

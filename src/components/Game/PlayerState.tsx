@@ -79,6 +79,17 @@ export default function PlayerState({
             properties={properties}
           />
         ))}
+        {player.hasGetOutOfJailFreeCard && (
+          <Box
+            w="fit-content"
+            p="15px"
+            borderRadius={'8px'}
+            shadow={'md'}
+            bg={'green.100'}
+          >
+            <Heading size="md">🆓 Get Out of Jail Free Card</Heading>
+          </Box>
+        )}
       </Flex>
     </Box>
   );
