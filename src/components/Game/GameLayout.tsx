@@ -59,10 +59,11 @@ const GamePlayersDisplay = () => {
     <Flex
       mt="10px"
       zIndex={'100'}
-      gap="5px"
+      gap="10px"
       borderRadius={'8px'}
-      minH="100px"
-      pos="sticky"
+      minH="150px"
+      left={'10px'}
+      pos="fixed"
       p="20px"
       bottom="10px"
       w="95%"
@@ -105,12 +106,27 @@ const GamePlayersDisplay = () => {
                   </Text>
                 }
               >
-                {selectedPlayer === player.token && (
+                {(selectedPlayer === player.token ||
+                  currentPlayer?.token === player.token) && (
                   <AvatarBadge
-                    borderColor="green.100"
-                    boxSize={'1.6rem'}
-                    bg="green"
-                  />
+                    borderColor={
+                      currentPlayer?.token === player.token
+                        ? 'white'
+                        : 'blue.500'
+                    }
+                    boxSize={
+                      currentPlayer?.token !== player.token
+                        ? '1.0rem'
+                        : 'fit-content'
+                    }
+                    bg={
+                      currentPlayer?.token === player.token
+                        ? 'white'
+                        : 'blue.500'
+                    }
+                  >
+                    {currentPlayer?.token === player.token ? '🎲' : ''}
+                  </AvatarBadge>
                 )}
               </Avatar>
             }
