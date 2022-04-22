@@ -1,18 +1,17 @@
 import { Box, Heading } from '@chakra-ui/react';
 import React, { useMemo } from 'react';
 import HUD from '../HUD';
-import {
-  ActionModalBuy,
-  ActionModalBuyHouse,
-  ActionModalFreeParking,
-  ActionModalGetOutJail,
-  ActionModalGo,
-  ActionModalGoToJail,
-  ActionModalPayRent,
-  ActionModalRoll,
-  ActionModalTakeCard,
-  ActionModalTax,
-} from './Content';
+import Buy from './Buy';
+import BuyHouse from './BuyHouse';
+import FreeParking from './FreeParking';
+import GetOutJail from './GetOutJail';
+import Go from './Go';
+import GoToJail from './GoToJail';
+import PayRent from './PayRent';
+import Roll from './Roll';
+import TakeCard from './TakeCard';
+import Tax from './Tax';
+import Trade from './Trade';
 
 // Different types of action modal we can use for our modal.
 export type ActionType =
@@ -28,26 +27,27 @@ export type ActionType =
   | 'FREE_PARKING' // Land on a Free Parking space
   | 'TAX' // Pay tax
   | 'BUY_HOUSE' // Buy a house
-  | 'GO'; // Land on a Go space
+  | 'GO' // Land on a Go space
+  | 'TRADE'; // Trade with another player
 
 export interface ActionModalProps {
   action: ActionType | null;
 }
 
 const actionModalComponents: Record<ActionType, React.FC<ActionModalProps>> = {
-  BUY: ActionModalBuy,
-  PAY_RENT: ActionModalPayRent,
-  GET_OUT_OF_JAIL: ActionModalGetOutJail,
-  ROLL: ActionModalRoll,
-  GO_TO_JAIL: ActionModalGoToJail,
-  TAKE_POT_LUCK: () => <ActionModalTakeCard cardType={'POT_LUCK'} />,
-  TAKE_OPPORTUNITY_KNOCKS: () => (
-    <ActionModalTakeCard cardType="OPPORTUNITY_KNOCKS" />
-  ),
-  FREE_PARKING: ActionModalFreeParking,
-  GO: ActionModalGo,
-  TAX: ActionModalTax,
-  BUY_HOUSE: ActionModalBuyHouse,
+  BUY: Buy,
+  PAY_RENT: PayRent,
+  GET_OUT_OF_JAIL: GetOutJail,
+  TRADE: Trade,
+  ROLL: Roll,
+  GO_TO_JAIL: GoToJail,
+  TAKE_POT_LUCK: () => <TakeCard cardType={'POT_LUCK'} />,
+  TAKE_OPPORTUNITY_KNOCKS: () => <TakeCard cardType="OPPORTUNITY_KNOCKS" />,
+
+  FREE_PARKING: FreeParking,
+  GO: Go,
+  TAX: Tax,
+  BUY_HOUSE: BuyHouse,
 };
 
 export default function ActionSidebar(props: ActionModalProps) {
@@ -60,15 +60,19 @@ export default function ActionSidebar(props: ActionModalProps) {
   );
 
   return (
-    <Box minW={'400px'} bg="white" px="20px" h="100vh">
-      <Heading>
-        {props.action
-          ?.split('_')
-          .map(w => w[0].toUpperCase() + w.slice(1).toLowerCase())
-          .join(' ')}
-      </Heading>
-      <Box minH="70%">{ActionComponent && <ActionComponent {...props} />}</Box>
+    <Box bg="white" minW="400px" minH="100vh">
       <HUD />
+      <Box px="10px">
+        <Heading>
+          {props.action
+            ?.split('_')
+            .map(w => w[0].toUpperCase() + w.slice(1).toLowerCase())
+            .join(' ')}
+        </Heading>
+        <Box minH="70%">
+          {ActionComponent && <ActionComponent {...props} />}
+        </Box>
+      </Box>
     </Box>
   );
 }

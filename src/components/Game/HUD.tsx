@@ -20,7 +20,7 @@ export default function HUD() {
 
   return (
     <>
-      <Box zIndex={'modal'} p="10px">
+      <Box zIndex={'modal'} bg="#333" px="10px" pb={canEndTurn ? '10px' : '0'}>
         <Flex py="10px" w="100%" justifyContent={'space-between'}>
           <IconButton
             aria-label={isPaused ? 'Resume' : 'Pause'}
@@ -53,7 +53,7 @@ export const GameTimeDisplay = () => {
   const secs = time % 60;
   return (
     <Box flexShrink={0}>
-      <Code fontSize={'2xl'} bg="transparent">
+      <Code fontSize={'2xl'} bg="white">
         {mins}:{secs < 10 ? `0${secs}` : secs}
       </Code>
     </Box>

@@ -1,7 +1,15 @@
 import { TOKENS_MAP, TokenType, useGameContext } from '@/hooks/useGameContext';
 import { usePlayer } from '@/hooks/usePlayer';
+import { useTrade } from '@/hooks/useTrade';
 import { formatPrice } from '@/util/formatPrice';
-import { Badge, Box, ChakraProps, Flex, Heading } from '@chakra-ui/react';
+import {
+  Badge,
+  Box,
+  Button,
+  ChakraProps,
+  Flex,
+  Heading,
+} from '@chakra-ui/react';
 import { GameProperty, PropertyGroupColor } from '@prisma/client';
 import React, { useMemo, useRef } from 'react';
 import PropertyGroupStack from './Board/PropertyStack';
@@ -11,7 +19,8 @@ export default function PlayerState({
   token,
   ...props
 }: { token: TokenType } & ChakraProps) {
-  const { gameSettings } = useGameContext();
+  const { gameSettings, showActionModal, canEndTurn } = useGameContext();
+  const { initializeTrade } = useTrade();
 
   const { isTurn, ...player } = usePlayer(token);
 
@@ -70,6 +79,15 @@ export default function PlayerState({
           )}
         </Flex>
       </Flex>
+      {canEndTurn && (
+        <Button
+          colorScheme={'blue'}
+          onClick={() => initializeTrade(isTurn ? undefined : token)}
+        >
+          Propose Trade
+          {isTurn ? '' : ` with ${TOKENS_MAP[token]}`}
+        </Button>
+      )}
       {/* Properties List */}
       <Flex overflowX={'auto'} w="500px" maxW="100%" mt="10px">
         {Object.entries(propertiesOwned ?? {}).map(([color, properties]) => (

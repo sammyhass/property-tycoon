@@ -24,6 +24,7 @@ import {
   useMemo,
   useState,
 } from 'react';
+import { TradeContextT, TradeProvider } from './useTrade';
 
 // Tokens a player can use in the game (gonna be emoji)
 export type TokenType =
@@ -44,6 +45,20 @@ export const TOKENS_MAP: { [key in TokenType]: string } = {
   iron: '🔨',
 };
 
+export type PerformTradeInput = Pick<
+  TradeContextT,
+  | 'tradingWithPlayer'
+  | 'moneyToTrade'
+  | 'propertiesToTrade'
+  | 'propertiesToReceive'
+  | 'currentPlayerIsGivingMoney'
+>;
+
+export type PropertyState = {
+  houses: number;
+  mortgaged: boolean;
+};
+
 export type PlayerState = Partial<{
   [token in TokenType]: {
     pos: number;
@@ -51,10 +66,7 @@ export type PlayerState = Partial<{
     // Ids of properties owned
     propertiesOwned: Partial<{
       [key in PropertyGroupColor]: {
-        [propertyId: string]: {
-          houses: number;
-          mortgaged: boolean;
-        };
+        [propertyId: string]: PropertyState;
       };
     }>;
 
@@ -172,6 +184,9 @@ export type GameContextT = {
 
   // Whether or not a player could pay an amount of money after mortgaging all their properties
   couldPay: (player: TokenType, amount: number) => boolean;
+
+  // Give owned properties to another player
+  trade: (input: PerformTradeInput) => void;
 };
 
 export const GameContext = createContext<GameContextT>({
@@ -184,11 +199,13 @@ export const GameContext = createContext<GameContextT>({
   buyHouse: () => {},
   unmortgage: () => {},
   rollDice: () => [0, 0],
+  trade: () => {},
   addPlayer: () => {},
   pause: () => {},
   pickUpGetOutOfJailFreeCard: () => {},
   useGetOutOfJailFreeCard: () => {},
   hideBuyHouseAction: () => {},
+  giveOwnedProperties: () => {},
   showBuyHouseAction: () => {},
   propertyToBuyHouseOn: null,
   resume: () => {},
@@ -232,7 +249,6 @@ export const GameContextProvider = ({
   initialGameSettings: GameSettingsT;
 }) => {
   const toast = useToast({
-    position: 'bottom-right',
     duration: 2500,
   });
 
@@ -292,6 +308,8 @@ export const GameContextProvider = ({
 
     return [dice1, dice2];
   }, [currentPlayerToken, setState, state]);
+
+  // Trade a property and/or money with another player
 
   const goto = useCallback(
     (player: TokenType, position: number, passGo: boolean = true) => {
@@ -526,6 +544,126 @@ export const GameContextProvider = ({
       });
     },
     [gameSettings, state]
+  );
+
+  const trade = useCallback(
+    (
+      tradeParams: Pick<
+        TradeContextT,
+        | 'propertiesToReceive'
+        | 'propertiesToTrade'
+        | 'moneyToTrade'
+        | 'currentPlayerIsGivingMoney'
+        | 'tradingWithPlayer'
+      >
+    ) => {
+      const {
+        propertiesToReceive,
+        propertiesToTrade,
+        moneyToTrade,
+        currentPlayerIsGivingMoney,
+        tradingWithPlayer,
+      } = tradeParams;
+
+      if (!(currentPlayer && tradingWithPlayer)) return;
+
+      const currentPlayerState = Object.assign(state[currentPlayer.token], {});
+
+      const tradingPlayerState = Object.assign(state[tradingWithPlayer], {});
+
+      if (!currentPlayerState || !tradingPlayerState) return;
+
+      const currentPlayerProperties = currentPlayerState.propertiesOwned;
+
+      for (const pToTrade of propertiesToTrade) {
+        const property = gameSettings?.Properties.find(p => p.id === pToTrade);
+
+        if (!property) continue;
+
+        const isMortgaged =
+          currentPlayerState.propertiesOwned[property.property_group_color]?.[
+            property.id
+          ]?.mortgaged ?? false;
+
+        // remove property from current player
+        delete currentPlayerProperties[property?.property_group_color]?.[
+          pToTrade
+        ];
+
+        // add property to trading player
+        tradingPlayerState.propertiesOwned[property?.property_group_color] = {
+          ...tradingPlayerState.propertiesOwned[property?.property_group_color],
+          [pToTrade]: {
+            mortgaged: isMortgaged,
+            houses: 0,
+          },
+        };
+
+        toast({
+          title: `
+          💸 ${TOKENS_MAP[currentPlayer.token]} traded ${property?.name} with ${
+            TOKENS_MAP[tradingWithPlayer]
+          }`,
+        });
+      }
+
+      for (const pToReceive of propertiesToReceive) {
+        const property = gameSettings?.Properties.find(
+          p => p.id === pToReceive
+        );
+
+        if (!property) continue;
+
+        const isMortgaged =
+          tradingPlayerState.propertiesOwned[property.property_group_color]?.[
+            property.id
+          ]?.mortgaged ?? false;
+
+        // remove property from trading player
+        delete tradingPlayerState.propertiesOwned[
+          property?.property_group_color
+        ]?.[pToReceive];
+
+        // add property to current player
+        currentPlayerProperties[property?.property_group_color] = {
+          ...currentPlayerProperties[property?.property_group_color],
+          [pToReceive]: {
+            mortgaged: isMortgaged,
+            houses: 0,
+          },
+        };
+
+        toast({
+          title: `
+          💸 ${TOKENS_MAP[tradingWithPlayer]} traded ${property?.name} with ${TOKENS_MAP[tradingWithPlayer]}`,
+        });
+      }
+
+      // set money
+      if (moneyToTrade > 0) {
+        currentPlayerState.money =
+          (currentPlayerState?.money ?? 0) -
+          moneyToTrade * (currentPlayerIsGivingMoney ? 1 : -1);
+        tradingPlayerState.money =
+          (tradingPlayerState?.money ?? 0) -
+          moneyToTrade * (currentPlayerIsGivingMoney ? -1 : 1);
+        toast({
+          title: `
+        💸 ${TOKENS_MAP[currentPlayer.token]} ${
+            currentPlayerIsGivingMoney ? 'gave' : 'took'
+          } ${formatPrice(moneyToTrade)} ${
+            currentPlayerIsGivingMoney ? 'to' : 'from'
+          } ${TOKENS_MAP[tradingWithPlayer]}`,
+        });
+      }
+
+      setState({
+        ...state,
+        [currentPlayer.token]: currentPlayerState,
+        [tradingWithPlayer]: tradingPlayerState,
+      });
+    },
+    [isOwned, isMortgaged, gameSettings, state]
   );
 
   const calculateRent = useCallback(
@@ -871,17 +1009,25 @@ export const GameContextProvider = ({
 
       if (newMoney < 0) return;
 
-      setState({
+      toast({
+        title: `
+        💸 ${TOKENS_MAP[sender]} ${amount > 0 ? 'paid' : 'received'} to ${
+          TOKENS_MAP[payee]
+        } ${amount > 0 ? formatPrice(amount) : formatPrice(amount * -1)}`,
+        status: 'success',
+      });
+
+      setState(state => ({
         ...state,
         [sender]: {
-          ...senderState,
+          ...state[sender],
           money: newMoney,
         },
         [payee]: {
-          ...payeeState,
+          ...state[payee],
           money: payeeState.money + amount,
         },
-      });
+      }));
     },
     [state]
   );
@@ -958,6 +1104,8 @@ export const GameContextProvider = ({
     setState({});
     _setCurrentPlayerToken(null);
     setTime(0);
+    setHasStarted(false);
+    setIsPaused(false);
   }, []);
 
   /// Handle start game should be run when the game is started (after initial setup where players are added)
@@ -1204,6 +1352,7 @@ export const GameContextProvider = ({
         showBuyHouseAction,
         hideBuyHouseAction,
         calculateRent,
+        trade,
         addPlayer,
         removePlayer,
         payBank,
@@ -1221,11 +1370,13 @@ export const GameContextProvider = ({
     >
       {/* <Flex> */}
       {hasStarted ? (
-        <Flex>
-          {children}
-          <ActionSidebar action={currentAction} />
-          <GamePausedGuard />
-        </Flex>
+        <TradeProvider>
+          <Flex>
+            {children}
+            <ActionSidebar action={currentAction} />
+            <GamePausedGuard />
+          </Flex>
+        </TradeProvider>
       ) : (
         children
       )}

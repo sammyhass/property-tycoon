@@ -63,7 +63,7 @@ const GamePlayersDisplay = () => {
       borderRadius={'8px'}
       minH="150px"
       left={'10px'}
-      pos="fixed"
+      pos="sticky"
       p="20px"
       bottom="10px"
       w="95%"

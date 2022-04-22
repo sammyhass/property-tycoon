@@ -12,13 +12,14 @@ import {
   ModalOverlay,
   Stack,
 } from '@chakra-ui/react';
-import { faPlay } from '@fortawesome/free-solid-svg-icons';
+import { faExclamation, faPlay } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { GameTimeDisplay } from './HUD';
 import PlayerState from './PlayerState';
 
 export default function GamePausedGuard() {
-  const { isPaused, pause, resume, players, currentPlayer } = useGameContext();
+  const { isPaused, pause, resume, players, resetGame, currentPlayer } =
+    useGameContext();
 
   return (
     <Modal
@@ -48,7 +49,7 @@ export default function GamePausedGuard() {
           </Stack>
           <Box></Box>
         </ModalBody>
-        <ModalFooter>
+        <ModalFooter flexDir={'column'} gap="5px">
           <Button
             size="lg"
             w="100%"
@@ -57,6 +58,15 @@ export default function GamePausedGuard() {
             leftIcon={<FontAwesomeIcon icon={faPlay} />}
           >
             Resume
+          </Button>
+          <Button
+            size="lg"
+            w="100%"
+            onClick={resetGame}
+            colorScheme={'red'}
+            leftIcon={<FontAwesomeIcon icon={faExclamation} />}
+          >
+            Reset Game
           </Button>
         </ModalFooter>
       </ModalContent>
