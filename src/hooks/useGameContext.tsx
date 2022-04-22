@@ -205,7 +205,7 @@ export const GameContext = createContext<GameContextT>({
   pickUpGetOutOfJailFreeCard: () => {},
   useGetOutOfJailFreeCard: () => {},
   hideBuyHouseAction: () => {},
-  giveOwnedProperties: () => {},
+
   showBuyHouseAction: () => {},
   propertyToBuyHouseOn: null,
   resume: () => {},
@@ -580,6 +580,14 @@ export const GameContextProvider = ({
 
         if (!property) continue;
 
+        if (
+          !currentPlayerState.propertiesOwned[property?.property_group_color]?.[
+            pToTrade
+          ]
+        ) {
+          continue;
+        }
+
         const isMortgaged =
           currentPlayerState.propertiesOwned[property.property_group_color]?.[
             property.id
@@ -613,6 +621,14 @@ export const GameContextProvider = ({
         );
 
         if (!property) continue;
+
+        if (
+          !tradingPlayerState.propertiesOwned[property?.property_group_color]?.[
+            pToReceive
+          ]
+        ) {
+          continue;
+        }
 
         const isMortgaged =
           tradingPlayerState.propertiesOwned[property.property_group_color]?.[
