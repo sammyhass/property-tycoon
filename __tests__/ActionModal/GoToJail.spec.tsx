@@ -1,8 +1,8 @@
-import { ActionModalGoToJail } from '@/components/Game/ActionModal/Content';
+import ActionModalGoToJail from '@/components/Game/ActionModal/GoToJail';
 import { PlayerState } from '@/hooks/useGameContext';
 import { act } from '@testing-library/react';
 import React from 'react';
-import { fakePlayer, renderWithGameContext } from '../fakers';
+import { fakePlayer, fakePlayerState, renderWithGameContext } from '../fakers';
 
 describe('Go to Jail ActionModal', () => {
   it('matches snapshot', () => {
@@ -26,18 +26,8 @@ describe('Go to Jail ActionModal', () => {
 
   it('after clicking button, player is sent to jail', async () => {
     let state: PlayerState = {
-      cat: {
-        inJail: false,
-        money: 1200,
-        pos: 3,
-        propertiesOwned: [],
-      },
-      boot: {
-        inJail: false,
-        money: 400,
-        pos: 1,
-        propertiesOwned: [],
-      },
+      cat: fakePlayerState(),
+      boot: fakePlayerState(),
     };
 
     const sendToJail = jest.fn();

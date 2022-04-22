@@ -1,7 +1,13 @@
-import { ActionModalTax } from '@/components/Game/ActionModal/Content';
+import ActionModalTax from '@/components/Game/ActionModal/Tax';
 import { act } from '@testing-library/react';
 import React from 'react';
-import { fakeGameSettings, fakePlayer, renderWithGameContext } from '../fakers';
+import {
+  fakeBoardSpace,
+  fakeGameSettings,
+  fakePlayer,
+  fakePlayerState,
+  renderWithGameContext,
+} from '../fakers';
 
 describe('Tax ActionModal', () => {
   test('matches snapshot', () => {
@@ -9,18 +15,8 @@ describe('Tax ActionModal', () => {
       currentPlayer: fakePlayer('cat'),
       gameSettings: fakeGameSettings(),
       state: {
-        boot: {
-          inJail: false,
-          money: 400,
-          pos: 1,
-          propertiesOwned: [],
-        },
-        cat: {
-          inJail: false,
-          money: 1200,
-          pos: 2,
-          propertiesOwned: [],
-        },
+        boot: fakePlayerState(),
+        cat: fakePlayerState(),
       },
     });
 
@@ -30,20 +26,18 @@ describe('Tax ActionModal', () => {
   test.skip('renders the correct text', () => {
     const { container } = renderWithGameContext(<ActionModalTax />, {
       currentPlayer: fakePlayer('cat'),
-      gameSettings: fakeGameSettings(),
+      gameSettings: fakeGameSettings({
+        BoardSpaces: [
+          fakeBoardSpace({
+            board_position: 1,
+            tax_cost: 200,
+            space_type: 'TAX',
+          }),
+        ],
+      }),
       state: {
-        boot: {
-          inJail: false,
-          money: 400,
-          pos: 1,
-          propertiesOwned: [],
-        },
-        cat: {
-          inJail: false,
-          money: 1200,
-          pos: 2,
-          propertiesOwned: [],
-        },
+        boot: fakePlayerState(),
+        cat: fakePlayerState(),
       },
     });
     expect(container.textContent).toContain('£200 Tax');
@@ -52,24 +46,24 @@ describe('Tax ActionModal', () => {
   });
 
   test('clicking button pays correct amount of tax to the bank', async () => {
-    const payBank = jest.fn();
+    const payToFreeParking = jest.fn();
     const { container } = renderWithGameContext(<ActionModalTax />, {
       currentPlayer: fakePlayer('cat'),
-      gameSettings: fakeGameSettings(),
-      payBank,
+      gameSettings: fakeGameSettings({
+        BoardSpaces: [
+          fakeBoardSpace({
+            board_position: 1,
+            tax_cost: 200,
+            space_type: 'TAX',
+          }),
+        ],
+      }),
+      payToFreeParking,
       state: {
-        boot: {
-          inJail: false,
-          money: 400,
+        boot: fakePlayerState(),
+        cat: fakePlayerState({
           pos: 1,
-          propertiesOwned: [],
-        },
-        cat: {
-          inJail: false,
-          money: 1200,
-          pos: 2,
-          propertiesOwned: [],
-        },
+        }),
       },
     });
 
@@ -79,6 +73,6 @@ describe('Tax ActionModal', () => {
       await button?.click();
       await new Promise(resolve => setTimeout(resolve, 1000));
     });
-    expect(payBank).toHaveBeenCalledWith('cat', 200);
+    expect(payToFreeParking).toHaveBeenCalledWith('cat', 200);
   });
 });

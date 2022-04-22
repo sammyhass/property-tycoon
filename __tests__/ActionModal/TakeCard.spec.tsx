@@ -1,4 +1,4 @@
-import { ActionModalTakeCard } from '@/components/Game/ActionModal/Content';
+import ActionModalTakeCard from '@/components/Game/ActionModal/TakeCard';
 import { act } from '@testing-library/react';
 import React from 'react';
 import { fakeCard, fakePlayer, renderWithGameContext } from '../fakers';

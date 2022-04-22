@@ -10,9 +10,16 @@ exports[`Tax ActionModal matches snapshot 1`] = `
     Pay the Tax
   </h2>
   <p
+    class="chakra-text css-0"
+  >
+    You are paying 
+    £0
+     in taxes to free parking.
+  </p>
+  <p
     class="chakra-text css-1gjuw9l"
   >
-    £200
+    £0
   </p>
   <button
     class="chakra-button css-uxt1e8"

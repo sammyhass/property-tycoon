@@ -1,4 +1,4 @@
-import { ActionModalRoll } from '@/components/Game/ActionModal/Content';
+import ActionModalRoll from '@/components/Game/ActionModal/Roll';
 import { act } from '@testing-library/react';
 import React from 'react';
 import { fakePlayer, renderWithGameContext } from '../fakers';

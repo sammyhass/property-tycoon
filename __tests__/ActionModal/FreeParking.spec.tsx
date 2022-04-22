@@ -1,26 +1,16 @@
-import { ActionModalFreeParking } from '@/components/Game/ActionModal/Content';
+import ActionModalFreeParking from '@/components/Game/ActionModal/FreeParking';
 import { PlayerState, TokenType } from '@/hooks/useGameContext';
 import React from 'react';
 import { act } from 'react-dom/test-utils';
-import { fakePlayer, renderWithGameContext } from '../fakers';
+import { fakePlayer, fakePlayerState, renderWithGameContext } from '../fakers';
 
 describe('Free Parking Action Modal', () => {
   it('should match snapshot', () => {
     const { container } = renderWithGameContext(<ActionModalFreeParking />, {
       currentPlayer: fakePlayer('boot'),
       state: {
-        boot: {
-          inJail: false,
-          money: 400,
-          pos: 1,
-          propertiesOwned: [],
-        },
-        cat: {
-          inJail: false,
-          money: 1200,
-          pos: 1,
-          propertiesOwned: [],
-        },
+        boot: fakePlayerState({ pos: 1 }),
+        cat: fakePlayerState({ pos: 1 }),
       },
       totalOnFreeParking: 100,
     });
@@ -32,18 +22,8 @@ describe('Free Parking Action Modal', () => {
     const { container } = renderWithGameContext(<ActionModalFreeParking />, {
       currentPlayer: fakePlayer('boot'),
       state: {
-        boot: {
-          inJail: false,
-          money: 400,
-          pos: 1,
-          propertiesOwned: [],
-        },
-        cat: {
-          inJail: false,
-          money: 1200,
-          pos: 1,
-          propertiesOwned: [],
-        },
+        boot: fakePlayerState({ pos: 1 }),
+        cat: fakePlayerState({ pos: 1 }),
       },
       totalOnFreeParking: 100,
     });
@@ -55,18 +35,8 @@ describe('Free Parking Action Modal', () => {
     const { container } = renderWithGameContext(<ActionModalFreeParking />, {
       currentPlayer: fakePlayer('boot'),
       state: {
-        boot: {
-          inJail: false,
-          money: 400,
-          pos: 1,
-          propertiesOwned: [],
-        },
-        cat: {
-          inJail: false,
-          money: 1200,
-          pos: 1,
-          propertiesOwned: [],
-        },
+        boot: fakePlayerState({ pos: 1 }),
+        cat: fakePlayerState({ pos: 1 }),
       },
       totalOnFreeParking: 100,
     });
@@ -77,18 +47,8 @@ describe('Free Parking Action Modal', () => {
   it('on clicking collect button, the total in free parking is collected by the current player', async () => {
     let totalOnFreeParking = 200;
     let state: PlayerState = {
-      boot: {
-        inJail: false,
-        money: 400,
-        pos: 1,
-        propertiesOwned: [],
-      },
-      cat: {
-        inJail: false,
-        money: 1200,
-        pos: 1,
-        propertiesOwned: [],
-      },
+      boot: fakePlayerState({ pos: 1, money: 0 }),
+      cat: fakePlayerState({ pos: 1, money: 0 }),
     };
     const landedOnFreeParking = jest.fn().mockImplementation((p: TokenType) => {
       if (!state[p]) return;
@@ -119,8 +79,8 @@ describe('Free Parking Action Modal', () => {
 
     expect(totalOnFreeParking).toBe(0);
     // Check that the money is added to the current player
-    expect(state.boot?.money).toBe(600);
+    expect(state.boot?.money).toBe(200);
     // And not to the other player
-    expect(state.cat?.money).toBe(1200);
+    expect(state.cat?.money).toBe(0);
   });
 });

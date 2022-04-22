@@ -1,14 +1,19 @@
-import { ActionModalBuy } from '@/components/Game/ActionModal/Content';
+import Buy from '@/components/Game/ActionModal/Buy';
 import { PlayerState } from '@/hooks/useGameContext';
 import { formatPrice } from '@/util/formatPrice';
 import { act } from '@testing-library/react';
 import React from 'react';
-import { fakeGameSettings, fakePlayer, renderWithGameContext } from '../fakers';
+import {
+  fakeGameSettings,
+  fakePlayer,
+  fakePlayerState,
+  renderWithGameContext,
+} from '../fakers';
 
 describe('Buy ActionModal', () => {
   it('matches snapshot', () => {
     const { container } = renderWithGameContext(
-      <ActionModalBuy />,
+      <Buy />,
 
       {
         currentPlayer: fakePlayer('cat'),
@@ -19,6 +24,8 @@ describe('Buy ActionModal', () => {
             money: 400,
             pos: 1,
             propertiesOwned: {},
+            hasGetOutOfJailFreeCard: false,
+            isBankrupt: false,
             lastRoll: 4,
             turnsInJail: 0,
           },
@@ -26,6 +33,8 @@ describe('Buy ActionModal', () => {
             inJail: false,
             money: 1200,
             lastRoll: 6,
+            isBankrupt: false,
+            hasGetOutOfJailFreeCard: false,
             turnsInJail: 0,
             pos: 1,
             propertiesOwned: {},
@@ -38,7 +47,7 @@ describe('Buy ActionModal', () => {
 
   it('renders correct property information', () => {
     const gameSettings = fakeGameSettings();
-    const { container } = renderWithGameContext(<ActionModalBuy />, {
+    const { container } = renderWithGameContext(<Buy />, {
       currentPlayer: fakePlayer('cat'),
       gameSettings,
       state: {
@@ -48,10 +57,14 @@ describe('Buy ActionModal', () => {
           lastRoll: 5,
           turnsInJail: 0,
           pos: 1,
+          hasGetOutOfJailFreeCard: false,
+          isBankrupt: false,
           propertiesOwned: {},
         },
         cat: {
           inJail: false,
+          hasGetOutOfJailFreeCard: false,
+          isBankrupt: false,
           lastRoll: 11,
           turnsInJail: 0,
           money: 1200,
@@ -75,26 +88,16 @@ describe('Buy ActionModal', () => {
 
     // reactive state
     const state: PlayerState = {
-      boot: {
-        inJail: false,
-        lastRoll: 5,
-        turnsInJail: 0,
-        money: 400,
+      boot: fakePlayerState({
         pos: 1,
-        propertiesOwned: {},
-      },
-      cat: {
-        inJail: false,
-        money: 1200,
+      }),
+      cat: fakePlayerState({
         pos: 1,
-        propertiesOwned: {},
-        lastRoll: 11,
-        turnsInJail: 0,
-      },
+      }),
     };
 
     const buy = jest.fn();
-    const { container } = renderWithGameContext(<ActionModalBuy />, {
+    const { container } = renderWithGameContext(<Buy />, {
       currentPlayer: fakePlayer('cat'),
       gameSettings,
       buy,

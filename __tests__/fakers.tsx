@@ -2,11 +2,14 @@ import {
   GameContext,
   GameContextT,
   Player,
+  PlayerState,
   TOKENS_MAP,
   TokenType,
 } from '@/hooks/useGameContext';
 import { BoardSpace, CardAction, GameProperty } from '@prisma/client';
 import { render } from '@testing-library/react';
+
+// Mocks for game context so we can test the board space component.
 
 export const fakeProperty = (params?: Partial<GameProperty>): GameProperty => ({
   game_id: '1',
@@ -74,7 +77,21 @@ export const MockGameContextProvider = ({
       value={{
         addPlayer: jest.fn(),
         totalOnFreeParking: 0,
-        addToFreeParking: jest.fn(),
+        bankrupt: jest.fn(),
+        buyHouse: jest.fn(),
+        couldPay: jest.fn().mockReturnValue(true),
+        hideBuyHouseAction: jest.fn(),
+        isMortgaged: jest.fn().mockReturnValue(false),
+        mortgage: jest.fn(),
+        pause: jest.fn(),
+        payToFreeParking: jest.fn(),
+        pickUpGetOutOfJailFreeCard: jest.fn(),
+        propertyToBuyHouseOn: null,
+        resume: jest.fn(),
+        useGetOutOfJailFreeCard: jest.fn(),
+        giveOwnedProperty: jest.fn(),
+        showBuyHouseAction: jest.fn(),
+        unmortgage: jest.fn(),
         buy: jest.fn(),
         currentPlayer: {
           name: 'Player 1',
@@ -87,28 +104,7 @@ export const MockGameContextProvider = ({
         rollDice: jest.fn().mockImplementation(() => [1, 5]),
         endTurn: jest.fn(),
         goto: jest.fn(),
-        gameSettings: {
-          BoardSpaces: new Array(40)
-            .fill(0)
-            .map((_, i) => fakeBoardSpace({ board_position: i })),
-          CardActions: new Array(100).fill(0).map((_, i) =>
-            fakeCard({
-              id: i.toString(),
-              type: Math.random() < 1 ? 'OPPORTUNITY_KNOCKS' : 'POT_LUCK',
-              description: 'Earn $200 from the bank',
-            })
-          ),
-          Properties: new Array(10)
-            .fill(0)
-            .map((_, i) => fakeProperty({ id: `${i}` })),
-          PropertyGroups: [],
-          active: false,
-          created_at: new Date(),
-          id: '1',
-          name: 'Game 1',
-          share_code: 'abc123',
-          user_id: '1',
-        },
+        gameSettings: fakeGameSettings(),
         handleStartGame: jest.fn(),
         hasStarted: true,
         takeCard: jest.fn(),
@@ -124,26 +120,10 @@ export const MockGameContextProvider = ({
         removePlayer: jest.fn(),
         resetGame: jest.fn(),
         sendToJail: jest.fn(),
-
-        setIsPaused: jest.fn(),
         showActionModal: jest.fn(),
         state: {
-          cat: {
-            inJail: false,
-            money: 5000,
-            propertiesOwned: [],
-            pos: 0,
-            turnsInJail: 0,
-            lastRoll: 6,
-          },
-          boot: {
-            inJail: false,
-            money: 5000,
-            lastRoll: 4,
-            turnsInJail: 0,
-            propertiesOwned: [],
-            pos: 0,
-          },
+          cat: fakePlayerState(),
+          boot: fakePlayerState(),
         },
         ...params,
       }}
@@ -152,6 +132,20 @@ export const MockGameContextProvider = ({
     </GameContext.Provider>
   );
 };
+
+export const fakePlayerState = (
+  params?: Partial<PlayerState[TokenType]>
+): PlayerState[TokenType] => ({
+  inJail: false,
+  money: 5000,
+  lastRoll: 6,
+  turnsInJail: 0,
+  propertiesOwned: {},
+  pos: 0,
+  hasGetOutOfJailFreeCard: false,
+  isBankrupt: false,
+  ...params,
+});
 
 export const fakeGameSettings = (
   params?: Partial<GameContextT['gameSettings']>
@@ -177,6 +171,7 @@ export const fakeGameSettings = (
       board_position: 4,
     }),
   ],
+  starting_money: 5000,
   Properties: [
     fakeProperty({
       id: '1',
