@@ -57,12 +57,12 @@ export default function BotTurn() {
     currentPlayer?.token ?? undefined
   );
 
-  useEffect(() => {
+  const clear = () => {
     setUpdates([]);
+    setHasCompletedTurn(false);
     setHasMoved(false);
     setIsTakingTurn(false);
-    setHasCompletedTurn(false);
-  }, [currentPlayer?.name]);
+  };
 
   const onLandOnGo = useCallback(() => {
     if (currentPlayer?.token) {
@@ -254,7 +254,7 @@ export default function BotTurn() {
     if (space) {
       onLandedOnSpace(space);
     }
-  }, [pos]);
+  }, [pos, currentPlayer, hasMoved]);
 
   const performTurn = useCallback(() => {
     setIsTakingTurn(true);
@@ -263,12 +263,11 @@ export default function BotTurn() {
 
     const [dice1, dice2] = rollDice();
     setUpdates([`🎲 ${name} rolled ${dice1} and ${dice2}`]);
-    if (!currentPlayer) return;
     const space = move(currentPlayer?.token, dice1 + dice2, true);
     setHasMoved(true);
 
     return space;
-  }, [currentPlayer, rollDice, name, move, onLandedOnSpace]);
+  }, [currentPlayer, rollDice, name, move]);
 
   return (
     <Box>
@@ -287,7 +286,14 @@ export default function BotTurn() {
         size="lg"
         w="100%"
         my="10px"
-        onClick={hasCompletedTurn ? endTurn : performTurn}
+        onClick={
+          hasCompletedTurn
+            ? () => {
+                clear();
+                endTurn();
+              }
+            : performTurn
+        }
         colorScheme={hasCompletedTurn ? 'green' : 'blue'}
         isLoading={isTakingTurn}
         leftIcon={
