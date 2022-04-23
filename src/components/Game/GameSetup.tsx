@@ -3,6 +3,7 @@ import {
   Alert,
   AlertDescription,
   AlertIcon,
+  Badge,
   Box,
   Button,
   Divider,
@@ -12,10 +13,18 @@ import {
   Heading,
   IconButton,
   Input,
+  InputGroup,
+  InputLeftElement,
   Select,
   Text,
 } from '@chakra-ui/react';
-import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faker } from '@faker-js/faker';
+import {
+  faDice,
+  faPlus,
+  faRobot,
+  faTrash,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useCallback, useState } from 'react';
 
@@ -29,13 +38,7 @@ export default function GameSetup() {
     Object.keys(TOKENS_MAP)[0] as TokenType
   );
 
-  const onAddPlayer = useCallback(() => {
-    addPlayer({
-      name: newPlayerName,
-      token: newPlayerToken as TokenType,
-    });
-    setNewPlayerName('');
-
+  const setNextToken = useCallback(() => {
     // attempt to set the token to the next one in the list
     const nextToken = Object.keys(TOKENS_MAP)[
       Object.keys(TOKENS_MAP).indexOf(newPlayerToken) + 1
@@ -43,7 +46,32 @@ export default function GameSetup() {
 
     if (nextToken) {
       setNewPlayerToken(nextToken);
+    } else {
+      // if we've reached the end of the list, set the token to the first one
+      setNewPlayerToken(Object.keys(TOKENS_MAP)[0] as TokenType);
     }
+  }, [newPlayerToken]);
+
+  const onAddBot = useCallback(() => {
+    addPlayer({
+      isBot: true,
+      name:
+        newPlayerName && !players.find(p => p.name === newPlayerName)
+          ? newPlayerName
+          : faker.name.firstName(),
+      token: newPlayerToken,
+    });
+    setNextToken();
+  }, [addPlayer, newPlayerName, newPlayerToken]);
+
+  const onAddPlayer = useCallback(() => {
+    addPlayer({
+      name: newPlayerName,
+      isBot: false,
+      token: newPlayerToken as TokenType,
+    });
+    setNewPlayerName('');
+    setNextToken();
   }, [newPlayerName, newPlayerToken, addPlayer]);
 
   return (
@@ -64,14 +92,30 @@ export default function GameSetup() {
             onAddPlayer();
           }}
         >
-          <Flex my="10px" gap="10px">
+          <Flex my="10px" gap="10px" align={'flex-end'}>
             <FormControl isInvalid={!newPlayerName}>
               <FormLabel>Player Name</FormLabel>
-              <Input
-                placeholder="Player Name"
-                value={newPlayerName}
-                onChange={e => setNewPlayerName(e.target.value)}
-              />
+              <InputGroup>
+                <InputLeftElement>
+                  <IconButton
+                    variant={'ghost'}
+                    color="blackAlpha.600"
+                    size="xs"
+                    icon={
+                      <FontAwesomeIcon icon={faDice} color="currentColor" />
+                    }
+                    aria-label="Randomize"
+                    onClick={() => {
+                      setNewPlayerName(faker.name.firstName());
+                    }}
+                  />
+                </InputLeftElement>
+                <Input
+                  placeholder="Player Name"
+                  value={newPlayerName}
+                  onChange={e => setNewPlayerName(e.target.value)}
+                />
+              </InputGroup>
             </FormControl>
             <FormControl isInvalid={!newPlayerToken}>
               <FormLabel>Player Token</FormLabel>
@@ -91,11 +135,28 @@ export default function GameSetup() {
                 ))}
               </Select>
             </FormControl>
+            {players.length < 6 && (
+              <Button
+                aria-label={'Add Bot'}
+                flexShrink={0}
+                maxH={'40px'}
+                colorScheme="purple"
+                borderRadius={'8px'}
+                size="lg"
+                shadow="md"
+                onClick={onAddBot}
+                disabled={!!players.find(p => p.token === newPlayerToken)}
+                leftIcon={<FontAwesomeIcon icon={faRobot} />}
+              >
+                Add Bot
+              </Button>
+            )}
           </Flex>
           <Button
             colorScheme="green"
             w="100%"
             type="submit"
+            size="lg"
             disabled={
               !newPlayerName ||
               !newPlayerToken ||
@@ -130,6 +191,12 @@ export default function GameSetup() {
             <Text fontSize={'5xl'} p="0" m="0">
               {TOKENS_MAP[player.token]}
             </Text>
+
+            {player.isBot && (
+              <Badge m="0" colorScheme={'purple'}>
+                <FontAwesomeIcon icon={faRobot} /> Robot
+              </Badge>
+            )}
             <Heading size="sm">{player.name}</Heading>
             <IconButton
               pos={'absolute'}

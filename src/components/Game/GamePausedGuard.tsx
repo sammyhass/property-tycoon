@@ -1,6 +1,5 @@
 import { useGameContext } from '@/hooks/useGameContext';
 import {
-  Box,
   Button,
   Flex,
   Heading,
@@ -44,10 +43,14 @@ export default function GamePausedGuard() {
           </Heading>
           <Stack maxH="300px" overflow={'auto'}>
             {players.map(player => (
-              <PlayerState key={player.token} token={player.token} my="10px" />
+              <PlayerState
+                key={player.token}
+                token={player.token}
+                my="10px"
+                inactive
+              />
             ))}
           </Stack>
-          <Box></Box>
         </ModalBody>
         <ModalFooter flexDir={'column'} gap="5px">
           <Button

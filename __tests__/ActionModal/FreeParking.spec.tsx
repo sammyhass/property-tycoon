@@ -1,6 +1,5 @@
 import ActionModalFreeParking from '@/components/Game/ActionModal/FreeParking';
-import { PlayerState, TokenType } from '@/hooks/useGameContext';
-import React from 'react';
+import { PlayersState, TokenType } from '@/hooks/useGameContext';
 import { act } from 'react-dom/test-utils';
 import { fakePlayer, fakePlayerState, renderWithGameContext } from '../fakers';
 
@@ -46,7 +45,7 @@ describe('Free Parking Action Modal', () => {
 
   it('on clicking collect button, the total in free parking is collected by the current player', async () => {
     let totalOnFreeParking = 200;
-    let state: PlayerState = {
+    let state: PlayersState = {
       boot: fakePlayerState({ pos: 1, money: 0 }),
       cat: fakePlayerState({ pos: 1, money: 0 }),
     };

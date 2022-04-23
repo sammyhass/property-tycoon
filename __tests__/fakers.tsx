@@ -2,7 +2,7 @@ import {
   GameContext,
   GameContextT,
   Player,
-  PlayerState,
+  PlayersState,
   TOKENS_MAP,
   TokenType,
 } from '@/hooks/useGameContext';
@@ -43,6 +43,7 @@ export const fakePlayer = (tokenType?: TokenType): Player => {
     return {
       name: 'Player 1',
       token: tokenType,
+      isBot: false,
     };
 
   const tokens = Object.keys(TOKENS_MAP);
@@ -50,6 +51,7 @@ export const fakePlayer = (tokenType?: TokenType): Player => {
   return {
     token: token as TokenType,
     name: `Player ${token}`,
+    isBot: false,
   };
 };
 
@@ -88,12 +90,14 @@ export const MockGameContextProvider = ({
         pickUpGetOutOfJailFreeCard: jest.fn(),
         propertyToBuyHouseOn: null,
         resume: jest.fn(),
-        useGetOutOfJailFreeCard: jest.fn(),
-        giveOwnedProperty: jest.fn(),
+        getOutOfJailWithCard: jest.fn(),
+        performCardAction: jest.fn(),
+        trade: jest.fn(),
         showBuyHouseAction: jest.fn(),
         unmortgage: jest.fn(),
         buy: jest.fn(),
         currentPlayer: {
+          isBot: false,
           name: 'Player 1',
           token: 'cat',
         },
@@ -134,10 +138,12 @@ export const MockGameContextProvider = ({
 };
 
 export const fakePlayerState = (
-  params?: Partial<PlayerState[TokenType]>
-): PlayerState[TokenType] => ({
+  params?: Partial<PlayersState[TokenType]>
+): PlayersState[TokenType] => ({
   inJail: false,
   money: 5000,
+  doublesInARow: 0,
+  isBot: false,
   lastRoll: 6,
   turnsInJail: 0,
   propertiesOwned: {},

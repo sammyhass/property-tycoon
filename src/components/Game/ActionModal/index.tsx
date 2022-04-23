@@ -1,6 +1,8 @@
+import { useGameContext } from '@/hooks/useGameContext';
 import { Box, Heading } from '@chakra-ui/react';
 import React, { useMemo } from 'react';
 import HUD from '../HUD';
+import BotTurn from './BotTurn';
 import Buy from './Buy';
 import BuyHouse from './BuyHouse';
 import FreeParking from './FreeParking';
@@ -28,7 +30,8 @@ export type ActionType =
   | 'TAX' // Pay tax
   | 'BUY_HOUSE' // Buy a house
   | 'GO' // Land on a Go space
-  | 'TRADE'; // Trade with another player
+  | 'TRADE' // Trade with another player
+  | 'BOT_TURN'; // ;Bot's turn (shows instead)
 
 export interface ActionModalProps {
   action: ActionType | null;
@@ -43,14 +46,16 @@ const actionModalComponents: Record<ActionType, React.FC<ActionModalProps>> = {
   GO_TO_JAIL: GoToJail,
   TAKE_POT_LUCK: () => <TakeCard cardType={'POT_LUCK'} />,
   TAKE_OPPORTUNITY_KNOCKS: () => <TakeCard cardType="OPPORTUNITY_KNOCKS" />,
-
   FREE_PARKING: FreeParking,
   GO: Go,
+  BOT_TURN: BotTurn,
   TAX: Tax,
   BUY_HOUSE: BuyHouse,
 };
 
 export default function ActionSidebar(props: ActionModalProps) {
+  const { currentPlayer } = useGameContext();
+
   const ActionComponent = useMemo(
     () =>
       props.action

@@ -1,5 +1,5 @@
 import ActionModalGoToJail from '@/components/Game/ActionModal/GoToJail';
-import { PlayerState } from '@/hooks/useGameContext';
+import { PlayersState } from '@/hooks/useGameContext';
 import { act } from '@testing-library/react';
 import React from 'react';
 import { fakePlayer, fakePlayerState, renderWithGameContext } from '../fakers';
@@ -25,7 +25,7 @@ describe('Go to Jail ActionModal', () => {
   });
 
   it('after clicking button, player is sent to jail', async () => {
-    let state: PlayerState = {
+    let state: PlayersState = {
       cat: fakePlayerState(),
       boot: fakePlayerState(),
     };

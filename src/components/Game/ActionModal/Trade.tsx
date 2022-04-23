@@ -49,6 +49,8 @@ export default function TradeContent() {
   const [showPropertySelectorForPlayer, setShowPropertySelectorForPlayer] =
     useState<TokenType | undefined>();
 
+  const [botAcceptsTrade, setBotAcceptsTrade] = useState(false);
+
   const {
     cancelTrade,
     moneyToTrade,
@@ -204,8 +206,9 @@ export default function TradeContent() {
                 fontSize="sm"
                 fontWeight={'bold'}
                 boxSize="fit-content"
-                children={formatPrice(moneyToTrade)}
-              />
+              >
+                {formatPrice(moneyToTrade)}
+              </SliderThumb>
             </Slider>
           </Flex>
           {!canAfford ? (
@@ -285,7 +288,11 @@ export default function TradeContent() {
             onClick={performTrade}
             colorScheme="green"
             leftIcon={<FontAwesomeIcon icon={faHandshake} />}
-            isDisabled={!canAfford || !tradingWithPlayer}
+            isDisabled={
+              !canAfford ||
+              !tradingWithPlayer ||
+              (tradingPlayerInfo.isBot && !botAcceptsTrade)
+            }
           >
             Perform Trade
           </Button>

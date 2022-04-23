@@ -7,9 +7,12 @@ import {
   Box,
   Button,
   ChakraProps,
+  Collapse,
   Flex,
   Heading,
 } from '@chakra-ui/react';
+import { faHandshake } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { GameProperty, PropertyGroupColor } from '@prisma/client';
 import React, { useMemo, useRef } from 'react';
 import PropertyGroupStack from './Board/PropertyStack';
@@ -17,12 +20,14 @@ import PropertyGroupStack from './Board/PropertyStack';
 // Renders relevent information for a particular player (e.g, properties owned, money, etc)
 export default function PlayerState({
   token,
+  inactive = false,
+
   ...props
-}: { token: TokenType } & ChakraProps) {
+}: { token: TokenType; inactive?: boolean } & ChakraProps) {
   const { gameSettings, showActionModal, canEndTurn } = useGameContext();
   const { initializeTrade } = useTrade();
 
-  const { isTurn, ...player } = usePlayer(token);
+  const { isTurn, isBot, ...player } = usePlayer(token);
 
   const propertiesOwned = useMemo(() => {
     return gameSettings?.Properties.filter(property => {
@@ -77,17 +82,26 @@ export default function PlayerState({
               Your Turn
             </Badge>
           )}
+
+          {isBot && (
+            <Badge colorScheme={'purple'} fontSize="md">
+              🤖 Bot
+            </Badge>
+          )}
         </Flex>
       </Flex>
-      {canEndTurn && (
+      <Collapse in={!inactive && canEndTurn}>
         <Button
+          mt="10px"
+          size="sm"
+          leftIcon={<FontAwesomeIcon icon={faHandshake} />}
           colorScheme={'blue'}
           onClick={() => initializeTrade(isTurn ? undefined : token)}
         >
           Propose Trade
           {isTurn ? '' : ` with ${TOKENS_MAP[token]}`}
         </Button>
-      )}
+      </Collapse>
       {/* Properties List */}
       <Flex overflowX={'auto'} w="500px" maxW="100%" mt="10px">
         {Object.entries(propertiesOwned ?? {}).map(([color, properties]) => (

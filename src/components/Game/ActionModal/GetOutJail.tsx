@@ -25,7 +25,7 @@ export default function ActionModalGetOutJail({ action }: ActionModalProps) {
     hideActionModal,
     move,
     freeFromJail,
-    useGetOutOfJailFreeCard,
+    getOutOfJailWithCard,
     failedToGetOutOfJail,
   } = useGameContext();
 
@@ -60,7 +60,7 @@ export default function ActionModalGetOutJail({ action }: ActionModalProps) {
 
   const handleDiceRoll = useCallback(() => {
     if (!currentPlayer) return;
-    const [roll1, roll2] = rollDice();
+    const [roll1, roll2] = rollDice(false);
     setRoll([roll1, roll2]);
     setDidRoll(true);
   }, [rollDice, currentPlayer]);
@@ -175,7 +175,7 @@ export default function ActionModalGetOutJail({ action }: ActionModalProps) {
           <Button
             colorScheme={'purple'}
             onClick={() => {
-              useGetOutOfJailFreeCard(currentPlayer.token);
+              getOutOfJailWithCard(currentPlayer.token);
               hideActionModal();
             }}
             w="100%"

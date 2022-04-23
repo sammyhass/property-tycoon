@@ -1,5 +1,5 @@
 import Buy from '@/components/Game/ActionModal/Buy';
-import { PlayerState } from '@/hooks/useGameContext';
+import { PlayersState } from '@/hooks/useGameContext';
 import { formatPrice } from '@/util/formatPrice';
 import { act } from '@testing-library/react';
 import React from 'react';
@@ -23,6 +23,8 @@ describe('Buy ActionModal', () => {
             inJail: false,
             money: 400,
             pos: 1,
+            doublesInARow: 0,
+            isBot: false,
             propertiesOwned: {},
             hasGetOutOfJailFreeCard: false,
             isBankrupt: false,
@@ -31,7 +33,9 @@ describe('Buy ActionModal', () => {
           },
           cat: {
             inJail: false,
-            money: 1200,
+            doublesInARow: 0,
+            isBot: false,
+            money: 400,
             lastRoll: 6,
             isBankrupt: false,
             hasGetOutOfJailFreeCard: false,
@@ -87,7 +91,7 @@ describe('Buy ActionModal', () => {
     const gameSettings = fakeGameSettings();
 
     // reactive state
-    const state: PlayerState = {
+    const state: PlayersState = {
       boot: fakePlayerState({
         pos: 1,
       }),

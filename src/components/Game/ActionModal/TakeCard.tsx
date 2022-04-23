@@ -9,76 +9,42 @@ import GameCard from '../Board/cards/Card';
 export default function TakeCardContent({ cardType }: { cardType: CardType }) {
   const {
     takeCard,
-    payBank,
     currentPlayer,
     gameSettings,
-    bankrupt,
-    pickUpGetOutOfJailFreeCard,
-    goto,
-    couldPay,
-    sendToJail,
+    performCardAction,
     hideActionModal,
   } = useGameContext();
 
   const [cardAction, setCardAction] = useState<CardAction | null>(null);
+  const [isChoosingCard, setIsChoosingCard] = useState(false);
+
+  const [isPerformingAction, setIsPerformingAction] = useState(false);
 
   const handleTakeCard = () => {
-    const action = takeCard(cardType);
-    if (action) {
-      setCardAction(action);
-    }
+    setIsChoosingCard(true);
+    setTimeout(() => {
+      const action = takeCard(cardType);
+      if (action) {
+        setCardAction(action);
+      }
+      setIsChoosingCard(false);
+    }, 500);
   };
 
-  const performAction = useCallback(() => {
-    if (!cardAction || !currentPlayer?.token) return;
+  const handlePerformCardAction = useCallback(() => {
+    if (!currentPlayer) return;
+    setIsPerformingAction(true);
+    setTimeout(() => {
+      if (cardAction) {
+        performCardAction(currentPlayer.token, cardAction);
+      }
+      setCardAction(null);
 
-    hideActionModal();
-
-    switch (cardAction.action_type) {
-      case 'EARN_FROM_BANK':
-        payBank(currentPlayer?.token, -(cardAction?.cost ?? 0));
-        break;
-      case 'PAY_BANK':
-        if (couldPay(currentPlayer?.token, cardAction?.cost ?? 0)) {
-          payBank(currentPlayer?.token, cardAction?.cost ?? 0);
-        } else {
-          bankrupt(currentPlayer?.token);
-        }
-        break;
-      case 'GO_TO_JAIL':
-        sendToJail(currentPlayer?.token);
-        break;
-      case 'GO_TO_PROPERTY':
-        const property = gameSettings?.BoardSpaces?.find(
-          space => space.property_id === cardAction?.property_id
-        );
-        if (property) {
-          goto(currentPlayer?.token, property.board_position);
-        }
-      case 'GO_TO_GO':
-        const goSpace = gameSettings?.BoardSpaces?.find(
-          space => space.space_type === 'GO'
-        );
-        if (goSpace) {
-          goto(currentPlayer?.token, goSpace.board_position);
-        }
-        break;
-      case 'GET_OUT_OF_JAIL_FREE':
-        pickUpGetOutOfJailFreeCard(currentPlayer?.token);
-        break;
-      default:
-        alert('Unknown card action');
-        break;
-    }
-  }, [
-    cardAction,
-    currentPlayer,
-    gameSettings,
-    hideActionModal,
-    payBank,
-    sendToJail,
-    goto,
-  ]);
+      if (cardAction?.action_type !== 'GO_TO_PROPERTY') {
+        hideActionModal();
+      }
+    }, 500);
+  }, [currentPlayer, cardAction, performCardAction, setCardAction]);
 
   return (
     <Flex direction={'column'} justify={'center'} align="center">
@@ -98,9 +64,10 @@ export default function TakeCardContent({ cardType }: { cardType: CardType }) {
       )}
       <Button
         colorScheme={'green'}
+        isLoading={isPerformingAction || isChoosingCard}
         mt={'10px'}
         w="100%"
-        onClick={() => (cardAction ? performAction() : handleTakeCard())}
+        onClick={cardAction ? handlePerformCardAction : handleTakeCard}
       >
         {cardAction ? 'Perform Card Action' : 'Take'}
       </Button>

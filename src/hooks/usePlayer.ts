@@ -1,8 +1,9 @@
-import { GameProperty } from '@prisma/client';
+import { BoardSpace, GameProperty } from '@prisma/client';
 import { useCallback, useMemo } from 'react';
 import {
   Player,
-  PlayerState,
+  PlayersState,
+  PropertyState,
   TokenType,
   useGameContext,
 } from './useGameContext';
@@ -11,8 +12,13 @@ type UsePlayerT = (token: TokenType | undefined) => {
   isTurn?: boolean;
   sendToJail: () => void;
   getOwnedProperties: () => GameProperty[];
+  getCurrentBoardSpace: () =>
+    | (BoardSpace & {
+        property: GameProperty | null;
+      })
+    | null;
 } & Partial<Player> &
-  Partial<PlayerState[TokenType]>;
+  Partial<PlayersState[TokenType]>;
 
 export const usePlayer: UsePlayerT = token => {
   const {
@@ -43,12 +49,36 @@ export const usePlayer: UsePlayerT = token => {
     return state[token];
   }, [token, state]);
 
+  const getCurrentBoardSpace = useCallback<
+    ReturnType<UsePlayerT>['getCurrentBoardSpace']
+  >(() => {
+    if (!playerState) return null;
+    const space = gameSettings?.BoardSpaces.find(
+      bs => bs.board_position === playerState.pos
+    );
+
+    if (!space) return null;
+
+    if (space?.space_type === 'PROPERTY') {
+      return {
+        ...space,
+        property:
+          gameSettings?.Properties.find(p => p.id === space.property_id) ??
+          null,
+      };
+    }
+
+    return { ...space, property: null } ?? null;
+  }, [playerState, gameSettings]);
+
   const getOwnedProperties = useCallback(() => {
     if (!playerState) return [];
 
     const { propertiesOwned } = playerState;
 
-    const properties: GameProperty[] = Object.values(propertiesOwned)
+    const properties: (GameProperty & PropertyState)[] = Object.values(
+      propertiesOwned
+    )
       .reduce(
         (acc, curr) => [...acc, ...Object.entries(curr).map(([k, v]) => k)],
         [] as string[]
@@ -56,7 +86,11 @@ export const usePlayer: UsePlayerT = token => {
       .map(
         id => gameSettings?.Properties.find(p => p.id === id) as GameProperty
       )
-      .filter(p => !!p);
+      .filter(p => !!p)
+      .map(p => ({
+        ...p,
+        ...(propertiesOwned?.[p.property_group_color]?.[p.id] as PropertyState),
+      }));
 
     return properties;
   }, [playerState, gameSettings]);
@@ -66,7 +100,7 @@ export const usePlayer: UsePlayerT = token => {
     getOwnedProperties,
     isTurn,
     sendToJail,
-
-    ...((token ? state[token] : {}) as PlayerState[TokenType]),
+    getCurrentBoardSpace,
+    ...((token ? state[token] : {}) as PlayersState[TokenType]),
   };
 };

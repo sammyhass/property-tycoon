@@ -2,6 +2,7 @@ import ActionModalTakeCard from '@/components/Game/ActionModal/TakeCard';
 import { act } from '@testing-library/react';
 import React from 'react';
 import { fakeCard, fakePlayer, renderWithGameContext } from '../fakers';
+jest.useFakeTimers();
 
 describe('Take Card Action Modal', () => {
   describe('Opportunity Knocks', () => {
@@ -25,13 +26,13 @@ describe('Take Card Action Modal', () => {
         action_type: 'PAY_BANK',
         description: 'Pay bank £200',
       });
-      const payBank = jest.fn();
       const takeCard = jest.fn().mockReturnValue(card);
+      const performCardAction = jest.fn();
       const { container } = renderWithGameContext(
         <ActionModalTakeCard cardType="OPPORTUNITY_KNOCKS" />,
         {
           takeCard,
-          payBank,
+          performCardAction,
           currentPlayer: fakePlayer('cat'),
         }
       );
@@ -40,7 +41,7 @@ describe('Take Card Action Modal', () => {
 
       act(() => {
         takeCardButton?.click();
-        new Promise(resolve => setTimeout(resolve, 0));
+        jest.runAllTimers();
       });
       expect(takeCard).toHaveReturnedWith(card);
       expect(container.textContent).toContain(card.description);
@@ -48,10 +49,10 @@ describe('Take Card Action Modal', () => {
       // Take Card Button now becomes the 'action' button
       act(() => {
         takeCardButton?.click();
-        new Promise(resolve => setTimeout(resolve));
+        jest.runAllTimers();
       });
 
-      expect(payBank).toHaveBeenCalledWith('cat', card.cost);
+      expect(performCardAction).toHaveBeenCalledWith('cat', card);
     });
   });
 
@@ -76,13 +77,13 @@ describe('Take Card Action Modal', () => {
         action_type: 'PAY_BANK',
         description: 'Pay bank £200',
       });
-      const payBank = jest.fn();
+      const performCardAction = jest.fn();
       const takeCard = jest.fn().mockReturnValue(card);
       const { container } = renderWithGameContext(
         <ActionModalTakeCard cardType="POT_LUCK" />,
         {
-          takeCard,
-          payBank,
+          takeCard: takeCard,
+          performCardAction,
           currentPlayer: fakePlayer('cat'),
         }
       );
@@ -91,18 +92,19 @@ describe('Take Card Action Modal', () => {
 
       act(() => {
         takeCardButton?.click();
-        new Promise(resolve => setTimeout(resolve, 0));
+        jest.runAllTimers();
       });
-      expect(takeCard).toHaveReturnedWith(card);
+
       expect(container.textContent).toContain(card.description);
+      expect(takeCard).toHaveReturnedWith(card);
 
       // Take Card Button now becomes the 'action' button
       act(() => {
         takeCardButton?.click();
-        new Promise(resolve => setTimeout(resolve));
+        jest.runAllTimers();
       });
 
-      expect(payBank).toHaveBeenCalledWith('cat', card.cost);
+      expect(performCardAction).toHaveBeenCalledWith('cat', card);
     });
   });
 });
