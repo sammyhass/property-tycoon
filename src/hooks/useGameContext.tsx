@@ -975,29 +975,27 @@ export const GameContextProvider = ({
           money: (state[player]?.money ?? 0) - amount,
         },
       }));
+      setTotalOnFreeParking((totalOnFreeParking ?? 0) + amount);
       toast({
         title: `
         💸 ${TOKENS_MAP[player]} paid ${formatPrice(amount)} to free parking`,
         status: 'success',
       });
-      setTotalOnFreeParking((totalOnFreeParking ?? 0) + amount);
     },
     [totalOnFreeParking, state]
   );
 
   const landedOnFreeParking = useCallback(
     (player: TokenType) => {
-      const playerState = state[player];
       const amount = totalOnFreeParking;
-      if (!playerState) return 0;
-      const newMoney = playerState.money + amount;
       setState(state => ({
         ...state,
         [player]: {
-          ...playerState,
-          money: newMoney,
+          ...state[player],
+          money: (state[player]?.money ?? 0) + amount,
         },
       }));
+
       toast({
         title: `
         🎉 - ${TOKENS_MAP[player]} landed on free parking and got ${formatPrice(
@@ -1008,7 +1006,7 @@ export const GameContextProvider = ({
       setTotalOnFreeParking(0);
       return amount ?? 0;
     },
-    [state, totalOnFreeParking]
+    [, totalOnFreeParking]
   );
 
   const sendToJail = useCallback(

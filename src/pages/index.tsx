@@ -19,7 +19,7 @@ const Home: NextPage = () => {
               Manage your Games
             </Button>
           </Link>
-          <Link passHref href="#">
+          <Link passHref href="/explore">
             <Button size="lg" colorScheme={'purple'}>
               Explore Boards
             </Button>

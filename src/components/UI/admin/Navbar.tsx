@@ -1,5 +1,13 @@
 import { useAuth } from '@/hooks/useAuth';
-import { Button, Flex, Heading, IconButton, Spacer } from '@chakra-ui/react';
+import {
+  Button,
+  Flex,
+  Heading,
+  IconButton,
+  LinkBox,
+  LinkOverlay,
+  Spacer,
+} from '@chakra-ui/react';
 import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Link from 'next/link';
@@ -12,13 +20,13 @@ export default function Navbar() {
 
   return (
     <Flex w="100%" bg={'darkviolet'} p={'20px'}>
-      <Heading
-        onClick={() => router.push('/admin/games')}
-        curor="pointer"
-        color="white"
-      >
-        Property Tycoon
-      </Heading>
+      <LinkBox>
+        <Link href="/" passHref>
+          <LinkOverlay>
+            <Heading color="white">Property Tycoon</Heading>
+          </LinkOverlay>
+        </Link>
+      </LinkBox>
       <Spacer />
       <Flex gap="10px" wrap={'wrap'}>
         <Link href={'/play'} passHref>
