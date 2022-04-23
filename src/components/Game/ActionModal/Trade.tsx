@@ -326,6 +326,7 @@ export default function TradeContent() {
                 : tradingPlayerProperties
               )?.map(p => (
                 <Box
+                  key={p.id}
                   pos="relative"
                   cursor={'pointer'}
                   p="10px"

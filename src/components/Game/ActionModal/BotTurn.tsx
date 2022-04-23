@@ -280,7 +280,7 @@ export default function BotTurn() {
       {!isTakingTurn && !hasCompletedTurn && (
         <Alert size="sm" my="5px" borderRadius={'8px'}>
           <AlertDescription>
-            Click below to simulate {name}'s turn
+            Click below to simulate {name}&apos;s turn
           </AlertDescription>
         </Alert>
       )}
