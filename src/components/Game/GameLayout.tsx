@@ -84,6 +84,7 @@ const GamePlayersDisplay = () => {
         >
           <IconButton
             isRound
+            position={'relative'}
             transform={
               selectedPlayer === player.token
                 ? 'translateY(-10px)'

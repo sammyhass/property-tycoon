@@ -13,8 +13,8 @@ export default function ActionModalFreeParking() {
 
   useEffect(() => {
     if (!currentPlayer) return;
-    const v = landedOnFreeParking(currentPlayer.token);
-  }, [currentPlayer, landedOnFreeParking]);
+    landedOnFreeParking(currentPlayer.token);
+  }, []);
 
   return (
     <Flex direction={'column'} justify={'center'} align="center">

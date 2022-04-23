@@ -49,8 +49,6 @@ export default function TradeContent() {
   const [showPropertySelectorForPlayer, setShowPropertySelectorForPlayer] =
     useState<TokenType | undefined>();
 
-  const [botAcceptsTrade, setBotAcceptsTrade] = useState(false);
-
   const {
     cancelTrade,
     moneyToTrade,
@@ -288,11 +286,7 @@ export default function TradeContent() {
             onClick={performTrade}
             colorScheme="green"
             leftIcon={<FontAwesomeIcon icon={faHandshake} />}
-            isDisabled={
-              !canAfford ||
-              !tradingWithPlayer ||
-              (tradingPlayerInfo.isBot && !botAcceptsTrade)
-            }
+            isDisabled={!canAfford || !tradingWithPlayer}
           >
             Perform Trade
           </Button>
@@ -319,8 +313,8 @@ export default function TradeContent() {
             Properties
           </ModalHeader>
           <ModalCloseButton />
-          <ModalBody>
-            <Flex>
+          <ModalBody overflow={'hidden'}>
+            <Flex overflowX={'auto'}>
               {(showPropertySelectorForPlayer === currentPlayer?.token
                 ? currentPlayerProperties
                 : tradingPlayerProperties

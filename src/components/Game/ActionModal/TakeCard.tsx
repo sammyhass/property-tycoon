@@ -40,9 +40,7 @@ export default function TakeCardContent({ cardType }: { cardType: CardType }) {
       }
       setCardAction(null);
 
-      if (cardAction?.action_type !== 'GO_TO_PROPERTY') {
-        hideActionModal();
-      }
+      hideActionModal();
     }, 500);
   }, [currentPlayer, cardAction, performCardAction, setCardAction]);
 

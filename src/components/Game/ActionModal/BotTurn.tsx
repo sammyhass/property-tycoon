@@ -14,7 +14,6 @@ import {
 import { faCheck, faDice } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { BoardSpace, CardAction, CardType } from '@prisma/client';
-import { AnimatePresence } from 'framer-motion';
 import { useCallback, useEffect, useState } from 'react';
 
 export type BotPreference =
@@ -299,16 +298,14 @@ export default function BotTurn() {
       </Button>
       <Box mt="10px">
         <UnorderedList spacing={3} fontSize="md">
-          <AnimatePresence>
-            {updates.map((update, index) => (
-              <ListItem
-                layoutId={`${currentPlayer?.name}-update-${index}`}
-                key={`${update}-${index}`}
-              >
-                {update}
-              </ListItem>
-            ))}
-          </AnimatePresence>
+          {updates.map((update, index) => (
+            <ListItem
+              layoutId={`${currentPlayer?.name}-update-${index}`}
+              key={`${update}-${index}`}
+            >
+              {update}
+            </ListItem>
+          ))}
         </UnorderedList>
       </Box>
     </Box>
