@@ -1506,6 +1506,7 @@ export const GameContextProvider = ({
         gameSettings,
         showActionModal,
         canEndTurn,
+        mode: gameMode,
         landedOnFreeParking,
         payToFreeParking,
         buy,
