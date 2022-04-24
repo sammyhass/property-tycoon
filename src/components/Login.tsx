@@ -1,12 +1,9 @@
-import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { Box, Divider, Heading } from '@chakra-ui/react';
 import { Auth } from '@supabase/ui';
 import React from 'react';
 
 export default function LoginComponent() {
-  const { isAuthenticated } = useAuth();
-
   return (
     <Box boxShadow={'xl'} p="20px" borderRadius={'10px'}>
       <Heading>Let&apos;s get you logged in</Heading>

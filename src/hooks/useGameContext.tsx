@@ -28,6 +28,9 @@ import {
 } from 'react';
 import { TradeContextT, TradeProvider } from './useTrade';
 
+export type GameModeT = 'timed' | 'normal';
+
+export const PLAYER_LIMIT = 6;
 // Tokens a player can use in the game (gonna be emoji)
 export type TokenType =
   | 'boot'
@@ -35,7 +38,13 @@ export type TokenType =
   | 'ship'
   | 'hatstand'
   | 'cat'
-  | 'iron';
+  | 'iron'
+  | 'soccerball'
+  | 'sandwich'
+  | 'pizza'
+  | 'penguin'
+  | 'dinosaur'
+  | 'sunglasses';
 
 // ---
 
@@ -46,6 +55,12 @@ export const TOKENS_MAP: { [key in TokenType]: string } = {
   hatstand: '🎩',
   cat: '🐱',
   iron: '🔨',
+  soccerball: '⚽',
+  sandwich: '🥪',
+  pizza: '🍕',
+  penguin: '🐧',
+  sunglasses: '🕶',
+  dinosaur: '🦖',
 };
 
 export type PerformTradeInput = Pick<
@@ -112,6 +127,8 @@ export type GameContextT = {
 
   players: Player[];
   state: PlayersState;
+  mode: GameModeT;
+
   currentPlayer: Player | null;
 
   // Roll the dice and return the result, (don't move the player)
@@ -143,7 +160,7 @@ export type GameContextT = {
   performCardAction: (player: TokenType, action: CardAction) => void;
 
   hasStarted: boolean;
-  handleStartGame: () => void;
+  handleStartGame: (mode: GameModeT) => void;
 
   showActionModal: (action: ActionType) => void;
   hideActionModal: () => void;
@@ -228,6 +245,7 @@ export const GameContext = createContext<GameContextT>({
   removePlayer: () => {},
   calculateRent: () => 0,
   bankrupt: () => {},
+  mode: 'normal',
   couldPay: () => false,
   payPlayer: () => {},
   resetGame: () => {},
@@ -272,6 +290,8 @@ export const GameContextProvider = ({
   const [gameSettings, setGameSettings] = useState<GameSettingsT | null>(
     initialGameSettings
   );
+
+  const [gameMode, setGameMode] = useState<GameModeT>('normal');
 
   const [time, setTime] = useState(0);
 
@@ -1266,52 +1286,58 @@ export const GameContextProvider = ({
     setTime(0);
     setHasStarted(false);
     setIsPaused(false);
+    setGameMode('normal');
   }, []);
 
   /// Handle start game should be run when the game is started (after initial setup where players are added)
   // it initializes the board state, gives starting money to players, and sets the current player
-  const handleStartGame = useCallback(() => {
-    setHasStarted(true);
-    setIsPaused(false);
+  const handleStartGame = useCallback(
+    (gameMode: GameModeT) => {
+      setHasStarted(true);
+      setIsPaused(false);
 
-    toast({
-      title: `
+      setGameMode(gameMode);
+
+      toast({
+        title: `
       🎉 Game has started!`,
-      status: 'success',
-    });
+        status: 'success',
+      });
 
-    // Initialize board state
-    setState(
-      players.reduce(
-        (acc, player) => ({
-          ...acc,
-          [player.token]: {
-            pos: 0,
-            propertiesOwned: {},
-            money: gameSettings?.starting_money ?? 0,
-            isBankrupt: false,
-            inJail: false,
-            doublesInARow: 0,
-            lastRoll: 0,
-            turnsInJail: 0,
-            hasGetOutOfJailFreeCard: false,
-            isBot: player.isBot,
-          } as PlayerState,
-        }),
-        {} as {
-          [key in TokenType]?: PlayerState;
-        }
-      )
-    );
+      // Initialize board state
+      setState(
+        players.reduce(
+          (acc, player) => ({
+            ...acc,
+            [player.token]: {
+              pos: 0,
+              propertiesOwned: {},
+              money: gameSettings?.starting_money ?? 0,
+              isBankrupt: false,
+              inJail: false,
+              doublesInARow: 0,
+              lastRoll: 0,
+              turnsInJail: 0,
+              hasGetOutOfJailFreeCard: false,
+              isBot: player.isBot,
+            } as PlayerState,
+          }),
+          {} as {
+            [key in TokenType]?: PlayerState;
+          }
+        )
+      );
 
-    // Begin the first turn
-    setCurrentPlayer(players[0].token);
-    if (players[0].isBot) {
-      startBotTurn();
-      return;
-    }
-    showActionModal('ROLL');
-  }, [players, setHasStarted, gameSettings?.starting_money]);
+      // Begin the first turn
+      setCurrentPlayer(players[0].token);
+      if (players[0].isBot) {
+        startBotTurn();
+        return;
+      }
+      showActionModal('ROLL');
+    },
+    [players, setHasStarted, gameSettings?.starting_money]
+  );
 
   const startBotTurn = () => showActionModal('BOT_TURN');
   // Attempt to use a get out of jail free card

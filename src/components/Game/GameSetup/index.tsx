@@ -1,4 +1,10 @@
-import { TOKENS_MAP, TokenType, useGameContext } from '@/hooks/useGameContext';
+import {
+  GameModeT,
+  PLAYER_LIMIT,
+  TOKENS_MAP,
+  TokenType,
+  useGameContext,
+} from '@/hooks/useGameContext';
 import {
   Alert,
   AlertDescription,
@@ -27,11 +33,14 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useCallback, useState } from 'react';
+import GameModePicker from './GameModePicker';
 
 // The GameSetup component is responsible for rendering the game setup screen where players initially choose their tokens.
 export default function GameSetup() {
   const { handleStartGame, gameSettings, addPlayer, players, removePlayer } =
     useGameContext();
+
+  const [gameMode, setGameMode] = useState<GameModeT>('normal');
 
   const [newPlayerName, setNewPlayerName] = useState('');
   const [newPlayerToken, setNewPlayerToken] = useState<TokenType>(
@@ -84,6 +93,9 @@ export default function GameSetup() {
       bg="white"
     >
       <Heading size="xl">Game Setup - {gameSettings?.name}</Heading>
+      <Box>
+        <GameModePicker value={gameMode} onChange={setGameMode} />
+      </Box>
       <Divider />
       <Box p="10px">
         <form
@@ -161,7 +173,8 @@ export default function GameSetup() {
               !newPlayerName ||
               !newPlayerToken ||
               !!players.find(p => p.name === newPlayerName) ||
-              !!players.find(p => p.token === newPlayerToken)
+              !!players.find(p => p.token === newPlayerToken) ||
+              players.length >= PLAYER_LIMIT
             }
             leftIcon={<FontAwesomeIcon icon={faPlus} />}
           >
@@ -218,7 +231,7 @@ export default function GameSetup() {
       <Button
         w="100%"
         colorScheme="green"
-        onClick={handleStartGame}
+        onClick={() => handleStartGame(gameMode)}
         size={'lg'}
         disabled={players.length <= 1}
         mt="10px"
