@@ -80,6 +80,9 @@ export type PropertyState = {
 export type PlayerState = {
   pos: number;
 
+  // How many turns the player has taken
+  nTurns: number;
+
   // Ids of properties owned
   propertiesOwned: Partial<{
     [key in PropertyGroupColor]: {
@@ -128,6 +131,7 @@ export type GameContextT = {
   players: Player[];
   state: PlayersState;
   mode: GameModeT;
+  timeLimit: number | null;
 
   currentPlayer: Player | null;
 
@@ -150,6 +154,8 @@ export type GameContextT = {
 
   removePlayer: (playerToken: TokenType) => void;
 
+  handleChangeGameMode: (mode: GameModeT, timeLimit: number | null) => void;
+
   resetGame: () => void;
 
   isPaused: boolean;
@@ -160,7 +166,7 @@ export type GameContextT = {
   performCardAction: (player: TokenType, action: CardAction) => void;
 
   hasStarted: boolean;
-  handleStartGame: (mode: GameModeT) => void;
+  handleStartGame: () => void;
 
   showActionModal: (action: ActionType) => void;
   hideActionModal: () => void;
@@ -232,6 +238,8 @@ export const GameContext = createContext<GameContextT>({
   buyHouse: () => {},
   unmortgage: () => {},
   rollDice: () => [0, 0],
+  timeLimit: null,
+  handleChangeGameMode: () => {},
   performCardAction: () => null,
   trade: () => {},
   addPlayer: () => {},
@@ -293,7 +301,21 @@ export const GameContextProvider = ({
 
   const [gameMode, setGameMode] = useState<GameModeT>('normal');
 
+  const [timeLimit, setTimeLimit] = useState<number | null>(null); // time limit in minutes
+
+  const handleChangeGameMode = (mode: GameModeT, timeLimit: number | null) => {
+    setGameMode(mode);
+    setTimeLimit(mode === 'timed' ? timeLimit ?? 60 : null);
+  };
+
   const [time, setTime] = useState(0);
+
+  const isTimeLimitReached = useMemo(() => {
+    if (gameMode === 'timed' && timeLimit) {
+      return time >= timeLimit * 60;
+    }
+    return false;
+  }, [gameMode, time, timeLimit]);
 
   // Current action the current player is taking
   const [currentAction, setCurrentAction] = useState<ActionType | null>(null);
@@ -310,6 +332,69 @@ export const GameContextProvider = ({
 
   // The current state of the game is stored in this object
   const [state, setState] = useState<PlayersState>({});
+
+  const allPlayersHadEqualTurns = useMemo(() => {
+    const turns = Object.values(state)
+      .map(player => player.nTurns)
+      .sort((a, b) => a - b);
+    return turns.every((turn, i, arr) => turn === arr[0]);
+  }, [state]);
+
+  const calculatePlayerValues = useCallback((): {
+    [key in TokenType]?: number;
+  } => {
+    const playerValues: { [key in TokenType]?: number } = {};
+
+    Object.entries(state).forEach(([token, player]) => {
+      const { money, propertiesOwned } = player;
+
+      let totalPropertyValue = 0;
+      Object.values(propertiesOwned).forEach(group => {
+        const properties = Object.keys(group);
+        const totalGroupValue = properties.reduce((acc, propertyId) => {
+          const property = gameSettings?.Properties.find(
+            p => p.id === propertyId
+          );
+          if (!property) return acc;
+          return acc + (property?.price ?? 0);
+        }, 0);
+        totalPropertyValue += totalGroupValue;
+      });
+
+      playerValues[token as TokenType] = totalPropertyValue + money;
+    });
+    return playerValues;
+  }, [state, gameSettings]);
+
+  useEffect(() => {
+    if (isTimeLimitReached && !allPlayersHadEqualTurns) {
+      toast({
+        title:
+          "Time's up! The game will end once all players have had equal turns",
+      });
+    } else if (isTimeLimitReached && allPlayersHadEqualTurns) {
+      const winner = Object.entries(calculatePlayerValues()).reduce(
+        (acc, [token, value]) => {
+          if (value > acc.value) {
+            return { token, value };
+          }
+          return acc;
+        },
+        { token: '', value: 0 }
+      );
+
+      const winnerName = players.find(p => p.token === winner.token)?.name;
+
+      toast({
+        title: 'Game ended! The winner is...',
+        status: 'success',
+        description: `${
+          TOKENS_MAP[winner?.token as TokenType]
+        } ${winnerName} with ${formatPrice(winner.value)}`,
+      });
+      resetGame();
+    }
+  }, [isTimeLimitReached, allPlayersHadEqualTurns]);
 
   const [totalOnFreeParking, setTotalOnFreeParking] = useState(0);
 
@@ -767,7 +852,8 @@ export const GameContextProvider = ({
       const firstSpace = sortedSpaces[sortedSpaces.length - 1];
 
       let newPos = newPostion + moveBy;
-      if (newPos >= lastSpace.board_position + 1) {
+      if (newPos >= lastSpace.board_position + 2) {
+        // we use +2 because to have passed go you need to land on the last space + 2 (otherwise you land on go)
         newPos =
           newPostion +
           moveBy -
@@ -871,7 +957,7 @@ export const GameContextProvider = ({
   // Trade a property and/or money with another player
 
   const goto = useCallback(
-    (player: TokenType, position: number, passGo = true) => {
+    (player: TokenType, position: number, passGo: boolean = true) => {
       const current = state[player]?.pos ?? 0;
       const diff = position - current;
       move(player, diff, passGo);
@@ -1148,7 +1234,7 @@ export const GameContextProvider = ({
             space => space.property_id === cardAction?.property_id
           );
           if (property) {
-            goto(player, property.board_position);
+            goto(player, property.board_position, true);
           }
           break;
         case 'GO_TO_GO':
@@ -1230,6 +1316,14 @@ export const GameContextProvider = ({
       nextIsBankrupt = state[_currentPlayer.token]?.isBankrupt ?? false;
     }
 
+    setState(state => ({
+      ...state,
+      [currentPlayerToken as TokenType]: {
+        ...state[currentPlayerToken as TokenType],
+        nTurns: (state[currentPlayerToken as TokenType]?.nTurns ?? 0) + 1,
+      } as PlayerState,
+    }));
+
     if (_currentPlayer) {
       setCurrentPlayer(_currentPlayer.token);
 
@@ -1246,6 +1340,7 @@ export const GameContextProvider = ({
       } else {
         showActionModal('ROLL');
       }
+      time % 60;
 
       toast({
         title: `
@@ -1256,14 +1351,14 @@ export const GameContextProvider = ({
 
   useEffect(() => {
     const timer = setInterval(() => {
-      if (!isPaused && hasStarted) {
+      if (!isPaused && hasStarted && !isTimeLimitReached) {
         setTime(time => time + 1);
       }
     }, 1000);
     return () => {
       clearInterval(timer);
     };
-  }, [hasStarted, isPaused]);
+  }, [hasStarted, isPaused, isTimeLimitReached]);
 
   const pause = () => setIsPaused(true);
   const resume = () => setIsPaused(false);
@@ -1291,53 +1386,49 @@ export const GameContextProvider = ({
 
   /// Handle start game should be run when the game is started (after initial setup where players are added)
   // it initializes the board state, gives starting money to players, and sets the current player
-  const handleStartGame = useCallback(
-    (gameMode: GameModeT) => {
-      setHasStarted(true);
-      setIsPaused(false);
+  const handleStartGame = useCallback(() => {
+    setHasStarted(true);
+    setIsPaused(false);
 
-      setGameMode(gameMode);
-
-      toast({
-        title: `
+    toast({
+      title: `
       🎉 Game has started!`,
-        status: 'success',
-      });
+      status: 'success',
+    });
 
-      // Initialize board state
-      setState(
-        players.reduce(
-          (acc, player) => ({
-            ...acc,
-            [player.token]: {
-              pos: 0,
-              propertiesOwned: {},
-              money: gameSettings?.starting_money ?? 0,
-              isBankrupt: false,
-              inJail: false,
-              doublesInARow: 0,
-              lastRoll: 0,
-              turnsInJail: 0,
-              hasGetOutOfJailFreeCard: false,
-              isBot: player.isBot,
-            } as PlayerState,
-          }),
-          {} as {
-            [key in TokenType]?: PlayerState;
-          }
-        )
-      );
+    // Initialize board state
+    setState(
+      players.reduce(
+        (acc, player) => ({
+          ...acc,
+          [player.token]: {
+            pos: 0,
+            propertiesOwned: {},
+            nTurns: 0,
+            money: gameSettings?.starting_money ?? 0,
+            isBankrupt: false,
+            inJail: false,
+            doublesInARow: 0,
+            lastRoll: 0,
+            turnsInJail: 0,
+            hasGetOutOfJailFreeCard: false,
+            isBot: player.isBot,
+          } as PlayerState,
+        }),
+        {} as {
+          [key in TokenType]?: PlayerState;
+        }
+      )
+    );
 
-      // Begin the first turn
-      setCurrentPlayer(players[0].token);
-      if (players[0].isBot) {
-        startBotTurn();
-        return;
-      }
-      showActionModal('ROLL');
-    },
-    [players, setHasStarted, gameSettings?.starting_money]
-  );
+    // Begin the first turn
+    setCurrentPlayer(players[0].token);
+    if (players[0].isBot) {
+      startBotTurn();
+      return;
+    }
+    showActionModal('ROLL');
+  }, [players, setHasStarted, gameSettings?.starting_money]);
 
   const startBotTurn = () => showActionModal('BOT_TURN');
   // Attempt to use a get out of jail free card
@@ -1512,6 +1603,7 @@ export const GameContextProvider = ({
         buy,
         players,
         state,
+        handleChangeGameMode,
         buyHouse,
         mortgage,
         unmortgage,
@@ -1536,6 +1628,7 @@ export const GameContextProvider = ({
         calculateRent,
         trade,
         addPlayer,
+        timeLimit,
         removePlayer,
         performCardAction,
         payBank,

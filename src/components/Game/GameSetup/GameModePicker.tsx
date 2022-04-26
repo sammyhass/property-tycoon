@@ -1,13 +1,27 @@
-import { GameModeT } from '@/hooks/useGameContext';
-import { Box, Button, ButtonGroup, Heading, Text } from '@chakra-ui/react';
+import { GameModeT, useGameContext } from '@/hooks/useGameContext';
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  Flex,
+  Heading,
+  Slider,
+  SliderFilledTrack,
+  SliderProps,
+  SliderThumb,
+  SliderTrack,
+  Text,
+  Tooltip,
+} from '@chakra-ui/react';
 
-export default function GameModePicker({
-  value,
-  onChange,
-}: {
-  value: GameModeT;
-  onChange: (value: GameModeT) => void;
-}) {
+export type GameModeOnChange<T extends GameModeT> = (
+  value: T,
+  payload: T extends 'timed' ? number : null
+) => void;
+
+export default function GameModePicker() {
+  const { handleChangeGameMode, mode, timeLimit } = useGameContext();
+
   return (
     <Box
       bg="white"
@@ -28,42 +42,99 @@ export default function GameModePicker({
       >
         <GameModeBox
           mode="normal"
-          selected={value === 'normal'}
-          onClick={onChange}
+          selected={mode === 'normal'}
+          description="The game is played until there is only one player left and all 
+          other players have retired from the game due to bankruptcy"
+          onClick={() => {
+            handleChangeGameMode('normal', null);
+          }}
         />
         <GameModeBox
           mode="timed"
-          selected={value === 'timed'}
-          onClick={onChange}
+          selected={mode === 'timed'}
+          description="A time limit is agreed at the outset by all 
+          players. When the time limit is reached, and the players have all taken the same number of 
+          turns, the game ends. Each player then calculated the value of their game assets. The player 
+          with the greatest value of game assets is declared the winner. "
+          onClick={() => handleChangeGameMode('timed', 60)}
         />
       </ButtonGroup>
+      {mode === 'timed' && (
+        <Box w="80%" my="10px" mx="auto">
+          <Heading size="md" mb="10px">
+            How long should the game last?
+          </Heading>
+          <GameTimeInput
+            value={timeLimit || 60}
+            defaultValue={60}
+            onChange={value => handleChangeGameMode('timed', value)}
+          />
+        </Box>
+      )}
     </Box>
   );
 }
 
 const GameModeBox = ({
   mode,
+  description,
   selected,
   onClick,
 }: {
   mode: GameModeT;
+  description: string;
   selected: boolean;
   onClick: (mode: GameModeT) => void;
 }) => {
   return (
-    <Box
-      as={Button}
-      size="lg"
-      onClick={onClick ? () => onClick(mode) : undefined}
-      colorScheme={selected ? 'purple' : 'gray'}
-      flexShrink={0}
-      gap="5px"
-      justifyItems={'center'}
-      p="40px 20px"
-      flexDir={'column'}
+    <Tooltip
+      label={description}
+      borderRadius="8px"
+      shadow={'lg'}
+      hasArrow
+      placement="top"
     >
-      <Text fontSize={'4xl'}>{mode === 'normal' ? '💯' : '🕒'}</Text>
-      {mode[0].toUpperCase().concat(mode.slice(1).toLowerCase())}
-    </Box>
+      <Box
+        as={Button}
+        size="lg"
+        onClick={onClick ? () => onClick(mode) : undefined}
+        colorScheme={selected ? 'purple' : 'gray'}
+        flexShrink={0}
+        py="10px"
+        h={'fit-content'}
+        flexDir={'column'}
+      >
+        <Text fontSize={'4xl'}>{mode === 'normal' ? '🤑' : '🕒'}</Text>
+        <Heading size="md">
+          {mode[0].toUpperCase().concat(mode.slice(1).toLowerCase())}
+        </Heading>
+      </Box>
+    </Tooltip>
+  );
+};
+
+const GameTimeInput = (props: SliderProps) => {
+  return (
+    <Flex gap="40px" align={'center'}>
+      <Flex
+        bg="green.500"
+        py="5px"
+        color="white"
+        w="140px"
+        justify="center"
+        align={'center'}
+        borderRadius={'8px'}
+        direction="column"
+      >
+        <Heading>{props.value}</Heading>
+        <Text>minutes</Text>
+      </Flex>
+      <Slider min={5} max={120} {...props} h="fit-content">
+        <SliderTrack h="20px" borderRadius={'8px'}>
+          <SliderFilledTrack bg="green.500" />
+        </SliderTrack>
+        <SliderThumb h="40px" w="40px" bg="green.500" />
+      </Slider>
+    </Flex>
   );
 };

@@ -1,5 +1,4 @@
 import {
-  GameModeT,
   PLAYER_LIMIT,
   TOKENS_MAP,
   TokenType,
@@ -39,8 +38,6 @@ import GameModePicker from './GameModePicker';
 export default function GameSetup() {
   const { handleStartGame, gameSettings, addPlayer, players, removePlayer } =
     useGameContext();
-
-  const [gameMode, setGameMode] = useState<GameModeT>('normal');
 
   const [newPlayerName, setNewPlayerName] = useState('');
   const [newPlayerToken, setNewPlayerToken] = useState<TokenType>(
@@ -94,7 +91,7 @@ export default function GameSetup() {
     >
       <Heading size="xl">Game Setup - {gameSettings?.name}</Heading>
       <Box>
-        <GameModePicker value={gameMode} onChange={setGameMode} />
+        <GameModePicker />
       </Box>
       <Divider />
       <Box p="10px">
@@ -231,7 +228,7 @@ export default function GameSetup() {
       <Button
         w="100%"
         colorScheme="green"
-        onClick={() => handleStartGame(gameMode)}
+        onClick={() => handleStartGame()}
         size={'lg'}
         disabled={players.length <= 1}
         mt="10px"

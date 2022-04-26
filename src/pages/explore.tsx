@@ -2,6 +2,7 @@ import AdminLayout from '@/components/UI/admin/AdminLayout';
 import { prismaClient } from '@/lib/prisma';
 import {
   Box,
+  Button,
   Flex,
   Heading,
   LinkBox,
@@ -39,14 +40,11 @@ export default function ExplorePage({ games, error }: ExplorePageProps) {
           <LinkBox
             p="20px"
             borderRadius={'8px'}
-            display={'flex'}
-            flexDir={'column'}
-            as="article"
             flexShrink={0}
             minW="300px"
-            gap="20px"
-            textAlign={'center'}
-            border="1px solid #eee"
+            shadow={'md'}
+            key={game.id}
+            transform="scale(0.98)"
             transition="all 0.2s"
             _hover={{
               shadow: 'md',
@@ -55,11 +53,14 @@ export default function ExplorePage({ games, error }: ExplorePageProps) {
             pos="relative"
             overflow={'hidden'}
           >
-            <Heading>
-              <Link href={`/play/${game.share_code}`} passHref>
-                <LinkOverlay>{game.name}</LinkOverlay>
-              </Link>
-            </Heading>
+            <Link href={`/play/${game.share_code}`} passHref>
+              <LinkOverlay>
+                <Flex direction={'column'}>
+                  <Heading>{game.name}</Heading>
+                </Flex>
+                <Button colorScheme={'green'}>Play Now</Button>
+              </LinkOverlay>
+            </Link>
           </LinkBox>
         ))}
       </Flex>

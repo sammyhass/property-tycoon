@@ -47,10 +47,15 @@ export default function HUD() {
 }
 
 export const GameTimeDisplay = () => {
-  const { time } = useGameContext();
+  const { time, timeLimit } = useGameContext();
 
-  const mins = Math.floor(time / 60);
-  const secs = time % 60;
+  // if there is a time limit, show time left
+  const timeLimitInSecs = timeLimit ? timeLimit * 60 : null;
+
+  const mins = timeLimitInSecs
+    ? Math.floor((timeLimitInSecs - time) / 60)
+    : Math.floor(time / 60);
+  const secs = timeLimitInSecs ? (timeLimitInSecs - time) % 60 : time % 60;
   return (
     <Box flexShrink={0}>
       <Code fontSize={'2xl'} bg="white">
