@@ -455,42 +455,6 @@ export const GameContextProvider = ({
     [setState]
   );
 
-  const bankrupt = useCallback(
-    (player: TokenType) => {
-      toast({
-        title: `
-        🎲 ${TOKENS_MAP[player]} is bankrupt`,
-      });
-      setState(state => ({
-        ...state,
-        [player]: {
-          ...state[player],
-          isBankrupt: true,
-        } as PlayersState[TokenType],
-      }));
-
-      endTurn();
-
-      // find the player who is not bankrupt
-      const winner = Object.entries(state)
-        .filter(([k, v]) => v.isBankrupt === false)
-        .map(([k, v]) => k as TokenType);
-
-      if (winner.length === 1) {
-        toast({
-          title: `
-          🎉
-          ${TOKENS_MAP[winner[0]]} is the winner!`,
-        });
-
-        setTimeout(() => {
-          resetGame();
-        }, 1000);
-      }
-    },
-    [setState]
-  );
-
   // Works out if a player could pay an amount of money after mortgaging all their properties
   const couldPay = useCallback(
     (player: TokenType, amount: number) => {
@@ -1587,6 +1551,42 @@ export const GameContextProvider = ({
       });
     },
     [gameSettings, state, setState]
+  );
+
+  const bankrupt = useCallback(
+    (player: TokenType) => {
+      toast({
+        title: `
+        🎲 ${TOKENS_MAP[player]} is bankrupt`,
+      });
+      setState(state => ({
+        ...state,
+        [player]: {
+          ...state[player],
+          isBankrupt: true,
+        } as PlayersState[TokenType],
+      }));
+
+      endTurn();
+
+      // find the player who is not bankrupt
+      const winner = Object.entries(state)
+        .filter(([k, v]) => v.isBankrupt === false)
+        .map(([k, v]) => k as TokenType);
+
+      if (winner.length === 1) {
+        toast({
+          title: `
+          🎉
+          ${TOKENS_MAP[winner[0]]} is the winner!`,
+        });
+
+        setTimeout(() => {
+          resetGame();
+        }, 3000);
+      }
+    },
+    [setState, toast, state, endTurn]
   );
 
   const canEndTurn = useMemo(() => currentAction === null, [currentAction]);
