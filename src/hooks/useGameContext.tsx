@@ -1571,6 +1571,7 @@ export const GameContextProvider = ({
 
       // find the player who is not bankrupt
       const winner = Object.entries(state)
+        .filter(([k, v]) => k !== player)
         .filter(([k, v]) => v.isBankrupt === false)
         .map(([k, v]) => k as TokenType);
 
