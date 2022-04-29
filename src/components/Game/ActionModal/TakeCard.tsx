@@ -11,10 +11,12 @@ export default function TakeCardContent({ cardType }: { cardType: CardType }) {
     takeCard,
     currentPlayer,
     gameSettings,
+    canEndTurn,
     performCardAction,
     hideActionModal,
   } = useGameContext();
 
+  const [hasPerformedAction, setHasPerformedAction] = useState(false);
   const [cardAction, setCardAction] = useState<CardAction | null>(null);
   const [isChoosingCard, setIsChoosingCard] = useState(false);
 
@@ -38,37 +40,50 @@ export default function TakeCardContent({ cardType }: { cardType: CardType }) {
       if (cardAction) {
         performCardAction(currentPlayer.token, cardAction);
       }
+      setHasPerformedAction(true);
       setCardAction(null);
-
-      hideActionModal();
     }, 500);
+    setIsPerformingAction(false);
   }, [currentPlayer, cardAction, performCardAction, setCardAction]);
 
   return (
     <Flex direction={'column'} justify={'center'} align="center">
-      <Heading size="md">
-        Pick a {cardType === 'POT_LUCK' ? 'Pot Luck' : 'Opportunity Knocks'}{' '}
-        Card
-      </Heading>
-      {cardAction && (
-        <GameCard
-          {...cardAction}
-          propertyName={
-            gameSettings?.Properties?.find(
-              property => property.id === cardAction?.property_id
-            )?.name ?? undefined
-          }
-        />
+      {!hasPerformedAction ? (
+        <>
+          <Heading size="md">
+            Pick a {cardType === 'POT_LUCK' ? 'Pot Luck' : 'Opportunity Knocks'}{' '}
+            Card
+          </Heading>
+          {cardAction && (
+            <GameCard
+              {...cardAction}
+              propertyName={
+                gameSettings?.Properties?.find(
+                  property => property.id === cardAction?.property_id
+                )?.name ?? undefined
+              }
+            />
+          )}
+          <Button
+            colorScheme={'green'}
+            isLoading={isPerformingAction || isChoosingCard}
+            mt={'10px'}
+            w="100%"
+            onClick={cardAction ? handlePerformCardAction : handleTakeCard}
+          >
+            {cardAction ? 'Perform Card Action' : 'Take'}
+          </Button>
+        </>
+      ) : (
+        <Button
+          size="lg"
+          onClick={hideActionModal}
+          w="100%"
+          colorScheme={'blue'}
+        >
+          Continue
+        </Button>
       )}
-      <Button
-        colorScheme={'green'}
-        isLoading={isPerformingAction || isChoosingCard}
-        mt={'10px'}
-        w="100%"
-        onClick={cardAction ? handlePerformCardAction : handleTakeCard}
-      >
-        {cardAction ? 'Perform Card Action' : 'Take'}
-      </Button>
     </Flex>
   );
 }
